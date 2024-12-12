@@ -26,7 +26,7 @@ const s3 = new S3Client({
 });
 
 // 확장자 검사 목록
-const allowedExtensions = [".png", ".jpg", ".jpeg", ".bmp", ".gif"];
+const allowedExtensions = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"];
 
 const storage = multerS3({
   s3, // AWS S3 연결
@@ -56,6 +56,7 @@ const upload = multer({
 // 카테고리 추가
 const addCategory = (req, res, next) => {
   const { categoryName } = req.body;
+
   const insertCategoryQuery = `insert into category (categoryName, createDate) values(?, ?)`;
 
   try {
@@ -76,7 +77,20 @@ const addCategory = (req, res, next) => {
 
 // 카테고리 조회
 const getCategory = (req, res, next) => {
-  const getCategoryQuery = `select * from category order by createDate desc`;
+  const getCategoryQuery = `SELECT 
+    category.id,
+    category.categoryName,
+    category.createDate,
+    IFNULL(COUNT(posts.id), 0) AS postCount
+FROM 
+    category
+LEFT JOIN  
+    posts 
+ON 
+    JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
+GROUP BY 
+    category.id
+    order by category.createDate desc;`;
 
   try {
     connection.query(getCategoryQuery, (err, result) => {
@@ -110,12 +124,14 @@ const editCategory = (req, res, next) => {
 
 // 카테고리 삭제
 const deleteCategory = (req, res, next) => {
-  const { id } = req.body;
+  const { ids } = req.body;
 
-  const deleteCategoryQuery = `delete from category where id = ?`;
+  // id 배열의 요소 수만큼 `?`를 추가하여 쿼리 작성
+  const placeholders = ids.map(() => "?").join(", ");
+  const deleteCategoryQuery = `delete from category WHERE id IN (${placeholders})`;
 
   try {
-    connection.query(deleteCategoryQuery, id, (err, result) => {
+    connection.query(deleteCategoryQuery, ids, (err, result) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
@@ -127,49 +143,28 @@ const deleteCategory = (req, res, next) => {
   }
 };
 
-// 게시글 추가
-const addPosts = (req, res, next) => {
-  const thumbnail = req.file.location;
-  const { title, content, author, category } = req.body;
-
-  const numberArray = category.map(Number);
-
-  const insertPostsQuery = `insert into posts (thumbnail, title, content, author, category, modifiedDate) values (?, ?, ?, ?, ? ,?)`;
-
-  connection.query(
-    insertPostsQuery,
-    [
-      thumbnail,
-      title,
-      content,
-      author,
-      JSON.stringify(numberArray),
-      currentDate,
-    ],
-    (err, result) => {
-      if (err) {
-        res.status(500).json({ Error: err.message });
-      }
-
-      res.status(200).json({ Success: "success" });
-    }
-  );
-  try {
-  } catch (error) {
-    next(error);
-  }
-};
-
 // 게시글 조회
 const getPosts = (req, res, next) => {
-  const getPostsQuery = `select * from posts`;
+  const page = req.query.page;
+
+  const offset = page === 1 ? 0 : (page - 1) * 6;
+
+  const getPostsQuery = `select * from posts order by modifiedDate desc limit ?, 6 `;
+  const getTotalPosts = `select count(*) as count from posts`;
 
   try {
-    connection.query(getPostsQuery, (err, result) => {
+    connection.query(getPostsQuery, offset, (err, result) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
-      res.status(200).json({ posts: result });
+      connection.query(getTotalPosts, (err, count) => {
+        if (err) {
+          res.status(500).json({ Error: err.message });
+        }
+        const totalCount = count[0]?.count || 0;
+
+        res.status(200).json({ posts: result, totalCount });
+      });
     });
   } catch (error) {
     next(error);
@@ -180,14 +175,35 @@ const getPosts = (req, res, next) => {
 const getDetailPosts = (req, res, next) => {
   const id = req.query.id;
 
-  const getDetailPostsQuery = `select * from posts where id =?`;
+  const getDetailPostsQuery = `SELECT 
+    posts.id, 
+    posts.thumbnail, 
+    posts.title, 
+    posts.content, 
+    posts.author,
+    posts.modifiedDate,
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'category_id', category.id,
+            'category_name', category.categoryName
+        )
+    ) AS category
+FROM 
+    posts
+INNER JOIN 
+    category
+    ON JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
+WHERE 
+    posts.id = ?
+GROUP BY 
+    posts.id;`;
 
   try {
     connection.query(getDetailPostsQuery, id, (err, result) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
-      res.status(200).json({ posts: result });
+      res.status(200).json({ posts: result[0] });
     });
   } catch (error) {
     next(error);
@@ -226,13 +242,66 @@ const editPosts = (req, res, next) => {
   }
 };
 
+// 카테고리 별 블로그 게시물 조회
+const getCategorySortPosts = (req, res, next) => {
+  const category_id = req.query.id;
+
+  const categorySortQuery = `SELECT category.categoryName,
+JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'id', posts.id,
+            'thumbnail', posts.thumbnail,
+            'title', posts.title,
+            'content', posts.content,
+            'author', posts.author,
+            'category', posts.category,
+            'modifiedDate', posts.modifiedDate
+        )
+    ) AS posts
+FROM 
+    category
+INNER JOIN 
+    posts
+on 
+    JSON_CONTAINS(posts.category, CAST(? AS JSON))
+WHERE 
+    category.id = ?
+GROUP BY 
+   category.id;`;
+  const totalPosts = `select count(*) as count from posts where JSON_CONTAINS(category, CAST(? AS JSON))`;
+
+  try {
+    connection.query(
+      categorySortQuery,
+      [category_id, category_id],
+      (err, result) => {
+        if (err) {
+          res.status(500).json({ Error: err.message });
+        }
+        connection.query(totalPosts, category_id, (err, count) => {
+          if (err) {
+            res.status(500).json({ Error: err.message });
+          }
+          const totalCount = count[0]?.count || 0;
+          res.status(200).json({ sortPosts: result, totalCount });
+        });
+      }
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 게시글 삭제
 const deletePosts = (req, res, next) => {
-  const id = req.query.id;
+  const { ids } = req.body;
 
-  const deletePostsQuery = `delete from posts where id = ?`;
+  // id 배열의 요소 수만큼 `?`를 추가하여 쿼리 작성
+  const placeholders = ids.map(() => "?").join(", ");
+  const deleteQuery = `delete from posts WHERE id IN (${placeholders})`;
+
   try {
-    connection.query(deletePostsQuery, id, (err, result) => {
+    connection.query(deleteQuery, ids, (err, result) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
@@ -244,21 +313,19 @@ const deletePosts = (req, res, next) => {
   }
 };
 
-// 슬라이드 게시물 추가
-const addSlidePosts = (req, res, next) => {
+// 슬라이드 게시물 수정
+const editSlidePosts = (req, res, next) => {
   const { postsId, title } = req.body;
 
-  const insertSlideQuery = `insert into slidePosts (posts_id, title) values (?, ?)`;
-
+  const updateSlideQuery = `update slidePosts set posts_id = ?, title = ? where id = 1`;
   try {
     connection.query(
-      insertSlideQuery,
+      updateSlideQuery,
       [JSON.stringify(postsId), title],
       (err, result) => {
         if (err) {
           res.status(500).json({ Error: err.message });
         }
-
         res.status(200).json({ Success: "success" });
       }
     );
@@ -267,28 +334,7 @@ const addSlidePosts = (req, res, next) => {
   }
 };
 
-// 슬라이드 게시물 수정
-const editSlidePosts = (req, res, next) => {
-  const id = req.query.id;
-  const { postsId, title } = req.body;
-
-  const updateSlideQuery = `update slidePosts set posts_id = ?, title = ?4 where id = ?`;
-  try {
-    connection.query(
-      updateSlideQuery,
-      [JSON.stringify(postsId), title, id],
-      (err, result) => {
-        if (err) {
-          res.status(500).json({ Error: err.message });
-        }
-        res.status(200).json({ Success: "success" });
-      }
-    );
-  } catch (error) {
-    next(error);
-  }
-};
-
+// 슬라이드 게시물 삭제
 const deleteSlidePosts = (req, res, next) => {
   const id = req.query.id;
 
@@ -306,20 +352,20 @@ const deleteSlidePosts = (req, res, next) => {
   }
 };
 
+// 슬라이드 게시물 조회
 const getSlidePosts = (req, res, next) => {
   const getSlideQuery = `SELECT 
     slidePosts.id AS slide_id,
     slidePosts.title AS slide_title,
     JSON_ARRAYAGG(
         JSON_OBJECT(
-            'post_id', posts.id,
+            'id', posts.id,
             'thumbnail', posts.thumbnail,
             'title', posts.title,
             'content', posts.content,
             'author', posts.author,
             'category', posts.category,
-            'modifiedDate', posts.modifiedDate,
-            'createDate', posts.createDate
+            'modifiedDate', posts.modifiedDate
         )
     ) AS posts,
     JSON_ARRAYAGG(posts.id) AS posts_id
@@ -345,6 +391,39 @@ GROUP BY
   }
 };
 
+// 유저조회
+const getUserList = (req, res, next) => {
+  const getUserQuery = `select * from userList`;
+
+  try {
+    connection.query(getUserQuery, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+
+      res.status(200).json({ user: result });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 유저상세조회
+const getUserDetail = (req, res, next) => {
+  const id = req.query.id;
+  const getUserDetailQuery = `select * from userList where id = ?`;
+  try {
+    connection.query(getUserDetailQuery, id, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ userDetail: result });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 카테고리
 router.post("/category", addCategory);
 router.get("/category", getCategory);
@@ -352,17 +431,20 @@ router.patch("/category", editCategory);
 router.delete("/category", deleteCategory);
 
 // 게시물
-router.post("/posts", upload.single("thumbnail"), addPosts);
 router.get("/posts", getPosts);
 router.get("/posts/detail", getDetailPosts);
 router.patch("/posts", upload.single("thumbnail"), editPosts);
 router.delete("/posts", deletePosts);
+router.get("/categorySort", getCategorySortPosts);
 
 // 슬라이드
-router.post("/slidePosts", addSlidePosts);
 router.patch("/slidePosts", editSlidePosts);
 router.delete("/slidePosts", deleteSlidePosts);
 router.get("/slidePosts", getSlidePosts);
+
+// 유저
+router.get("/user", getUserList);
+router.get("/userDetail", getUserDetail);
 
 export default {
   router,
