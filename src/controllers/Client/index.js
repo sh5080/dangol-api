@@ -135,9 +135,8 @@ GROUP BY
 
 // 게시글 추가
 const addPosts = (req, res, next) => {
-  const thumbnail = req.file.location;
-  const { title, content, author, category } = req.body;
-
+  const thumbnail = req.file.location; // 게시물 썸네일 주소
+  const { title, content, author, category } = req.body; // 제목, 내용, 작성자, 카테고리
   const numberArray = category.map(Number);
 
   const insertPostsQuery = `insert into posts (thumbnail, title, content, author, category, modifiedDate) values (?, ?, ?, ?, ? ,?)`;
@@ -168,8 +167,8 @@ const addPosts = (req, res, next) => {
 
 // 카테고리 별 블로그 게시물 조회
 const getCategorySortPosts = (req, res, next) => {
-  const category_id = req.query.id;
-  const page = req.query.page;
+  const category_id = req.query.id; // 카테고리 id
+  const page = req.query.page; // 게시물 Page
 
   const offset = page === 1 ? 0 : (page - 1) * 6;
 
@@ -206,13 +205,17 @@ GROUP BY
         if (err) {
           res.status(500).json({ Error: err.message });
         }
-        connection.query(totalPosts, [category_id, category_id], (err, count) => {
-          if (err) {
-            res.status(500).json({ Error: err.message });
+        connection.query(
+          totalPosts,
+          [category_id, category_id],
+          (err, count) => {
+            if (err) {
+              res.status(500).json({ Error: err.message });
+            }
+            const totalCount = count[0]?.count || 0;
+            res.status(200).json({ sortPosts: result, totalCount });
           }
-          const totalCount = count[0]?.count || 0;
-          res.status(200).json({ sortPosts: result, totalCount });
-        });
+        );
       }
     );
   } catch (error) {

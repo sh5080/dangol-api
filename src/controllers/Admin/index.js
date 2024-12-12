@@ -55,8 +55,9 @@ const upload = multer({
 
 // 카테고리 추가
 const addCategory = (req, res, next) => {
-  const { categoryName } = req.body;
+  const { categoryName } = req.body; //카테고리 이름
 
+  // 카테고리 이름을 받아 카테고리 추가
   const insertCategoryQuery = `insert into category (categoryName, createDate) values(?, ?)`;
 
   try {
@@ -106,7 +107,9 @@ GROUP BY
 
 // 카테고리 수정
 const editCategory = (req, res, next) => {
-  const { categoryName, id } = req.body;
+  const { categoryName, id } = req.body; // 카테고리 이름과 카테고리 id
+
+  // 카테고리 id와 일치하는 것에 카테고리 이름을 수정
   const patchCategoryQuery = `update category set categoryName = ? where id = ?`;
 
   try {
@@ -145,11 +148,14 @@ const deleteCategory = (req, res, next) => {
 
 // 게시글 조회
 const getPosts = (req, res, next) => {
-  const page = req.query.page;
+  const page = req.query.page; // 페이지
 
+  // 페이지를 받아 limit offset에 추가
   const offset = page === 1 ? 0 : (page - 1) * 6;
 
+  // 게시글 조회
   const getPostsQuery = `select * from posts order by modifiedDate desc limit ?, 6 `;
+  // 게시글에 전체 갯수
   const getTotalPosts = `select count(*) as count from posts`;
 
   try {
@@ -173,7 +179,7 @@ const getPosts = (req, res, next) => {
 
 // 게시글 상세 조회
 const getDetailPosts = (req, res, next) => {
-  const id = req.query.id;
+  const id = req.query.id; // 게시글 id
 
   const getDetailPostsQuery = `SELECT 
     posts.id, 
@@ -212,10 +218,10 @@ GROUP BY
 
 // 게시글 수정
 const editPosts = (req, res, next) => {
-  const id = req.query.id;
-  const thumbnail = req.file.location;
-  const { title, content, author, category } = req.body;
-  const numberArray = category.map(Number);
+  const id = req.query.id; // 게시글 id
+  const thumbnail = req.file.location; // 게시글 썸네일 주소
+  const { title, content, author, category } = req.body; // 제목, 본문, 작성자, 카테고리
+  const numberArray = category.map(Number); // [1, 2, 3] 이런식에 카테고리를 map으로 풀어 씀.
   const editPostsQuery = `update posts set thumbnail = ?, title = ?, content = ?, author = ?, category = ?, modifiedDate = ? WHERE id = ?`;
 
   try {
@@ -244,7 +250,7 @@ const editPosts = (req, res, next) => {
 
 // 카테고리 별 블로그 게시물 조회
 const getCategorySortPosts = (req, res, next) => {
-  const category_id = req.query.id;
+  const category_id = req.query.id; // 카테고리 id
 
   const categorySortQuery = `SELECT category.categoryName,
 JSON_ARRAYAGG(
@@ -294,7 +300,7 @@ GROUP BY
 
 // 게시글 삭제
 const deletePosts = (req, res, next) => {
-  const { ids } = req.body;
+  const { ids } = req.body; // 여러개 게시글의 id
 
   // id 배열의 요소 수만큼 `?`를 추가하여 쿼리 작성
   const placeholders = ids.map(() => "?").join(", ");
@@ -315,7 +321,7 @@ const deletePosts = (req, res, next) => {
 
 // 슬라이드 게시물 수정
 const editSlidePosts = (req, res, next) => {
-  const { postsId, title } = req.body;
+  const { postsId, title } = req.body; // 슬라이드 게시물 id, 제목
 
   const updateSlideQuery = `update slidePosts set posts_id = ?, title = ? where id = 1`;
   try {
@@ -336,7 +342,7 @@ const editSlidePosts = (req, res, next) => {
 
 // 슬라이드 게시물 삭제
 const deleteSlidePosts = (req, res, next) => {
-  const id = req.query.id;
+  const id = req.query.id; // 슬라이드 게시물 삭제
 
   const deleteSlideQuery = `delete from slidePosts where id = ?`;
 
@@ -410,7 +416,7 @@ const getUserList = (req, res, next) => {
 
 // 유저상세조회
 const getUserDetail = (req, res, next) => {
-  const id = req.query.id;
+  const id = req.query.id; // 유저 아이디
   const getUserDetailQuery = `select * from userList where id = ?`;
   try {
     connection.query(getUserDetailQuery, id, (err, result) => {
