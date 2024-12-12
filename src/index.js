@@ -8,7 +8,7 @@ const app = express();
 // 미들웨어
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://dev.nuworks.io"],
     credentials: true,
   })
 );
