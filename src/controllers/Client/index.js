@@ -61,6 +61,7 @@ const getTopPosts = (req, res, next) => {
     posts.content, 
     posts.author,
     posts.modifiedDate,
+    posts.description,
     JSON_ARRAYAGG(
         JSON_OBJECT(
             'category_id', category.id,
@@ -136,10 +137,13 @@ GROUP BY
 // 게시글 추가
 const addPosts = (req, res, next) => {
   const thumbnail = req.file.location; // 게시물 썸네일 주소
-  const { title, content, author, category } = req.body; // 제목, 내용, 작성자, 카테고리
-  const numberArray = category.map(Number);
+  const { title, content, author, category, description } = req.body; // 제목, 내용, 작성자, 카테고리
 
-  const insertPostsQuery = `insert into posts (thumbnail, title, content, author, category, modifiedDate) values (?, ?, ?, ?, ? ,?)`;
+  const numberArray = Array.isArray(category)
+    ? category.map(Number)
+    : [Number(category)];
+
+  const insertPostsQuery = `insert into posts (thumbnail, title, content, author, category, modifiedDate,description) values (?, ?, ?, ?, ? ,?,?)`;
 
   connection.query(
     insertPostsQuery,
@@ -150,6 +154,7 @@ const addPosts = (req, res, next) => {
       author,
       JSON.stringify(numberArray),
       currentDate,
+      description
     ],
     (err, result) => {
       if (err) {
