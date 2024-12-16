@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { connection } from "../../db/mysql";
 import bcrypt, { hash } from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { sign } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { smtpTransport } from "../../util/email.js";
 
@@ -19,8 +19,15 @@ const currentDate = date.toISOString().split("T")[0];
 // 회원 가입
 const createUser = (req, res, next) => {
   try {
-    const { email, name, password, affiliation, phoneNumber, userClass, event } =
-      req.body;
+    const {
+      email,
+      name,
+      password,
+      affiliation,
+      phoneNumber,
+      userClass,
+      event,
+    } = req.body;
 
     bcrypt.hash(password, 10, (err, hashedPw) => {
       if (err) {
@@ -73,7 +80,7 @@ const createUser = (req, res, next) => {
 // 로그인
 const loginUser = (req, res, next) => {
   const { email, password } = req.body;
-  const token = jwt.sign({ email, }, secretKey, {
+  const token = jwt.sign({ email }, secretKey, {
     expiresIn: "7d",
   });
 
@@ -109,6 +116,31 @@ const loginUser = (req, res, next) => {
       } else {
         res.status(400).json({ message: "아이디가 존재하지 않습니다." });
       }
+      console.log(result);
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 소셜 로그인
+const socialLogin = (req, res, next) => {
+  const { email } = req.body;
+
+  console.log(email);
+
+  const searchQuery = `select * from userList where email = ?`;
+  try {
+    connection.query(searchQuery, email, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      if (result.length > 0) {
+        res.status(400).json({ message: "이미 가입된 이메일입니다." });
+      } else {
+        res.status(200).json({ sign: true });
+      }
+
       console.log(result);
     });
   } catch (error) {
@@ -186,12 +218,19 @@ const emailCertification = (req, res, next) => {
 // 유저 프로필 조회
 const getUserProfile = (req, res, next) => {
   const getToken = req.get("Authorization");
-//   const token = getToken.split(" ")[1];
-  const verified = jwt.verify(getToken, secretKey);
-  console.log(verified);
-  try {
-  } catch (error) {
-    next(error);
+  if (getToken) {
+    const verified = jwt.verify(getToken, secretKey);
+    const getUserQuery = `select * from userList where email = ?`;
+    try {
+      connection.query(getUserQuery, verified.email, (err, result) => {
+        if (err) {
+          return res.status(500).json({ Error: err.message });
+        }
+        res.status(200).json({ profile: result[0] });
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 };
 
@@ -199,6 +238,7 @@ router.post("/crate", createUser);
 router.post("/login", loginUser);
 router.post("/emailCertification", emailCertification);
 router.get("/profile", getUserProfile);
+router.post("/social", socialLogin);
 
 export default {
   router,
