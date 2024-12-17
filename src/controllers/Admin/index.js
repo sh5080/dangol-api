@@ -423,7 +423,24 @@ const getUserDetail = (req, res, next) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
-      res.status(200).json({ userDetail: result });
+      res.status(200).json({ userDetail: result[0] });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 유저 포스팅 권한 수정
+const editPosting = (req, res, next) => {
+  const { approval, id } = req.body;
+
+  const approvalPostingQuery = `update userList set writer = ? where id = ?`;
+  try {
+    connection.query(approvalPostingQuery, [approval, id], (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ Success: "success" });
     });
   } catch (error) {
     next(error);
@@ -451,6 +468,7 @@ router.get("/slidePosts", getSlidePosts);
 // 유저
 router.get("/user", getUserList);
 router.get("/userDetail", getUserDetail);
+router.post("/user", editPosting);
 
 export default {
   router,
