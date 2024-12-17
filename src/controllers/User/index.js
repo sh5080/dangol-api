@@ -116,7 +116,6 @@ const loginUser = (req, res, next) => {
       } else {
         res.status(400).json({ message: "아이디가 존재하지 않습니다." });
       }
-      console.log(result);
     });
   } catch (error) {
     next(error);
@@ -126,23 +125,24 @@ const loginUser = (req, res, next) => {
 // 소셜 로그인
 const socialLogin = (req, res, next) => {
   const { email } = req.body;
-
-  console.log(email);
+  const token = jwt.sign({ email }, secretKey, {
+    expiresIn: "7d",
+  });
 
   const searchQuery = `select * from userList where email = ?`;
   try {
-    connection.query(searchQuery, email, (err, result) => {
-      if (err) {
-        res.status(500).json({ Error: err.message });
-      }
-      if (result.length > 0) {
-        res.status(400).json({ message: "이미 가입된 이메일입니다." });
-      } else {
-        res.status(200).json({ sign: true });
-      }
-
-      console.log(result);
-    });
+    if (email) {
+      connection.query(searchQuery, email, (err, result) => {
+        if (err) {
+          res.status(500).json({ Error: err.message });
+        }
+        if (result?.length > 0) {
+          res.status(200).json({ sing: false, token });
+        } else {
+          res.status(200).json({ sign: true });
+        }
+      });
+    }
   } catch (error) {
     next(error);
   }
@@ -218,6 +218,7 @@ const emailCertification = (req, res, next) => {
 // 유저 프로필 조회
 const getUserProfile = (req, res, next) => {
   const getToken = req.get("Authorization");
+
   if (getToken) {
     const verified = jwt.verify(getToken, secretKey);
     const getUserQuery = `select * from userList where email = ?`;
@@ -231,6 +232,8 @@ const getUserProfile = (req, res, next) => {
     } catch (error) {
       next(error);
     }
+  } else {
+    res.status(200).json({ message: "not found" });
   }
 };
 
