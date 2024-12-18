@@ -377,12 +377,13 @@ const getSlidePosts = (req, res, next) => {
     JSON_ARRAYAGG(posts.id) AS posts_id
 FROM 
     slidePosts
-INNER JOIN 
+LEFT JOIN 
     posts
 ON 
     JSON_CONTAINS(slidePosts.posts_id, CAST(posts.id AS JSON))
 GROUP BY 
-    slidePosts.id;
+    slidePosts.id, slidePosts.title;
+;
 `;
   try {
     connection.query(getSlideQuery, (err, result) => {
