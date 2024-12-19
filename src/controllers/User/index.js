@@ -237,11 +237,114 @@ const getUserProfile = (req, res, next) => {
   }
 };
 
+// 비밀번호 변경
+const updatePassword = (req, res, next) => {
+  const { email, password } = req.body;
+
+  const updatePasswordQuery = `update userList set password = ? where email = ?`;
+
+  try {
+    bcrypt.hash(password, 10, (err, hashedPw) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ Error: "비밀번호 해싱 중 오류가 발생했습니다." });
+      }
+      connection.query(
+        updatePasswordQuery,
+        [hashedPw, email],
+        (err, result) => {
+          if (err) {
+            return res.status(500).json({ Error: err.message });
+          }
+
+          console.log(result.changedRows);
+          if (result.changedRows === 0) {
+            return res.status(400).json({
+              message: "가입되지 않은 이메일입니다.",
+            });
+          } else {
+            res.status(200).json({ Success: "success" });
+          }
+        }
+      );
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 비밀번호 찾기 이메일 인증
+const passwordCertification = (req, res, next) => {
+  const { email } = req.body;
+
+  const generateRandom = function (min, max) {
+    const ranNum = Math.floor(Math.random() * (max - min + 1)) + min;
+    return ranNum;
+  };
+
+  const number = generateRandom(111111, 999999);
+
+  const mailOptions = {
+    from: "info@nucode.co.kr",
+    to: email,
+    subject: "누코드 비밀번호 찾기 인증 메일입니다.",
+    html: `
+      <div style=" width : 600px; height : 600px; text-align : center;">
+          <h2 style="color : #006452;">NUCODE</h2>
+          <p style="color : #151515;">누코드 비밀번호 찾기 메일인증</p>
+          <br/>
+          <p style="color : #151515;">누코드 계정에 등록한 이메일 주소가 올바른지 확인하기 위한 인증번호입니다.</p>
+          <p style="color : #151515;">아래의 인증번호를 복사하여 이메일 인증을 완료해 주세요.</p>
+          <p style="color : #151515;">인증번호 : <span style="color :#006452; font-weight : 700; font-size : 20px">${number}</span></p>
+          <br/>
+          <br/>
+          <p style="color : #151515;">새로고침을 하지말아주세요. 새로고침을 하게되면 이전 인증번호는 유효하지 않습니다.</p>
+          <p style="color : #151515;">감사합니다.</p>
+      </div>
+      `,
+  };
+  const searchEmailQuery = `select * from userList where email = ?`;
+
+  try {
+    connection.query(searchEmailQuery, email, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+
+      if (Array.isArray(result) && result.length > 0) {
+        smtpTransport.sendMail(mailOptions, (err, response) => {
+          if (err) {
+            res.status(400).json({ message: "메일 전송에 실패하였습니다." });
+            smtpTransport.close();
+            return;
+          } else {
+            res.status(200).json({
+              message: "메일 전송에 성공하였습니다.",
+              authNum: number,
+            });
+            smtpTransport.close();
+            return;
+          }
+        });
+      } else {
+        return res.status(400).json({
+          message: "가입된 이메일이 없습니다.",
+        });
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 router.post("/crate", createUser);
 router.post("/login", loginUser);
 router.post("/emailCertification", emailCertification);
 router.get("/profile", getUserProfile);
 router.post("/social", socialLogin);
+router.post("/passwordCertification", passwordCertification);
+router.patch("/updatePassword", updatePassword);
 
 export default {
   router,
