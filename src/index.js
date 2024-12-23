@@ -9,7 +9,11 @@ const app = express();
 // 미들웨어
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://dev.nuworks.io"],
+    origin: [
+      "http://localhost:3000",
+      "https://dev.nuworks.io",
+      "https://nuworks.io",
+    ],
     credentials: true,
   })
 );
@@ -25,7 +29,6 @@ controllers.forEach((controller) => {
 app.get("/", (req, res) => {
   res.send("Express");
 });
-
 
 app.listen(8080, () => {
   console.log("서버가 시작되었습니다.");
