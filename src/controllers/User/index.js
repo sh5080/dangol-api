@@ -14,10 +14,11 @@ const secretKey = "nucode";
 
 // 현재날짜 yyyy-mm-dd
 const date = new Date();
-const currentDate = date.toISOString().split("T")[0];
 
 // 회원 가입
 const createUser = (req, res, next) => {
+  const currentDate = date.toISOString().split("T")[0];
+
   try {
     const {
       email,

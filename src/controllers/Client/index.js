@@ -13,7 +13,6 @@ const pathName = "/client"; //pathname 설정
 
 // 현재날짜 yyyy-mm-dd
 const date = new Date();
-const currentDate = date.toISOString().split("T")[0];
 
 // s3 클라이언트 연결
 const s3 = new S3Client({
@@ -137,6 +136,7 @@ GROUP BY
 // 게시글 추가
 const addPosts = (req, res, next) => {
   const thumbnail = req.file.location; // 게시물 썸네일 주소
+  const currentDate = date.toISOString().split("T")[0];
   const { title, content, author, category, description } = req.body; // 제목, 내용, 작성자, 카테고리
 
   const numberArray = Array.isArray(category)
