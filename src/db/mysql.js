@@ -12,4 +12,5 @@ export const connection = mysql.createConnection({
   // password: "junseok12!",
   password: process.env.MYSQL_PW,
   database: process.env.MYSQL_DATABASE,
+  connectTimeout: 10000, // 10초
 });

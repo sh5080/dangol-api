@@ -13,7 +13,6 @@ const pathName = "/client"; //pathname 설정
 
 // 현재날짜 yyyy-mm-dd
 const date = new Date();
-const currentDate = date.toISOString().split("T")[0];
 
 // s3 클라이언트 연결
 const s3 = new S3Client({
@@ -137,6 +136,7 @@ GROUP BY
 // 게시글 추가
 const addPosts = (req, res, next) => {
   const thumbnail = req.file.location; // 게시물 썸네일 주소
+  const currentDate = date.toISOString().split("T")[0];
   const { title, content, author, category, description } = req.body; // 제목, 내용, 작성자, 카테고리
 
   const numberArray = Array.isArray(category)
@@ -154,7 +154,7 @@ const addPosts = (req, res, next) => {
       author,
       JSON.stringify(numberArray),
       currentDate,
-      description
+      description,
     ],
     (err, result) => {
       if (err) {
@@ -228,6 +228,44 @@ GROUP BY
   }
 };
 
+// 상세 게시글 조회
+const getPostsDetail = (req, res, next) => {
+  const id = req.query.id;
+
+  const getDetailQuery = `SELECT 
+    posts.id, 
+    posts.thumbnail, 
+    posts.title, 
+    posts.content, 
+    posts.author,
+    posts.modifiedDate,
+    posts.description,
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'category_id', category.id,
+            'category_name', category.categoryName
+        )
+    ) AS category
+FROM 
+    posts
+INNER JOIN 
+    category ON JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
+WHERE posts.id = ?
+GROUP BY 
+    posts.id
+ 	`;
+  try {
+    connection.query(getDetailQuery, id, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ post: result[0] });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 카테고리 조회
 const getCategoryList = (req, res, next) => {
   const getCategoryQuery = `select * from category`;
@@ -247,6 +285,7 @@ const getCategoryList = (req, res, next) => {
 router.get("/topPosts", getTopPosts);
 router.get("/slidePosts", getSlidePosts);
 router.get("/categorySort", getCategorySortPosts);
+router.get("/detail", getPostsDetail);
 router.get("/categoryList", getCategoryList);
 router.post("/posts", upload.single("thumbnail"), addPosts);
 
