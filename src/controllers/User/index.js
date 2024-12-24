@@ -12,11 +12,12 @@ const router = Router();
 const pathName = "/user"; //pathname 설정
 const secretKey = "nucode";
 
-// 현재날짜 yyyy-mm-dd
-const date = new Date();
+
 
 // 회원 가입
 const createUser = (req, res, next) => {
+  // 현재날짜 yyyy-mm-dd
+  const date = new Date();
   const currentDate = date.toISOString().split("T")[0];
 
   try {
