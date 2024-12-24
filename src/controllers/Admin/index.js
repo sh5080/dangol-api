@@ -12,8 +12,7 @@ dotenv.config();
 const router = Router();
 const pathName = "/admin"; //pathname 설정
 
-// 현재날짜 yyyy-mm-dd
-const date = new Date();
+
 
 // s3 클라이언트 연결
 const s3 = new S3Client({
@@ -55,6 +54,8 @@ const upload = multer({
 // 카테고리 추가
 const addCategory = (req, res, next) => {
   const { categoryName } = req.body; //카테고리 이름
+  // 현재날짜 yyyy-mm-dd
+  const date = new Date();
   const currentDate = date.toISOString().split("T")[0];
 
   // 카테고리 이름을 받아 카테고리 추가
@@ -223,6 +224,8 @@ const editPosts = (req, res, next) => {
   const { title, content, author, category } = req.body; // 제목, 본문, 작성자, 카테고리
   const numberArray = category.map(Number); // [1, 2, 3] 이런식에 카테고리를 map으로 풀어 씀.
   const editPostsQuery = `update posts set thumbnail = ?, title = ?, content = ?, author = ?, category = ?, modifiedDate = ? WHERE id = ?`;
+  // 현재날짜 yyyy-mm-dd
+  const date = new Date();
   const currentDate = date.toISOString().split("T")[0];
 
   try {
