@@ -11,7 +11,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://www.nuworks.io/",
+      "https://www.nuworks.io",
     ],
     credentials: true,
   })
