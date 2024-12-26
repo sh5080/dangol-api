@@ -12,6 +12,14 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://www.nuworks.io",
+      "https://nuworks.io"
+    ],
+    methods: [
+      'GET',
+      'POST',
+    ],
+    allowedHeaders: [
+      'Content-Type',
     ],
     credentials: true,
   })
