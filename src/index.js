@@ -11,8 +11,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://www.nuworks.io",
-      "https://nuworks.io"
+      "https://dev.nuworks.io",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
