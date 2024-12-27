@@ -14,13 +14,8 @@ app.use(
       "https://www.nuworks.io",
       "https://nuworks.io"
     ],
-    methods: [
-      'GET',
-      'POST',
-    ],
-    allowedHeaders: [
-      'Content-Type',
-    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
