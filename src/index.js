@@ -12,6 +12,8 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://dev.nuworks.io",
+      "https://nuworks.io",
+      "https://www.nuworks.io"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -31,7 +33,7 @@ app.get("/", (req, res) => {
   res.send("Express");
 });
 
-app.listen(8081, () => {
+app.listen(8080, () => {
   console.log("서버가 시작되었습니다.");
 });
 
