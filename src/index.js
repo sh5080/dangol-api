@@ -11,16 +11,10 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://www.nuworks.io",
-      "https://nuworks.io"
+      "https://dev.nuworks.io",
     ],
-    methods: [
-      'GET',
-      'POST',
-    ],
-    allowedHeaders: [
-      'Content-Type',
-    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
@@ -37,7 +31,7 @@ app.get("/", (req, res) => {
   res.send("Express");
 });
 
-app.listen(8080, () => {
+app.listen(8081, () => {
   console.log("서버가 시작되었습니다.");
 });
 

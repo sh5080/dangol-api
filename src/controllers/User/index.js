@@ -223,7 +223,22 @@ const getUserProfile = (req, res, next) => {
 
   if (getToken) {
     const verified = jwt.verify(getToken, secretKey);
-    const getUserQuery = `select * from userList where email = ?`;
+    const getUserQuery = `SELECT 
+    userList.id, 
+    userList.email, 
+    userList.name, 
+    userList.affiliation, 
+    userList.phoneNumber,
+    userList.userClass, 
+    userList.createDate, 
+    userList.writer,
+    userList.event, 
+    userList.description, 
+    userList.subject
+FROM 
+    userList
+WHERE 
+    userList.email = ?`;
     try {
       connection.query(getUserQuery, verified.email, (err, result) => {
         if (err) {
