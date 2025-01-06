@@ -13,7 +13,7 @@ app.use(
       "http://localhost:3000",
       "https://dev.nuworks.io",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
