@@ -231,8 +231,9 @@ GROUP BY
 
 // 상세 게시글 조회
 const getPostsDetail = (req, res, next) => {
-  const id = req.query.id;
+  const slug = req.query.slug;
 
+  console.log(slug)
   const getDetailQuery = `SELECT 
     posts.id, 
     posts.thumbnail, 
@@ -251,12 +252,12 @@ FROM
     posts
 INNER JOIN 
     category ON JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
-WHERE posts.id = ?
+WHERE posts.title LIKE CONCAT('%', ?, '%')
 GROUP BY 
     posts.id
  	`;
   try {
-    connection.query(getDetailQuery, id, (err, result) => {
+    connection.query(getDetailQuery, slug, (err, result) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
