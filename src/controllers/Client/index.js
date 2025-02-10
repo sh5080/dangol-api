@@ -86,6 +86,22 @@ GROUP BY
   }
 };
 
+// 게시글 조회
+const getAllPosts = (req, res, next) => {
+  const getPostsQuery = `select * from posts order by modifiedDate desc`;
+
+  try {
+    connection.query(getPostsQuery, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ posts: result })
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 슬라이드 게시물 조회
 const getSlidePosts = (req, res, next) => {
   const getSlideQuery = `SELECT 
@@ -283,6 +299,7 @@ const getCategoryList = (req, res, next) => {
   }
 };
 
+router.get('/allPosts', getAllPosts);
 router.get("/topPosts", getTopPosts);
 router.get("/slidePosts", getSlidePosts);
 router.get("/categorySort", getCategorySortPosts);
