@@ -1,11 +1,10 @@
-import { query, Router } from "express";
+import { Router } from "express";
 import { connection } from "../../db/mysql";
 import dotenv from "dotenv";
 import path from "path";
-import { S3Client } from "@aws-sdk/client-s3";
-import multerS3 from "multer-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import multer from "multer";
-
+import sharp from "sharp";
 // env 사용 허용
 dotenv.config();
 
@@ -26,28 +25,18 @@ const s3 = new S3Client({
 // 확장자 검사 목록
 const allowedExtensions = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"];
 
-const storage = multerS3({
-  s3, // AWS S3 연결
-  acl: "public-read", // S3 Bucket의 객체에 대한 읽기 권한
-  bucket: process.env.AWS_BUCKET_NAME, // S3 Bucket의 이름
-  contentType: multerS3.AUTO_CONTENT_TYPE, // 파일 MIME 타입 자동 지정
-  key: (req, file, cb) => {
-    // 확장자 검사
-    const extension = path.extname(file.originalname).toLowerCase();
-    if (!allowedExtensions.includes(extension)) {
-      return cb(new Error("확장자 에러"));
-    }
-
-    const fileName = file.originalname;
-
-    cb(null, `nuworks/blogthumbnail/${fileName}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 // s3 파일 업로드 객체 생성
 const upload = multer({
   storage, // 파일 스토리지 설정
-  limits: { fileSize: 5 * 1024 * 1024 }, // 파일 크기 제한
+  fileFilter: (req, file, cb) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+    if (!allowedExtensions.includes(extension)) {
+      return cb(new Error("허용되지 않는 파일 형식입니다."));
+    }
+    cb(null, true);
+  },
   defaultValue: { path: "", mimetype: "" }, // 기본 값
 });
 
@@ -218,26 +207,42 @@ GROUP BY
 };
 
 // 게시글 수정
-const editPosts = (req, res, next) => {
+const editPosts = async (req, res, next) => {
   const id = req.query.id; // 게시글 id
-  const thumbnail = req.file.location; // 게시글 썸네일 주소
+  const file = req.file;
   const { title, content, author, category } = req.body; // 제목, 본문, 작성자, 카테고리
   const numberArray = category.map(Number); // [1, 2, 3] 이런식에 카테고리를 map으로 풀어 씀.
-  const editPostsQuery = `update posts set thumbnail = ?, title = ?, content = ?, author = ?, category = ?, modifiedDate = ? WHERE id = ?`;
-  // 현재날짜 yyyy-mm-dd
-  const date = new Date();
-  const currentDate = date.toISOString().split("T")[0];
+  const editPostsQuery = `update posts set thumbnail = ?, title = ?, content = ?, author = ?, category = ? WHERE id = ?`;
+
+  const resizedImageBuffer = await sharp(file.buffer)
+    .rotate() // EXIF 데이터를 기반으로 정방향으로 회전
+    .toFormat("jpeg") // JPEG 포맷으로 변환
+    .toBuffer();
+
+  const fileName = `nuworks/blogthumbnail/${file.originalname}`;
+
+  const ThumbnailUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+  // S3에 업로드
+  const uploadParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: fileName, // 저장될 파일명
+    Body: resizedImageBuffer, // 리사이즈된 이미지 데이터
+    ContentType: "image/jpeg", // MIME 타입 설정
+  };
+
+  // 파일명 설정
+  await s3.send(new PutObjectCommand(uploadParams)); // S3에 업로드
 
   try {
     connection.query(
       editPostsQuery,
       [
-        thumbnail,
+        ThumbnailUrl,
         title,
         content,
         author,
         JSON.stringify(numberArray),
-        currentDate,
         id,
       ],
       (err, result) => {
@@ -452,6 +457,70 @@ const editPosting = (req, res, next) => {
   }
 };
 
+// 팝업 조회
+const getPopup = (req, res, next) => {
+  const getQuery = `select * from popupList`;
+
+  try {
+    connection.query(getQuery, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+
+      res.status(200).json({ popup: result })
+    })
+  } catch (error) {
+    next(error);
+  }
+}
+
+// 팝업 추가
+const addPopup = async (req, res, next) => {
+  const { title, status } = req.body;
+  const file = req.file;
+
+  const resizedImageBuffer = await sharp(file.buffer)
+    .rotate() // EXIF 데이터를 기반으로 정방향으로 회전
+    .toFormat("jpeg") // JPEG 포맷으로 변환
+    .toBuffer();
+
+  const fileName = `nuworks/popup/${file.originalname}`;
+
+  const ThumbnailUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+  // S3에 업로드
+  const uploadParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: fileName, // 저장될 파일명
+    Body: resizedImageBuffer, // 리사이즈된 이미지 데이터
+    ContentType: "image/jpeg", // MIME 타입 설정
+  };
+
+  const addQuery = `insert into popupList (title, status, thumbnail) values (?, ?, ?)`
+
+  // 파일명 설정
+  await s3.send(new PutObjectCommand(uploadParams)); // S3에 업로드
+
+  try {
+    connection.query(
+      addQuery,
+      [
+        title,
+        status,
+        ThumbnailUrl
+      ],
+      (err, result) => {
+        if (err) {
+          res.status(500).json({ Error: err.message });
+        }
+        res.status(200).json({ Success: "success" });
+      }
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
 // 카테고리
 router.post("/category", addCategory);
 router.get("/category", getCategory);
@@ -474,6 +543,10 @@ router.get("/slidePosts", getSlidePosts);
 router.get("/user", getUserList);
 router.get("/userDetail", getUserDetail);
 router.post("/user", editPosting);
+
+// 팝업
+router.get("/popup", getPopup)
+router.post("/popup", upload.single("thumbnail"), addPopup)
 
 export default {
   router,
