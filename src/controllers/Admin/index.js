@@ -460,14 +460,37 @@ const editPosting = (req, res, next) => {
 // 팝업 조회
 const getPopup = (req, res, next) => {
   const getQuery = `select * from popupList`;
-
+  const getTotalPopup = `select count(*) as count from popupList`;
   try {
     connection.query(getQuery, (err, result) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
+      connection.query(getTotalPopup, (err, total) => {
+        if (err) {
+          res.status(500).json({ Error: err.message });
+        }
+        const totalCount = total[0]?.count || 0;
+        res.status(200).json({ popup: result, totalCount })
+      })
+    })
+  } catch (error) {
+    next(error);
+  }
+}
 
-      res.status(200).json({ popup: result })
+// 팝업 공개 수정
+const editShowPopup = (req, res, next) => {
+  const { status, id } = req.body;
+
+  const editQuery = `update popupList set status = ? where id = ?`
+
+  try {
+    connection.query(editQuery, [status, id], (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ success: "success" });
     })
   } catch (error) {
     next(error);
@@ -476,7 +499,7 @@ const getPopup = (req, res, next) => {
 
 // 팝업 추가
 const addPopup = async (req, res, next) => {
-  const { title, status } = req.body;
+  const { title, link } = req.body;
   const file = req.file;
 
   const resizedImageBuffer = await sharp(file.buffer)
@@ -496,7 +519,7 @@ const addPopup = async (req, res, next) => {
     ContentType: "image/jpeg", // MIME 타입 설정
   };
 
-  const addQuery = `insert into popupList (title, status, thumbnail) values (?, ?, ?)`
+  const addQuery = `insert into popupList (title, link, thumbnail) values (?, ?, ?)`
 
   // 파일명 설정
   await s3.send(new PutObjectCommand(uploadParams)); // S3에 업로드
@@ -506,7 +529,7 @@ const addPopup = async (req, res, next) => {
       addQuery,
       [
         title,
-        status,
+        link,
         ThumbnailUrl
       ],
       (err, result) => {
@@ -518,6 +541,23 @@ const addPopup = async (req, res, next) => {
     );
   } catch (error) {
     next(error);
+  }
+}
+
+// 팝업 삭제
+const deletePopup = (req, res, next) => {
+  const { ids } = req.body;
+  const placeholders = ids.map(() => "?").join(", ");
+  const deleteQuery = `delete from popupList WHERE id IN (${placeholders})`
+  try {
+    connection.query(deleteQuery, ids, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ Success: "success" });
+    })
+  } catch (error) {
+    next(error)
   }
 }
 
@@ -545,8 +585,10 @@ router.get("/userDetail", getUserDetail);
 router.post("/user", editPosting);
 
 // 팝업
-router.get("/popup", getPopup)
-router.post("/popup", upload.single("thumbnail"), addPopup)
+router.get("/popup", getPopup);
+router.post("/popup", upload.single("thumbnail"), addPopup);
+router.patch("/popup", editShowPopup);
+router.delete("/popup", deletePopup);
 
 export default {
   router,
