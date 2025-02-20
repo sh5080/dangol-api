@@ -5,12 +5,14 @@ import path from "path";
 import { S3Client } from "@aws-sdk/client-s3";
 import multerS3 from "multer-s3";
 import multer from "multer";
+import jwt from "jsonwebtoken";
+
 // env 사용 허용
 dotenv.config();
 
 const router = Router();
 const pathName = "/client"; //pathname 설정
-
+const secretKey = "nucode";
 
 
 // s3 클라이언트 연결
@@ -95,7 +97,7 @@ const getAllPosts = (req, res, next) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
-      res.status(200).json({ posts: result })
+      res.status(200).json({ posts: result });
     });
   } catch (error) {
     next(error);
@@ -257,20 +259,30 @@ const getPostsDetail = (req, res, next) => {
     posts.author,
     posts.modifiedDate,
     posts.description,
-    JSON_ARRAYAGG(
+    -- 카테고리 JSON 배열
+    (SELECT JSON_ARRAYAGG(
         JSON_OBJECT(
             'category_id', category.id,
             'category_name', category.categoryName
         )
-    ) AS category
+    ) 
+    FROM category 
+    WHERE JSON_CONTAINS(posts.category, CAST(category.id AS JSON))) AS category,
+    -- 사용자 JSON 배열
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'user_id', userList.id,
+            'user_name', userList.name,
+            'user_description', userList.description,
+            'user_subject', userList.subject
+        )
+    ) 
+    FROM userList 
+    WHERE posts.author = userList.name) AS users  -- 비교 대상 수정
 FROM 
     posts
-INNER JOIN 
-    category ON JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
-WHERE posts.id = ?
-GROUP BY 
-    posts.id
- 	`;
+WHERE 
+    posts.id = ?`;
   try {
     connection.query(getDetailQuery, id, (err, result) => {
       if (err) {
@@ -299,6 +311,107 @@ const getCategoryList = (req, res, next) => {
   }
 };
 
+// 워크스페이스
+const getWorkspaceList = (req, res, next) => {
+  const getToken = req.get("Authorization");
+  const verified = jwt.verify(getToken, secretKey);
+  const getQuery = `select * from workspace where email = ?`;
+
+  try {
+    connection.query(getQuery, verified.email, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ workspace: result });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 워크스페이스 추가
+const addWorkspace = (req, res, next) => {
+  const getToken = req.get("Authorization");
+
+  const verified = jwt.verify(getToken, secretKey);
+  const date = new Date();
+  const currentDate = date.toISOString().split("T")[0];
+
+
+  const addQuery = `insert into workspace (email, createDate) values (?, ?)`;
+
+  try {
+    connection.query(addQuery, [verified.email, currentDate], (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ Success: "success" });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 워크스페이스 삭제
+const deleteWorkspace = (req, res, next) => {
+  const id = req.query.id;
+  const deleteQuery = `delete from workspace where id = ?`;
+
+  try {
+    connection.query(deleteQuery, id, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ Success: "success" });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 워크스페이스 수정
+const editWorkspace = (req, res, next) => {
+  const { aiSystem, title, id } = req.body;
+
+  let fields = [];
+  let queryParams = [];
+
+  if (title) {
+    fields.push(`title = ?`);
+    queryParams.push(title);
+  }
+
+  if (aiSystem) {
+    fields.push(`aiSystem = ?`);
+    queryParams.push(JSON.stringify(aiSystem));
+  }
+
+  if (fields.length === 0) {
+    return res.status(400).json({ Error: "No fields to update" });
+  }
+
+  if (!id) {
+    return res.status(400).json({ Error: "ID is required" });
+  }
+
+  queryParams.push(id);
+  const finalQuery = `UPDATE workspace SET ${fields.join(', ')} WHERE id = ?`;
+  console.log(finalQuery);
+
+  try {
+    connection.query(finalQuery, queryParams, (err, result) => {
+      if (err) {
+        return res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ Success: "success" });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// 블로그
 router.get('/allPosts', getAllPosts);
 router.get("/topPosts", getTopPosts);
 router.get("/slidePosts", getSlidePosts);
@@ -306,6 +419,12 @@ router.get("/categorySort", getCategorySortPosts);
 router.get("/detail", getPostsDetail);
 router.get("/categoryList", getCategoryList);
 router.post("/posts", upload.single("thumbnail"), addPosts);
+
+// 워크스페이스
+router.get("/workspace", getWorkspaceList);
+router.post("/workspace", addWorkspace);
+router.delete("/workspace", deleteWorkspace);
+router.patch("/workspace", editWorkspace);
 
 export default {
   router,
