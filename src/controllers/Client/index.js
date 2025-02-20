@@ -259,20 +259,30 @@ const getPostsDetail = (req, res, next) => {
     posts.author,
     posts.modifiedDate,
     posts.description,
-    JSON_ARRAYAGG(
+    -- 카테고리 JSON 배열
+    (SELECT JSON_ARRAYAGG(
         JSON_OBJECT(
             'category_id', category.id,
             'category_name', category.categoryName
         )
-    ) AS category
+    ) 
+    FROM category 
+    WHERE JSON_CONTAINS(posts.category, CAST(category.id AS JSON))) AS category,
+    -- 사용자 JSON 배열
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'user_id', userList.id,
+            'user_name', userList.name,
+            'user_description', userList.description,
+            'user_subject', userList.subject
+        )
+    ) 
+    FROM userList 
+    WHERE posts.author = userList.name) AS users  -- 비교 대상 수정
 FROM 
     posts
-INNER JOIN 
-    category ON JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
-WHERE posts.id = ?
-GROUP BY 
-    posts.id
- 	`;
+WHERE 
+    posts.id = ?`;
   try {
     connection.query(getDetailQuery, id, (err, result) => {
       if (err) {
