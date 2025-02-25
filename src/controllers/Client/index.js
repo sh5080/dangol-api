@@ -295,6 +295,44 @@ WHERE
   }
 };
 
+// 에디터별 게시물 조회
+const getEditorPostsList = (req, res, next) => {
+  const author = req.query.author;
+
+  const getQuery = `SELECT 
+      posts.id,
+      posts.thumbnail,
+      posts.title,
+      posts.content,
+      posts.author,
+      posts.modifiedDate,
+      JSON_ARRAYAGG(
+        JSON_OBJECT(
+             'category_id', category.id,
+             'category_name', category.categoryName
+        )
+      ) as category
+FROM 
+    posts
+INNER JOIN 
+    category
+    ON posts.author = ? 
+WHERE (JSON_CONTAINS(posts.category , CAST(category.id AS JSON)))
+GROUP BY 
+posts.id ORDER BY posts.modifiedDate desc;`;
+  try {
+    connection.query(getQuery, author, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+      res.status(200).json({ posts: result });
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 카테고리 조회
 const getCategoryList = (req, res, next) => {
   const getCategoryQuery = `select * from category`;
@@ -419,6 +457,7 @@ router.get("/categorySort", getCategorySortPosts);
 router.get("/detail", getPostsDetail);
 router.get("/categoryList", getCategoryList);
 router.post("/posts", upload.single("thumbnail"), addPosts);
+router.get("/editorPosts", getEditorPostsList);
 
 // 워크스페이스
 router.get("/workspace", getWorkspaceList);
