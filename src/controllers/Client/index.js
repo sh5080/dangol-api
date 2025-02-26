@@ -77,7 +77,8 @@ const getTopPosts = (req, res, next) => {
             'user_id', userList.id,
             'user_name', userList.name,
             'user_description', userList.description,
-            'user_subject', userList.subject
+            'user_subject', userList.subject,
+            'user_thumbnail', userList.thumbnail
         )
     ) 
     FROM userList 
@@ -245,7 +246,8 @@ const getCategorySortPosts = (req, res, next) => {
             'user_id', userList.id,
             'user_name', userList.name,
             'user_description', userList.description,
-            'user_subject', userList.subject
+            'user_subject', userList.subject,
+            'user_thumbnail', userList.thumbnail
         )
     ) 
     FROM userList 
@@ -312,7 +314,8 @@ const getPostsDetail = (req, res, next) => {
             'user_id', userList.id,
             'user_name', userList.name,
             'user_description', userList.description,
-            'user_subject', userList.subject
+            'user_subject', userList.subject,
+            'user_thumbnail', userList.thumbnail
         )
     ) 
     FROM userList 
