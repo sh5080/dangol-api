@@ -316,7 +316,7 @@ const getPostsDetail = (req, res, next) => {
         )
     ) 
     FROM userList 
-    WHERE posts.author = userList.name) AS users  -- 비교 대상 수정
+    WHERE posts.author = userList.id) AS users  -- 비교 대상 수정
 FROM 
     posts
 WHERE 
