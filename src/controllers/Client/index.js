@@ -62,19 +62,31 @@ const getTopPosts = (req, res, next) => {
     posts.author,
     posts.modifiedDate,
     posts.description,
-    JSON_ARRAYAGG(
+    -- 카테고리 JSON 배열
+    (SELECT JSON_ARRAYAGG(
         JSON_OBJECT(
             'category_id', category.id,
             'category_name', category.categoryName
         )
-    ) AS category
+    ) 
+    FROM category 
+    WHERE JSON_CONTAINS(posts.category, CAST(category.id AS JSON))) AS category,
+    -- 사용자 JSON 배열
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'user_id', userList.id,
+            'user_name', userList.name,
+            'user_description', userList.description,
+            'user_subject', userList.subject
+        )
+    ) 
+    FROM userList 
+    WHERE posts.author = userList.id) AS users  -- 비교 대상 수정
 FROM 
     posts
-INNER JOIN 
-    category ON JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
-GROUP BY 
-    posts.id
-    ORDER BY posts.modifiedDate desc;`;
+ORDER BY 
+    posts.modifiedDate DESC;
+`;
 
   try {
     connection.query(getTopQuery, (err, result) => {
@@ -126,6 +138,18 @@ const getSlidePosts = (req, res, next) => {
                 FROM category
                 WHERE JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
             ),
+            'users', (
+                SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'user_id', userList.id,
+                        'user_name', userList.name,
+                        'user_description', userList.description,
+                        'user_subject', userList.subject
+                    )
+                )
+                FROM userList
+                WHERE posts.author = userList.id
+            ),
             'modifiedDate', posts.modifiedDate
         )
     ) AS posts
@@ -136,7 +160,8 @@ INNER JOIN
 ON 
     JSON_CONTAINS(slidePosts.posts_id, CAST(posts.id AS JSON))
 GROUP BY 
-    slidePosts.id;`;
+    slidePosts.id;
+`;
   try {
     connection.query(getSlideQuery, (err, result) => {
       if (err) {
@@ -197,27 +222,40 @@ const getCategorySortPosts = (req, res, next) => {
   const offset = page === 1 ? 0 : (page - 1) * 6;
 
   const categorySortQuery = `SELECT 
-     posts.id, 
+    posts.id, 
     posts.thumbnail, 
     posts.title, 
     posts.content, 
     posts.author,
     posts.modifiedDate,
-    JSON_ARRAYAGG(
+    posts.description,
+    -- 카테고리 JSON 배열
+    (SELECT JSON_ARRAYAGG(
         JSON_OBJECT(
             'category_id', category.id,
             'category_name', category.categoryName
         )
-    ) AS category
+    ) 
+    FROM category 
+    WHERE (? = 0 OR JSON_CONTAINS(posts.category, CAST(? AS JSON)))
+    AND JSON_CONTAINS(posts.category, CAST(category.id AS JSON))) AS category,
+    -- 사용자 JSON 배열
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'user_id', userList.id,
+            'user_name', userList.name,
+            'user_description', userList.description,
+            'user_subject', userList.subject
+        )
+    ) 
+    FROM userList 
+    WHERE posts.author = userList.id) AS users  -- 비교 대상 수정
 FROM 
     posts
-INNER JOIN 
-    category 
-ON (? = 0 OR JSON_CONTAINS(category, CAST(? AS JSON)))
-WHERE (JSON_CONTAINS(posts.category , CAST(category.id AS JSON)))
-GROUP BY 
-    posts.id ORDER BY posts.modifiedDate desc
-   LIMIT ?, 6;
+ORDER BY 
+    posts.modifiedDate DESC
+LIMIT ?, 6;
+
 `;
   const totalPosts = `select count(*) as count from posts WHERE (? = 0 OR JSON_CONTAINS(category, CAST(? AS JSON)))`;
 
@@ -290,6 +328,57 @@ WHERE
       }
       res.status(200).json({ post: result[0] });
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 에디터별 게시물 조회
+const getEditorPostsList = (req, res, next) => {
+  const id = req.query.id;
+
+  const getQuery = `SELECT 
+    posts.id,
+    posts.thumbnail,
+    posts.title,
+    posts.content,
+    posts.author,
+    posts.modifiedDate,
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'category_id', category.id,
+            'category_name', category.categoryName
+        )
+    ) AS category
+FROM 
+    posts
+INNER JOIN 
+    userList 
+    ON posts.author = userList.id
+INNER JOIN 
+    category 
+    ON JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
+WHERE 
+    userList.id = ?
+GROUP BY 
+    posts.id 
+ORDER BY 
+    posts.modifiedDate DESC;
+`;
+
+  const getUserQuery = `select * from userList where id = ?`;
+  try {
+    connection.query(getQuery, id, (err, result) => {
+      if (err) {
+        res.status(500).json({ Error: err.message });
+      }
+
+      connection.query(getUserQuery, id, (err, user) => {
+        res.status(200).json({ posts: result, user: user[0] });
+
+      });
+    });
+
   } catch (error) {
     next(error);
   }
@@ -396,7 +485,6 @@ const editWorkspace = (req, res, next) => {
 
   queryParams.push(id);
   const finalQuery = `UPDATE workspace SET ${fields.join(', ')} WHERE id = ?`;
-  console.log(finalQuery);
 
   try {
     connection.query(finalQuery, queryParams, (err, result) => {
@@ -411,6 +499,7 @@ const editWorkspace = (req, res, next) => {
 };
 
 
+
 // 블로그
 router.get('/allPosts', getAllPosts);
 router.get("/topPosts", getTopPosts);
@@ -419,6 +508,7 @@ router.get("/categorySort", getCategorySortPosts);
 router.get("/detail", getPostsDetail);
 router.get("/categoryList", getCategoryList);
 router.post("/posts", upload.single("thumbnail"), addPosts);
+router.get("/editorPosts", getEditorPostsList);
 
 // 워크스페이스
 router.get("/workspace", getWorkspaceList);
