@@ -81,7 +81,7 @@ const getTopPosts = (req, res, next) => {
         )
     ) 
     FROM userList 
-    WHERE posts.author = userList.name) AS users  -- 비교 대상 수정
+    WHERE posts.author = userList.id) AS users  -- 비교 대상 수정
 FROM 
     posts
 ORDER BY 
@@ -148,7 +148,7 @@ const getSlidePosts = (req, res, next) => {
                     )
                 )
                 FROM userList
-                WHERE posts.author = userList.name
+                WHERE posts.author = userList.id
             ),
             'modifiedDate', posts.modifiedDate
         )
@@ -249,7 +249,7 @@ const getCategorySortPosts = (req, res, next) => {
         )
     ) 
     FROM userList 
-    WHERE posts.author = userList.name) AS users  -- 비교 대상 수정
+    WHERE posts.author = userList.id) AS users  -- 비교 대상 수정
 FROM 
     posts
 ORDER BY 
@@ -354,7 +354,7 @@ FROM
     posts
 INNER JOIN 
     userList 
-    ON posts.author = userList.name
+    ON posts.author = userList.id
 INNER JOIN 
     category 
     ON JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
@@ -365,12 +365,18 @@ GROUP BY
 ORDER BY 
     posts.modifiedDate DESC;
 `;
+
+  const getUserQuery = `select * from userList where id = ?`;
   try {
     connection.query(getQuery, id, (err, result) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
-      res.status(200).json({ posts: result });
+
+      connection.query(getUserQuery, id, (err, user) => {
+        res.status(200).json({ posts: result, user: user[0] });
+
+      });
     });
 
   } catch (error) {
@@ -479,7 +485,6 @@ const editWorkspace = (req, res, next) => {
 
   queryParams.push(id);
   const finalQuery = `UPDATE workspace SET ${fields.join(', ')} WHERE id = ?`;
-  console.log(finalQuery);
 
   try {
     connection.query(finalQuery, queryParams, (err, result) => {
@@ -492,6 +497,7 @@ const editWorkspace = (req, res, next) => {
     next(error);
   }
 };
+
 
 
 // 블로그

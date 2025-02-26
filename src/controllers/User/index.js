@@ -1,9 +1,13 @@
 import { Router } from "express";
 import { connection } from "../../db/mysql";
-import bcrypt, { hash } from "bcrypt";
-import jwt, { sign } from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { smtpTransport } from "../../util/email.js";
+import { S3Client } from "@aws-sdk/client-s3";
+import multerS3 from "multer-s3";
+import multer from "multer";
+import path from "path";
 
 // env 사용 허용
 dotenv.config();
@@ -12,6 +16,46 @@ const router = Router();
 const pathName = "/user"; //pathname 설정
 const secretKey = "nucode";
 
+
+
+// s3 클라이언트 연결
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_KEY,
+  },
+});
+
+// 확장자 검사 목록
+const allowedExtensions = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"];
+
+const storage = multerS3({
+  s3, // AWS S3 연결
+  acl: "public-read", // S3 Bucket의 객체에 대한 읽기 권한
+  bucket: process.env.AWS_BUCKET_NAME, // S3 Bucket의 이름
+  contentType: multerS3.AUTO_CONTENT_TYPE, // 파일 MIME 타입 자동 지정
+  key: (req, file, cb) => {
+    // 확장자 검사
+    const extension = path.extname(file.originalname).toLowerCase();
+    if (!allowedExtensions.includes(extension)) {
+      return cb(new Error("확장자 에러"));
+    }
+
+    const fileName = file.originalname;
+    const date = new Date();
+    const currentDate = date.toISOString().split("T")[0];
+
+    cb(null, `nuworks/profile/${currentDate}_${fileName}`);
+  },
+});
+
+// s3 파일 업로드 객체 생성
+const upload = multer({
+  storage, // 파일 스토리지 설정
+  limits: { fileSize: 5 * 1024 * 1024 }, // 파일 크기 제한
+  defaultValue: { path: "", mimetype: "" }, // 기본 값
+});
 
 
 // 회원 가입
@@ -127,6 +171,7 @@ const loginUser = (req, res, next) => {
 // 소셜 로그인
 const socialLogin = (req, res, next) => {
   const { email } = req.body;
+
   const token = jwt.sign({ email }, secretKey, {
     expiresIn: "7d",
   });
@@ -139,9 +184,9 @@ const socialLogin = (req, res, next) => {
           res.status(500).json({ Error: err.message });
         }
         if (result?.length > 0) {
-          res.status(200).json({ sing: false, token });
+          res.status(200).json({ token });
         } else {
-          res.status(200).json({ sign: true });
+          res.status(400).json({ message: "아이디가 존재하지 않습니다." });
         }
       });
     }
@@ -195,8 +240,6 @@ const emailCertification = (req, res, next) => {
         });
       } else {
         smtpTransport.sendMail(mailOptions, (err, response) => {
-          //   console.log("response", response);
-
           if (err) {
             res.status(400).json({ message: "메일 전송에 실패하였습니다." });
             smtpTransport.close();
@@ -234,7 +277,8 @@ const getUserProfile = (req, res, next) => {
     userList.writer,
     userList.event, 
     userList.description, 
-    userList.subject
+    userList.subject,
+    userList.thumbnail
 FROM 
     userList
 WHERE 
@@ -275,7 +319,6 @@ const updatePassword = (req, res, next) => {
             return res.status(500).json({ Error: err.message });
           }
 
-          console.log(result.changedRows);
           if (result.changedRows === 0) {
             return res.status(400).json({
               message: "가입되지 않은 이메일입니다.",
@@ -355,6 +398,60 @@ const passwordCertification = (req, res, next) => {
   }
 };
 
+// 프로필 변경
+const editProfile = (req, res, next) => {
+  try {
+    const thumbnail = req?.file?.location;
+    const { id, name, subject, affiliation, description } = req.body;
+
+    let editQuery = `UPDATE userList SET name = ?, subject = ?, affiliation = ?, description = ?`;
+    const getUserQuery = `SELECT 
+    userList.id, 
+    userList.email, 
+    userList.name, 
+    userList.affiliation, 
+    userList.phoneNumber,
+    userList.userClass, 
+    userList.createDate, 
+    userList.writer,
+    userList.event, 
+    userList.description, 
+    userList.subject,
+    userList.thumbnail
+FROM 
+    userList
+WHERE 
+    userList.id = ?`;
+    const queryParams = [name, subject, affiliation, description];
+
+    if (thumbnail) {
+      editQuery += ", thumbnail = ?";
+      queryParams.push(thumbnail);
+    }
+
+    editQuery += " WHERE id = ?";
+    queryParams.push(id);
+
+    connection.query(editQuery, queryParams, (err, result) => {
+      if (err) {
+        return res.status(500).json({ Error: err.message });
+      }
+
+      connection.query(getUserQuery, id, (err, result) => {
+        if (err) {
+          return res.status(500).json({ Error: err.message });
+        }
+
+        res.status(200).json({ user: result[0] });
+
+      });
+
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 router.post("/crate", createUser);
 router.post("/login", loginUser);
 router.post("/emailCertification", emailCertification);
@@ -362,6 +459,7 @@ router.get("/profile", getUserProfile);
 router.post("/social", socialLogin);
 router.post("/passwordCertification", passwordCertification);
 router.patch("/updatePassword", updatePassword);
+router.patch("/editProfile", upload.single("thumbnail"), editProfile);
 
 export default {
   router,
