@@ -181,7 +181,10 @@ const addPosts = (req, res, next) => {
   const thumbnail = req.file.location; // 게시물 썸네일 주소
   // 현재날짜 yyyy-mm-dd
   const date = new Date();
-  const currentDate = date.toISOString().split("T")[0];
+  const currentDateTimeKST = new Date(date.getTime() + 9 * 60 * 60 * 1000)
+    .toISOString()
+    .replace("T", " ")
+    .split(".")[0];
   const { title, content, author, category, description } = req.body; // 제목, 내용, 작성자, 카테고리
 
   const numberArray = Array.isArray(category)
@@ -198,7 +201,7 @@ const addPosts = (req, res, next) => {
       content,
       author,
       JSON.stringify(numberArray),
-      currentDate,
+      currentDateTimeKST,
       description,
     ],
     (err, result) => {
