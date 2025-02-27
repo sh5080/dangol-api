@@ -220,49 +220,56 @@ const addPosts = (req, res, next) => {
 
 // 카테고리 별 블로그 게시물 조회
 const getCategorySortPosts = (req, res, next) => {
-  const category_id = req.query.id; // 카테고리 id
-  const page = req.query.page; // 게시물 Page
+  const category_id = Number(req.query.id) || 0; // 숫자로 변환
+  const page = Number(req.query.page) || 1; // 페이지 번호 숫자로 변환
 
-  const offset = page === 1 ? 0 : (page - 1) * 6;
+  const offset = (page - 1) * 6;
 
-  const categorySortQuery = `SELECT 
-    posts.id, 
-    posts.thumbnail, 
-    posts.title, 
-    posts.content, 
-    posts.author,
-    posts.modifiedDate,
-    posts.description,
-    -- 카테고리 JSON 배열
-    (SELECT JSON_ARRAYAGG(
-        JSON_OBJECT(
+  const categorySortQuery = `
+    SELECT 
+      posts.id, 
+      posts.thumbnail, 
+      posts.title, 
+      posts.content, 
+      posts.author,
+      posts.modifiedDate,
+      posts.description,
+      -- 카테고리 JSON 배열
+      (
+        SELECT JSON_ARRAYAGG(
+          JSON_OBJECT(
             'category_id', category.id,
             'category_name', category.categoryName
-        )
-    ) 
-    FROM category 
-    WHERE (? = 0 OR JSON_CONTAINS(posts.category, CAST(? AS JSON)))
-    AND JSON_CONTAINS(posts.category, CAST(category.id AS JSON))) AS category,
-    -- 사용자 JSON 배열
-    (SELECT JSON_ARRAYAGG(
-        JSON_OBJECT(
+          )
+        ) 
+        FROM category 
+        WHERE JSON_CONTAINS(posts.category, CAST(category.id AS JSON))
+      ) AS category,
+      -- 사용자 JSON 배열
+      (
+        SELECT JSON_ARRAYAGG(
+          JSON_OBJECT(
             'user_id', userList.id,
             'user_name', userList.name,
             'user_description', userList.description,
             'user_subject', userList.subject,
             'user_thumbnail', userList.thumbnail
-        )
-    ) 
-    FROM userList 
-    WHERE posts.author = userList.id) AS users  -- 비교 대상 수정
-FROM 
-    posts
-ORDER BY 
-    posts.modifiedDate DESC
-LIMIT ?, 6;
+          )
+        ) 
+        FROM userList 
+        WHERE posts.author = userList.id
+      ) AS users  
+    FROM posts
+    WHERE (? = 0 OR JSON_CONTAINS(posts.category, CAST(? AS JSON)))
+    ORDER BY posts.modifiedDate DESC
+    LIMIT ?, 6;
+  `;
 
-`;
-  const totalPosts = `select count(*) as count from posts WHERE (? = 0 OR JSON_CONTAINS(category, CAST(? AS JSON)))`;
+  const totalPostsQuery = `
+    SELECT COUNT(*) AS count 
+    FROM posts 
+    WHERE (? = 0 OR JSON_CONTAINS(category, CAST(? AS JSON)))
+  `;
 
   try {
     connection.query(
@@ -270,16 +277,18 @@ LIMIT ?, 6;
       [category_id, category_id, offset],
       (err, result) => {
         if (err) {
-          res.status(500).json({ Error: err.message });
+          return res.status(500).json({ Error: err.message });
         }
+
         connection.query(
-          totalPosts,
+          totalPostsQuery,
           [category_id, category_id],
-          (err, count) => {
+          (err, countResult) => {
             if (err) {
-              res.status(500).json({ Error: err.message });
+              return res.status(500).json({ Error: err.message });
             }
-            const totalCount = count[0]?.count || 0;
+
+            const totalCount = countResult[0]?.count || 0;
             res.status(200).json({ sortPosts: result, totalCount });
           }
         );
@@ -289,6 +298,7 @@ LIMIT ?, 6;
     next(error);
   }
 };
+
 
 // 상세 게시글 조회
 const getPostsDetail = (req, res, next) => {
