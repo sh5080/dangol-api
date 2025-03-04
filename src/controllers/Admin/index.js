@@ -144,7 +144,31 @@ const getPosts = (req, res, next) => {
   const offset = page === 1 ? 0 : (page - 1) * 6;
 
   // 게시글 조회
-  const getPostsQuery = `select * from posts order by modifiedDate desc limit ?, 6 `;
+  const getPostsQuery = `SELECT 
+    posts.id, 
+    posts.thumbnail, 
+    posts.title, 
+    posts.content, 
+    posts.author,
+    posts.modifiedDate,
+    posts.description,
+    -- 사용자 JSON 배열
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'user_id', userList.id,
+            'user_name', userList.name,
+            'user_description', userList.description,
+            'user_subject', userList.subject,
+            'user_thumbnail', userList.thumbnail
+        )
+    ) 
+    FROM userList 
+    WHERE posts.author = userList.id) AS users  -- 비교 대상 수정
+FROM 
+    posts
+    order by posts.modifiedDate DESC
+    limit ?, 6;
+    `;
   // 게시글에 전체 갯수
   const getTotalPosts = `select count(*) as count from posts`;
 
@@ -260,9 +284,15 @@ const editPosts = async (req, res, next) => {
 // 카테고리 별 블로그 게시물 조회
 const getCategorySortPosts = (req, res, next) => {
   const category_id = req.query.id; // 카테고리 id
+  const page = Number(req.query.page) || 1; // 페이지 번호 숫자로 변환
+  const offset = (page - 1) * 6;
 
-  const categorySortQuery = `SELECT category.categoryName,
-JSON_ARRAYAGG(
+
+
+  const categorySortQuery = `SELECT 
+    category.categoryName,
+    -- 게시글 JSON 배열
+    (SELECT JSON_ARRAYAGG(
         JSON_OBJECT(
             'id', posts.id,
             'thumbnail', posts.thumbnail,
@@ -270,25 +300,33 @@ JSON_ARRAYAGG(
             'content', posts.content,
             'author', posts.author,
             'category', posts.category,
-            'modifiedDate', posts.modifiedDate
+            'modifiedDate', posts.modifiedDate,
+            'user', (
+                SELECT JSON_OBJECT(
+                    'user_id', userList.id,
+                    'user_name', userList.name,
+                    'user_description', userList.description,
+                    'user_subject', userList.subject
+                )
+                FROM userList
+                WHERE posts.author = userList.id
+            )
         )
-    ) AS posts
+    ) 
+    FROM posts
+    WHERE JSON_CONTAINS(posts.category, CAST(? AS JSON))) AS posts
 FROM 
     category
-INNER JOIN 
-    posts
-on 
-    JSON_CONTAINS(posts.category, CAST(? AS JSON))
 WHERE 
     category.id = ?
-GROUP BY 
-   category.id;`;
+    LIMIT ?, 6;
+`;
   const totalPosts = `select count(*) as count from posts where JSON_CONTAINS(category, CAST(? AS JSON))`;
 
   try {
     connection.query(
       categorySortQuery,
-      [category_id, category_id],
+      [category_id, category_id, offset],
       (err, result) => {
         if (err) {
           res.status(500).json({ Error: err.message });
@@ -298,7 +336,7 @@ GROUP BY
             res.status(500).json({ Error: err.message });
           }
           const totalCount = count[0]?.count || 0;
-          res.status(200).json({ sortPosts: result, totalCount });
+          res.status(200).json({ sortPosts: result[0], totalCount });
         });
       }
     );
@@ -471,19 +509,19 @@ const getPopup = (req, res, next) => {
           res.status(500).json({ Error: err.message });
         }
         const totalCount = total[0]?.count || 0;
-        res.status(200).json({ popup: result, totalCount })
-      })
-    })
+        res.status(200).json({ popup: result, totalCount });
+      });
+    });
   } catch (error) {
     next(error);
   }
-}
+};
 
 // 팝업 공개 수정
 const editShowPopup = (req, res, next) => {
   const { status, id } = req.body;
 
-  const editQuery = `update popupList set status = ? where id = ?`
+  const editQuery = `update popupList set status = ? where id = ?`;
 
   try {
     connection.query(editQuery, [status, id], (err, result) => {
@@ -491,11 +529,11 @@ const editShowPopup = (req, res, next) => {
         res.status(500).json({ Error: err.message });
       }
       res.status(200).json({ success: "success" });
-    })
+    });
   } catch (error) {
     next(error);
   }
-}
+};
 
 // 팝업 추가
 const addPopup = async (req, res, next) => {
@@ -519,7 +557,7 @@ const addPopup = async (req, res, next) => {
     ContentType: "image/jpeg", // MIME 타입 설정
   };
 
-  const addQuery = `insert into popupList (title, link, thumbnail) values (?, ?, ?)`
+  const addQuery = `insert into popupList (title, link, thumbnail) values (?, ?, ?)`;
 
   // 파일명 설정
   await s3.send(new PutObjectCommand(uploadParams)); // S3에 업로드
@@ -542,24 +580,24 @@ const addPopup = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
 
 // 팝업 삭제
 const deletePopup = (req, res, next) => {
   const { ids } = req.body;
   const placeholders = ids.map(() => "?").join(", ");
-  const deleteQuery = `delete from popupList WHERE id IN (${placeholders})`
+  const deleteQuery = `delete from popupList WHERE id IN (${placeholders})`;
   try {
     connection.query(deleteQuery, ids, (err, result) => {
       if (err) {
         res.status(500).json({ Error: err.message });
       }
       res.status(200).json({ Success: "success" });
-    })
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 // 카테고리
 router.post("/category", addCategory);
