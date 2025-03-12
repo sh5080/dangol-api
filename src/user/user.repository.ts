@@ -14,7 +14,10 @@ export class UserRepository {
   }
 
   async create(dto: CreateUserDto) {
-    return await this.prisma.user.create({ data: { id: uuidv4(), ...dto } });
+    const { certificationCode, ...rest } = dto;
+    return await this.prisma.user.create({
+      data: { id: uuidv4(), ...rest },
+    });
   }
 
   async getUserByEmail(email: string) {

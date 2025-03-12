@@ -17,6 +17,7 @@ export const UserErrorMessage = {
   USER_NOT_FOUND: "User not found.",
   EMAIL_CONFLICTED: "Email already in use.",
   NICKNAME_CONFLICTED: "Nickname already in use.",
+  INVALID_CODE: "Invalid code.",
 } as const;
 
 export const DefaultErrorMessage = {

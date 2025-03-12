@@ -13,7 +13,8 @@ export interface UpdatePasswordDto {
   password: string & tags.MinLength<8> & tags.MaxLength<16>;
 }
 
-export interface CertificationDto {
+export interface CheckCertificationDto {
   type: CertificationType;
   email: string & tags.Format<"email">;
+  code: string & tags.MinLength<6> & tags.MaxLength<6> & tags.Example<"123456">;
 }

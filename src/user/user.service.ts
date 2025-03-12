@@ -4,8 +4,11 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { CreateUserDto } from "./dtos/create-user.dto";
-import { CertificationDto, UpdatePasswordDto } from "./dtos/update-user.dto";
+import { CreateUserDto, CertificationDto } from "./dtos/create-user.dto";
+import {
+  CheckCertificationDto,
+  UpdatePasswordDto,
+} from "./dtos/update-user.dto";
 import * as bcrypt from "bcrypt";
 
 import { MailService } from "../mail/mail.service";
@@ -41,16 +44,35 @@ export class UserService implements IUserService {
   async createUser(dto: CreateUserDto) {
     const { email, password } = dto;
 
+    // 이메일 중복 검사
     const existingUser = await this.userRepository.getUserByEmail(email);
     if (existingUser) {
       throw new BadRequestException(UserErrorMessage.EMAIL_CONFLICTED);
     }
+
+    // 이메일 인증번호 체크
+    await this.checkCertification({
+      email,
+      type: Certification.SIGNUP,
+      code: dto.certificationCode,
+    });
+
+    // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    return await this.userRepository.create({
+    // 유저 생성
+    const createdUser = await this.userRepository.create({
       ...dto,
       password: hashedPassword,
     });
+
+    // 인증번호 삭제
+    const redisKey = this.redisService.certificationKey(
+      Certification.SIGNUP,
+      email
+    );
+    await this.redis.del(redisKey);
+    return createdUser;
   }
 
   async sendCertification(dto: CertificationDto) {
@@ -69,18 +91,37 @@ export class UserService implements IUserService {
       Math.floor(Math.random() * (999999 - 111111 + 1)) + 111111;
     const redisKey = this.redisService.certificationKey(type, email);
 
+    // 인증번호 저장
     await this.redis.set(
       redisKey,
       verifyCode,
       "EX",
-      env.mail.MAIL_VERIFY_EXPIRATION
+      env.auth.MAIL_VERIFY_EXPIRATION
     );
+
+    // 인증번호 이메일 전송
     await this.mailService.sendCertificationMail(
       email,
       verifyCode,
       Certification.SIGNUP
     );
 
+    return;
+  }
+
+  async checkCertification(dto: CheckCertificationDto) {
+    const { email, type, code } = dto;
+
+    const redisKey = this.redisService.certificationKey(type, email);
+    const storedCode = await this.redis.get(redisKey);
+    if (!storedCode) {
+      throw new BadRequestException("Email must be verified.");
+    }
+    if (storedCode !== code) {
+      throw new BadRequestException(UserErrorMessage.INVALID_CODE);
+    }
+    // 인증한 이후 코드 만료 시간 연장
+    await this.redis.expire(redisKey, env.auth.AFTER_MAIL_VERIFY_EXPIRATION);
     return;
   }
 
