@@ -21,6 +21,13 @@ const envSchema = z.object({
   ACCESS_JWT_EXPIRATION: z.string().transform(Number),
   REFRESH_JWT_EXPIRATION: z.string().transform(Number),
 
+  // ********* mail *********
+  MAIL_USER: z.string(),
+  MAIL_PASSWORD: z.string(),
+  MAIL_SERVICE: z.string(),
+  MAIL_PORT: z.string().transform(Number),
+  MAIL_HOST: z.string(),
+  MAIL_VERIFY_EXPIRATION: z.string().transform(Number),
   // ********* aws *********
   AWS_REGION: z.string(),
   AWS_ACCESS_KEY_ID: z.string(),
@@ -32,6 +39,7 @@ const parsedEnv = envSchema.parse(process.env);
 
 export const env = {
   ...parsedEnv,
+
   db: {
     DATABASE_URL: parsedEnv.DATABASE_URL,
     REDIS_HOST: parsedEnv.REDIS_HOST,
@@ -44,6 +52,14 @@ export const env = {
     REFRESH_JWT_SECRET: parsedEnv.REFRESH_JWT_SECRET,
     ACCESS_JWT_EXPIRATION: parsedEnv.ACCESS_JWT_EXPIRATION,
     REFRESH_JWT_EXPIRATION: parsedEnv.REFRESH_JWT_EXPIRATION,
+  },
+  mail: {
+    MAIL_USER: parsedEnv.MAIL_USER,
+    MAIL_PASSWORD: parsedEnv.MAIL_PASSWORD,
+    MAIL_SERVICE: parsedEnv.MAIL_SERVICE,
+    MAIL_PORT: parsedEnv.MAIL_PORT,
+    MAIL_HOST: parsedEnv.MAIL_HOST,
+    MAIL_VERIFY_EXPIRATION: parsedEnv.MAIL_VERIFY_EXPIRATION,
   },
   aws: {
     AWS_REGION: parsedEnv.AWS_REGION,
