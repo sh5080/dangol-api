@@ -48,7 +48,7 @@ export type BlockStatusType = (typeof BlockStatus)[keyof typeof BlockStatus];
 
 export const Certification = {
   SIGNUP: "signup",
-  PASSWORD_RESET: "password",
+  PASSWORD_RESET: "passwordReset",
 } as const;
 
 export type CertificationType =

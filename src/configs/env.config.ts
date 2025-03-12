@@ -20,6 +20,8 @@ const envSchema = z.object({
   REFRESH_JWT_SECRET: z.string().min(16),
   ACCESS_JWT_EXPIRATION: z.string().transform(Number),
   REFRESH_JWT_EXPIRATION: z.string().transform(Number),
+  MAIL_VERIFY_EXPIRATION: z.string().transform(Number),
+  AFTER_MAIL_VERIFY_EXPIRATION: z.string().transform(Number),
 
   // ********* mail *********
   MAIL_USER: z.string(),
@@ -27,7 +29,6 @@ const envSchema = z.object({
   MAIL_SERVICE: z.string(),
   MAIL_PORT: z.string().transform(Number),
   MAIL_HOST: z.string(),
-  MAIL_VERIFY_EXPIRATION: z.string().transform(Number),
   // ********* aws *********
   AWS_REGION: z.string(),
   AWS_ACCESS_KEY_ID: z.string(),
@@ -52,6 +53,9 @@ export const env = {
     REFRESH_JWT_SECRET: parsedEnv.REFRESH_JWT_SECRET,
     ACCESS_JWT_EXPIRATION: parsedEnv.ACCESS_JWT_EXPIRATION,
     REFRESH_JWT_EXPIRATION: parsedEnv.REFRESH_JWT_EXPIRATION,
+
+    MAIL_VERIFY_EXPIRATION: parsedEnv.MAIL_VERIFY_EXPIRATION,
+    AFTER_MAIL_VERIFY_EXPIRATION: parsedEnv.AFTER_MAIL_VERIFY_EXPIRATION,
   },
   mail: {
     MAIL_USER: parsedEnv.MAIL_USER,
@@ -59,7 +63,6 @@ export const env = {
     MAIL_SERVICE: parsedEnv.MAIL_SERVICE,
     MAIL_PORT: parsedEnv.MAIL_PORT,
     MAIL_HOST: parsedEnv.MAIL_HOST,
-    MAIL_VERIFY_EXPIRATION: parsedEnv.MAIL_VERIFY_EXPIRATION,
   },
   aws: {
     AWS_REGION: parsedEnv.AWS_REGION,

@@ -34,7 +34,6 @@ export class MailService {
           <p style="color: #151515;">인증번호: <span style="color: #006452; font-weight: 700; font-size: 20px">${authNum}</span></p>
           <br/>
           <br/>
-          <p style="color: #151515;">새로고침을 하지말아주세요. 새로고침을 하게되면 이전 인증번호는 유효하지 않습니다.</p>
           <p style="color: #151515;">감사합니다.</p>
       </div>
     `;
