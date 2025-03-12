@@ -18,11 +18,17 @@ import {
   CheckUserValueType,
 } from "../types/enum.type";
 import { IUserService } from "../interfaces/user.interface";
+import Redis from "ioredis";
+import { InjectRedis } from "@nestjs-modules/ioredis";
+import { env } from "../configs/env.config";
+import { RedisService } from "../redis/redis.service";
 @Injectable()
 export class UserService implements IUserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly mailService: MailService
+    private readonly mailService: MailService,
+    @InjectRedis() private readonly redis: Redis,
+    private readonly redisService: RedisService
   ) {}
   async checkUser(key: CheckUserValueType, value: string) {
     const user = await this.userRepository.checkUserByValue(key, value);
@@ -54,13 +60,26 @@ export class UserService implements IUserService {
     // 이메일 유효성 검증
     if (type === Certification.SIGNUP && existingUser) {
       throw new BadRequestException(UserErrorMessage.EMAIL_CONFLICTED);
-    } else if (type === Certification.PASSWORD && !existingUser) {
+    } else if (type === Certification.PASSWORD_RESET && !existingUser) {
       throw new BadRequestException(UserErrorMessage.USER_NOT_FOUND);
     }
 
     // 인증번호 생성 및 이메일 전송
-    const authNum = Math.floor(Math.random() * (999999 - 111111 + 1)) + 111111;
-    await this.mailService.sendSignupVerification(email, authNum);
+    const verifyCode =
+      Math.floor(Math.random() * (999999 - 111111 + 1)) + 111111;
+    const redisKey = this.redisService.certificationKey(type, email);
+
+    await this.redis.set(
+      redisKey,
+      verifyCode,
+      "EX",
+      env.mail.MAIL_VERIFY_EXPIRATION
+    );
+    await this.mailService.sendCertificationMail(
+      email,
+      verifyCode,
+      Certification.SIGNUP
+    );
 
     return;
   }
