@@ -25,22 +25,45 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let message = exception;
     this.logger.error(message);
     console.error("error in middleware: ", message);
+
     const jsonRes: ReturnResponse = {
       status: ResponseStatus.ERROR,
       message,
     };
 
+    const isTypiaError =
+      exception.response &&
+      exception.response.message &&
+      exception.response.message.startsWith("Request body data");
+
+    if (isTypiaError) {
+      const firstError = exception.response.errors[0];
+      if (firstError && firstError.path) {
+        const fieldMatch = firstError.path.match(/\$input\.(\w+)/);
+        if (fieldMatch && fieldMatch[1]) {
+          const fieldName = fieldMatch[1];
+          jsonRes.message = `Invalid ${fieldName}`;
+          status = HttpStatus.BAD_REQUEST;
+          return response.status(status).json(jsonRes);
+        }
+      }
+    }
+
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.getResponse() as string;
 
-      if (message.message.includes("JSON at position")) {
+      if (
+        message.message &&
+        typeof message.message === "string" &&
+        message.message.includes("JSON at position")
+      ) {
         message.message = DefaultErrorMessage.SYNTAX;
       }
 
-      if (Array.isArray(message.message)) {
+      if (message.message && Array.isArray(message.message)) {
         jsonRes.message = message.message[0];
-      } else {
+      } else if (message.message) {
         jsonRes.message = message.message;
       }
     } else if (
@@ -52,7 +75,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     } else {
       jsonRes.message = DefaultErrorMessage.UNEXPECTED_2;
     }
-
     return response.status(status).json(jsonRes);
   }
 }
