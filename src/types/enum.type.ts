@@ -29,14 +29,14 @@ export const TokenEnum = {
 
 export type TokenEnumType = (typeof TokenEnum)[keyof typeof TokenEnum];
 
-export const RedisEnum = {
+export const RedisKey = {
   PW_MISMATCH_COUNT: "failedLoginAttempts",
   BLACKLIST: "blacklist",
   SESSION: "session",
   RESET_PW: "resetPw",
 } as const;
 
-export type RedisEnumType = (typeof RedisEnum)[keyof typeof RedisEnum];
+export type RedisKeyType = (typeof RedisKey)[keyof typeof RedisKey];
 
 export const BlockStatus = {
   ACTIVE: 1,
@@ -48,8 +48,22 @@ export type BlockStatusType = (typeof BlockStatus)[keyof typeof BlockStatus];
 
 export const Certification = {
   SIGNUP: "signup",
-  PASSWORD: "password",
+  PASSWORD_RESET: "password",
 } as const;
 
 export type CertificationType =
   (typeof Certification)[keyof typeof Certification];
+
+export const SortBy = {
+  CREATED_AT: "createdAt",
+  UPDATED_AT: "updatedAt",
+} as const;
+export const SortOption = {
+  LATEST: 0,
+  NAME: 1,
+  LIKES: 2,
+} as const;
+export const Order = {
+  ASC: "asc",
+  DESC: "desc",
+} as const;
