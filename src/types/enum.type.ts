@@ -62,28 +62,28 @@ export const AuthProvider = {
 } as const;
 
 export const AUTH_PROVIDER_ID_MAP: Record<string, number> = {
-  nucode: 0,
-  kakao: 1,
-  google: 2,
-  naver: 3,
+  nucode: 1,
+  kakao: 2,
+  google: 3,
+  naver: 4,
 };
 
 export const AUTH_PROVIDER_ID_MAP_REVERSE: Record<number, string> = {
-  0: "nucode",
-  1: "kakao",
-  2: "google",
-  3: "naver",
-  4: "nucode+kakao",
-  5: "nucode+google",
-  6: "nucode+naver",
+  1: "nucode",
+  2: "kakao",
+  3: "google",
+  4: "naver",
+  5: "nucode+kakao",
+  6: "nucode+google",
+  7: "nucode+naver",
 };
 
 // 통합 인증 제공자 ID 맵
 export const INTEGRATED_AUTH_PROVIDERS: Record<string, number[]> = {
-  nucode: [0, 4, 5, 6], // nucode는 단독 또는 모든 통합 계정에서 사용 가능
-  kakao: [1, 4], // kakao는 단독 또는 nucode+kakao에서 사용 가능
-  google: [2, 5], // google은 단독 또는 nucode+google에서 사용 가능
-  naver: [3, 6], // naver는 단독 또는 nucode+naver에서 사용 가능
+  nucode: [1, 5, 6, 7], // nucode는 단독 또는 모든 통합 계정에서 사용 가능
+  kakao: [2, 5], // kakao는 단독 또는 nucode+kakao에서 사용 가능
+  google: [3, 6], // google은 단독 또는 nucode+google에서 사용 가능
+  naver: [4, 7], // naver는 단독 또는 nucode+naver에서 사용 가능
 };
 
 export type AuthProviderType = (typeof AuthProvider)[keyof typeof AuthProvider];
