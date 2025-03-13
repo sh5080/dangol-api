@@ -121,6 +121,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     await this.repository.ensureAuthProvider("KAKAO");
     await this.repository.ensureAuthProvider("GOOGLE");
     await this.repository.ensureAuthProvider("NAVER");
+    await this.repository.ensureAuthProvider("NUCODE+KAKAO");
+    await this.repository.ensureAuthProvider("NUCODE+GOOGLE");
+    await this.repository.ensureAuthProvider("NUCODE+NAVER");
   }
 
   async onModuleDestroy() {

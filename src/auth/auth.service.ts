@@ -23,10 +23,12 @@ import { EncryptionService } from "../utils/encryption.util";
 import { IUserService } from "../interfaces/user.interface";
 import { Logger } from "nestjs-pino";
 import {
+  AUTH_PROVIDER_ID_MAP_REVERSE,
   BlockStatus,
   RedisKey,
   TokenEnum,
   TokenEnumType,
+  INTEGRATED_AUTH_PROVIDERS,
 } from "../types/enum.type";
 import { Token, UserPayload } from "../types/data.type";
 import Redis from "ioredis";
@@ -35,8 +37,6 @@ import { RedisService } from "../redis/redis.service";
 
 @Injectable()
 export class AuthService {
-  private readonly secretKey: string = "nucode";
-
   constructor(
     @Inject("IUserService") private readonly userService: IUserService,
     @InjectRedis() private readonly redis: Redis,
@@ -51,11 +51,18 @@ export class AuthService {
     ip: string,
     userAgent: string
   ) {
-    const { email } = dto;
+    const { email, authType } = dto;
+
     const user = await this.userService.getUserByEmail(email);
 
     if (!user) {
       throw new BadRequestException(UserErrorMessage.USER_NOT_FOUND);
+    }
+    // 가입되어 있는 authType이 호환되지 않는 경우
+    if (!INTEGRATED_AUTH_PROVIDERS[authType].includes(user.authProviderId)) {
+      throw new BadRequestException(
+        `Can login with ${AUTH_PROVIDER_ID_MAP_REVERSE[user.authProviderId]}`
+      );
     }
 
     // 일반 로그인인 경우 비밀번호 검증

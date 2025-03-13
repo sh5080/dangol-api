@@ -17,6 +17,7 @@ import { UserErrorMessage } from "../types/message.type";
 import { UpdateUserDto } from "./dtos/update-user.dto";
 import {
   AUTH_PROVIDER_ID_MAP,
+  AuthProvider,
   Certification,
   CheckUserValue,
   CheckUserValueType,
@@ -43,7 +44,7 @@ export class UserService implements IUserService {
   }
 
   async createUser(dto: CreateUserDto) {
-    const { email, password } = dto;
+    const { email, password, certificationCode, authType } = dto;
 
     // 이메일 중복 검사
     const existingUser = await this.userRepository.getUserByEmail(email);
@@ -55,12 +56,15 @@ export class UserService implements IUserService {
     await this.checkCertification({
       email,
       type: Certification.SIGNUP,
-      code: dto.certificationCode,
+      code: certificationCode,
     });
+    const authProviderId = AUTH_PROVIDER_ID_MAP[authType];
+    // authType nucode인 경우 비밀번호 해싱 / 그 외에는 undefined
+    const hashedPassword =
+      authType === AuthProvider.NUCODE && password
+        ? await bcrypt.hash(password, 10)
+        : undefined;
 
-    // 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const authProviderId = AUTH_PROVIDER_ID_MAP[dto.authType];
     // 유저 생성
     const createdUser = await this.userRepository.create(
       { ...dto, password: hashedPassword },
