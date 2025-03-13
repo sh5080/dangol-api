@@ -59,7 +59,7 @@ export class AuthService {
     }
 
     // 일반 로그인인 경우 비밀번호 검증
-    if ("password" in dto) {
+    if ("password" in dto && user.password) {
       const isPasswordValid = await this.encryptionService.compare(
         dto.password,
         user.password
