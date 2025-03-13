@@ -16,6 +16,7 @@ import { UserRepository } from "./user.repository";
 import { UserErrorMessage } from "../types/message.type";
 import { UpdateUserDto } from "./dtos/update-user.dto";
 import {
+  AUTH_PROVIDER_ID_MAP,
   Certification,
   CheckUserValue,
   CheckUserValueType,
@@ -59,12 +60,12 @@ export class UserService implements IUserService {
 
     // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    const authProviderId = AUTH_PROVIDER_ID_MAP[dto.authType];
     // 유저 생성
-    const createdUser = await this.userRepository.create({
-      ...dto,
-      password: hashedPassword,
-    });
+    const createdUser = await this.userRepository.create(
+      { ...dto, password: hashedPassword },
+      authProviderId
+    );
 
     // 인증번호 삭제
     const redisKey = this.redisService.certificationKey(

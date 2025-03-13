@@ -54,6 +54,20 @@ export const Certification = {
 export type CertificationType =
   (typeof Certification)[keyof typeof Certification];
 
+export const AuthProvider = {
+  NUCLODE: "nucode",
+  KAKAO: "kakao",
+  GOOGLE: "google",
+  NAVER: "naver",
+} as const;
+export const AUTH_PROVIDER_ID_MAP: Record<string, number> = {
+  nucode: 0,
+  kakao: 1,
+  google: 2,
+  naver: 3,
+};
+export type AuthProviderType = (typeof AuthProvider)[keyof typeof AuthProvider];
+
 export const SortBy = {
   CREATED_AT: "createdAt",
   UPDATED_AT: "updatedAt",
