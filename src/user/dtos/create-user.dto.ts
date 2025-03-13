@@ -1,5 +1,5 @@
 import { tags } from "typia";
-import { Certification, CertificationType } from "../../types/enum.type";
+import { AuthProviderType, CertificationType } from "../../types/enum.type";
 
 export interface CreateUserDto {
   email: string & tags.Format<"email">;
@@ -14,16 +14,17 @@ export interface CreateUserDto {
     tags.MinLength<10> &
     tags.MaxLength<13> &
     tags.Example<"010-1234-5678">;
-  userClass: string &
+  education: string &
     tags.MinLength<2> &
     tags.MaxLength<10> &
     tags.Example<"학생">;
-  event: number & tags.Minimum<1> & tags.Maximum<10>;
+  isEventAgree: boolean & tags.Example<true>;
   certificationCode: string &
     tags.Pattern<"^[0-9]{6}$"> &
     tags.MinLength<6> &
     tags.MaxLength<6> &
     tags.Example<"123456">;
+  authType: AuthProviderType;
 }
 
 export interface CertificationDto {
