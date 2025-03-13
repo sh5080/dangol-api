@@ -13,10 +13,19 @@ export class UserRepository {
     this.prisma = this.prismaService.prisma;
   }
 
-  async create(dto: CreateUserDto) {
-    const { certificationCode, ...rest } = dto;
+  async create(dto: CreateUserDto, authProviderId: number) {
+    const { certificationCode, isEventAgree, affiliation, education, ...user } =
+      dto;
+
     return await this.prisma.user.create({
-      data: { id: uuidv4(), ...rest },
+      data: {
+        id: uuidv4(),
+        ...user,
+        authProviderId,
+        events: { create: { eventId: 1, isAgreed: isEventAgree } },
+        profile: { create: { affiliation, education } },
+      },
+      include: { profile: true, events: true },
     });
   }
 
