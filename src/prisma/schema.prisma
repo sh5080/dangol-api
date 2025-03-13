@@ -7,18 +7,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model AuthProvider {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique
+  isActive Boolean @default(true)
+  users    User[]
+}
+
 model User {
-  id          String      @id @unique
-  email       String      @unique
-  name        String
-  password    String
-  affiliation String
-  phoneNumber String
-  userClass   String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  blocks      UserBlock[]
-  events      UserEvent[]
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password       String? // 소셜 로그인만 사용하는 경우 null 가능
+  name           String
+  authProviderId Int
+  phoneNumber    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  authProvider AuthProvider  @relation(fields: [authProviderId], references: [id])
+  blocks       UserBlock[]
+  events       UserEvent[]
+  profile      UserProfile[]
+}
+
+model UserProfile {
+  id          Int     @id @default(autoincrement())
+  userId      String  @unique
+  nickname    String? // 닉네임
+  bio         String? // 자기소개
+  interests   String? // 관심사
+  avatar      String? // 프로필 이미지
+  affiliation String // 소속
+  education   String // 학력
+  user        User    @relation(fields: [userId], references: [id])
 }
 
 model UserBlock {
