@@ -3,7 +3,7 @@ import { AuthProviderType, CertificationType } from "../../types/enum.type";
 
 export interface CreateUserDto {
   email: string & tags.Format<"email">;
-  password: string & tags.MinLength<8> & tags.MaxLength<16>;
+  password?: string & tags.MinLength<8> & tags.MaxLength<16>;
   name: string & tags.MinLength<2> & tags.MaxLength<10>;
   affiliation: string &
     tags.MinLength<2> &
