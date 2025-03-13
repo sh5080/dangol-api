@@ -1,14 +1,13 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
-import { ValidationPipe } from "@nestjs/common";
 import { NestiaSwaggerComposer } from "@nestia/sdk";
 import { SwaggerModule } from "@nestjs/swagger";
 import { env } from "./configs/env.config";
+import NESTIA_CONFIG from "../nestia.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 미들웨어 설정
   app.enableCors({
     origin: [
       "http://localhost:3000",
@@ -21,16 +20,17 @@ async function bootstrap() {
     credentials: true,
   });
   app.setGlobalPrefix("api");
-  const document = await NestiaSwaggerComposer.document(app, {
-    openapi: "3.1",
-    servers: [
-      {
-        url: `http://localhost:${env.PORT}`,
-        description: "nuworks-api",
-      },
-    ],
+  const document = await NestiaSwaggerComposer.document(
+    app,
+    NESTIA_CONFIG.swagger as any
+  );
+
+  SwaggerModule.setup("docs", app, document as any, {
+    jsonDocumentUrl: "api-json",
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
   });
-  SwaggerModule.setup("docs", app, document as any);
   await app.listen(env.PORT);
   console.log(`Server is running on port ${env.PORT}`);
 }
