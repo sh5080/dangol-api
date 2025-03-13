@@ -1,13 +1,11 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
 import { Prisma, PrismaClient, User } from "@prisma/client";
-import { env } from "../configs/env.config";
 import { EncryptionService } from "../utils/encryption.util";
+import { PrismaRepository } from "./prisma.repository";
 
 type ExtendedPrismaClient = PrismaClient & {
   user: {
-    create: (
-      params: Prisma.UserCreateInput
-    ) => Promise<User & { password?: string }>;
+    create: (params: Prisma.UserCreateInput) => Promise<User>;
     findUnique: (params: Prisma.UserFindUniqueArgs) => Promise<User | null>;
     findFirst: (params: Prisma.UserFindFirstArgs) => Promise<User | null>;
     findMany: (params: Prisma.UserFindManyArgs) => Promise<User[]>;
@@ -20,13 +18,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private _prisma: PrismaClient;
   public prisma: ExtendedPrismaClient;
 
-  constructor(private readonly encryptionService: EncryptionService) {
-    this._prisma = new PrismaClient({
-      datasources: {
-        db: { url: env.DATABASE_URL },
-      },
-    });
-    const encryption = this.encryptionService;
+  constructor(
+    private readonly encryptionService: EncryptionService,
+    private readonly repository: PrismaRepository
+  ) {
+    this._prisma = new PrismaClient();
+    // const encryption = this.encryptionService;
     const prismaInstance = this._prisma;
 
     this.prisma = this._prisma.$extends({
@@ -108,10 +105,18 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
       },
     }) as unknown as ExtendedPrismaClient;
   }
-
   async onModuleInit() {
     await this._prisma.$connect();
     console.log("Database connected successfully");
+    await this.seedInitialData();
+    console.log("Initial data seeded successfully");
+  }
+  /** 초기 데이터 시딩 */
+  private async seedInitialData() {
+    await this.repository.ensureEvent(
+      "이벤트 수신동의",
+      "마케팅 및 이벤트 정보 수신에 동의합니다."
+    );
   }
 
   async onModuleDestroy() {
