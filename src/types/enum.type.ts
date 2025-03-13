@@ -55,7 +55,7 @@ export type CertificationType =
   (typeof Certification)[keyof typeof Certification];
 
 export const AuthProvider = {
-  NUCLODE: "nucode",
+  NUCODE: "nucode",
   KAKAO: "kakao",
   GOOGLE: "google",
   NAVER: "naver",
@@ -65,6 +65,12 @@ export const AUTH_PROVIDER_ID_MAP: Record<string, number> = {
   kakao: 1,
   google: 2,
   naver: 3,
+};
+export const AUTH_PROVIDER_ID_MAP_REVERSE: Record<number, string> = {
+  0: "nucode",
+  1: "kakao",
+  2: "google",
+  3: "naver",
 };
 export type AuthProviderType = (typeof AuthProvider)[keyof typeof AuthProvider];
 
