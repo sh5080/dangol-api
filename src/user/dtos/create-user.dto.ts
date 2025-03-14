@@ -3,7 +3,10 @@ import { AuthProviderType, CertificationType } from "../../types/enum.type";
 
 export interface CreateUserDto {
   email: string & tags.Format<"email">;
-  password?: string & tags.MinLength<8> & tags.MaxLength<16>;
+  password?: string &
+    tags.MinLength<8> &
+    tags.MaxLength<16> &
+    tags.Example<"test123123!">;
   name: string & tags.MinLength<2> & tags.MaxLength<10>;
   affiliation: string &
     tags.MinLength<2> &
@@ -14,10 +17,7 @@ export interface CreateUserDto {
     tags.MinLength<10> &
     tags.MaxLength<13> &
     tags.Example<"010-1234-5678">;
-  education: string &
-    tags.MinLength<2> &
-    tags.MaxLength<10> &
-    tags.Example<"학생">;
+  class: string & tags.MinLength<2> & tags.MaxLength<10> & tags.Example<"학생">;
   isEventAgree: boolean & tags.Example<true>;
   certificationCode: string &
     tags.Pattern<"^[0-9]{6}$"> &
