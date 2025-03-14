@@ -1,44 +1,28 @@
-import {
-  Inject,
-  Controller,
-  UseInterceptors,
-  BadRequestException,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
+import { Inject, Controller, UseGuards, Req } from "@nestjs/common";
 import { IUserService } from "../interfaces/user.interface";
 import { CreateUserDto, CertificationDto } from "./dtos/create-user.dto";
 import {
   CheckCertificationDto,
   UpdatePasswordDto,
 } from "./dtos/update-user.dto";
-import { UpdateUserDto } from "./dtos/update-user.dto";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { UploadService } from "../upload/upload.service";
-import * as jwt from "jsonwebtoken";
+import { UpdateUserProfileDto } from "./dtos/update-user.dto";
 import { ApiTags } from "@nestjs/swagger";
-import {
-  TypedBody,
-  TypedFormData,
-  TypedHeaders,
-  TypedRoute,
-} from "@nestia/core";
+import { TypedBody, TypedRoute } from "@nestia/core";
 import { AuthGuard } from "../auth/auth.guard";
 import { AuthRequest } from "../types/request.type";
-import Multer from "multer";
 
 @ApiTags("유저")
 @Controller("user")
 export class UserController {
-  private readonly secretKey = "nucode";
-
   constructor(
-    @Inject("IUserService") private readonly userService: IUserService,
-    private readonly uploadService: UploadService
+    @Inject("IUserService") private readonly userService: IUserService
   ) {}
 
   /**
-   * @summary 회원가입 (완료)
+   * 1. userClass:class 로 네이밍 수정
+   * 2. event:isEventAgree 로 네이밍 수정, 0,1 대신 true, false 사용
+   * 3. authType: nucode, kakao, google, naver 사용
+   * @summary 회원가입 (1차 완료) ----- 요청 값 유효성 검증 규칙 임의로 지정해놓았는데, schema에서 확인가능합니다. 바꿔야하는 부분이 있으면 알려주세요.
    * @param dto 유저 생성 dto
    * @returns 생성된 유저
    */
@@ -48,7 +32,7 @@ export class UserController {
   }
 
   /**
-   * @summary 유저 인증 이메일 발송 (완료)
+   * @summary 유저 인증 이메일 발송 (1차 완료)
    * @param dto 유저 인증 이메일 발송 dto
    * @returns 인증 이메일 발송 결과
    */
@@ -58,7 +42,7 @@ export class UserController {
   }
 
   /**
-   * @summary 유저 인증 이메일 확인 (완료)
+   * @summary 유저 인증 이메일 확인 (1차 완료)
    * @param dto 유저 인증 이메일 확인 dto
    * @returns 인증 이메일 확인 결과
    */
@@ -68,10 +52,10 @@ export class UserController {
   }
 
   /**
-   * @summary 유저 비밀번호 업데이트
+   * @summary 유저 비밀번호 업데이트 (완료)
+   * @security bearer
    * @param dto 유저 비밀번호 업데이트 dto
    * @param req 인증 요청
-   * @returns 업데이트된 유저 비밀번호
    */
   @TypedRoute.Patch("password")
   @UseGuards(AuthGuard)
@@ -84,41 +68,31 @@ export class UserController {
   }
 
   /**
-   * @summary 유저 정보 조회
-   * @param headers 인증 헤더
-   * @returns 유저 정보
+   * @summary 유저 프로필 조회 (완료)
+   * @security bearer
+   * @returns 유저 프로필
    */
-  @TypedRoute.Get()
+  @TypedRoute.Get("profile")
   @UseGuards(AuthGuard)
-  async getUser(@TypedHeaders() headers: { Authorization: string }) {
-    const token = headers.Authorization;
-    if (!token) {
-      return { message: "not found" };
-    }
-
-    try {
-      const decoded = jwt.verify(token, this.secretKey) as { email: string };
-      return this.userService.getUserByEmail(decoded.email);
-    } catch (error) {
-      throw new BadRequestException("유효하지 않은 토큰입니다.");
-    }
+  async getUserProfile(@Req() req: AuthRequest) {
+    const userId = req.user.userId;
+    return this.userService.getUserProfileById(userId);
   }
 
   /**
    * @summary 유저 프로필 업데이트
+   * @security bearer
    * @param dto 유저 프로필 업데이트 dto
    * @param req 인증 요청
-   * @param file 썸네일 파일
    * @returns 업데이트된 유저 프로필
    */
-  @TypedRoute.Patch()
+  @TypedRoute.Patch("profile")
   @UseGuards(AuthGuard)
-  @UseInterceptors(FileInterceptor("thumbnail"))
   async updateUserProfile(
-    @TypedFormData.Body(() => Multer()) dto: UpdateUserDto,
+    @TypedBody() dto: UpdateUserProfileDto,
     @Req() req: AuthRequest
   ) {
     const userId = req.user.userId;
-    return this.userService.updateUser(userId, dto);
+    return this.userService.updateUserProfile(userId, dto);
   }
 }
