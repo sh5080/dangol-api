@@ -2,6 +2,8 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
 import { Prisma, PrismaClient, User } from "@prisma/client";
 import { EncryptionService } from "../utils/encryption.util";
 import { PrismaRepository } from "./prisma.repository";
+import { promises as fs } from "fs";
+import * as path from "path";
 
 type ExtendedPrismaClient = PrismaClient & {
   user: {
@@ -124,6 +126,20 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     await this.repository.ensureAuthProvider("NUCODE+KAKAO");
     await this.repository.ensureAuthProvider("NUCODE+GOOGLE");
     await this.repository.ensureAuthProvider("NUCODE+NAVER");
+    await this.repository.ensureBlockReason("password mistake");
+    await this.repository.ensureBlockReason("user reported");
+    await this.repository.ensureBlockReason("other inquiries");
+    await this.seedUsers();
+  }
+
+  async seedUsers() {
+    const filePath = path.join(__dirname, "../../data/test-user.json");
+    const data = await fs.readFile(filePath, "utf-8");
+    const users = JSON.parse(data);
+
+    for (const user of users) {
+      await this.repository.ensureUser(user, user.id, 1);
+    }
   }
 
   async onModuleDestroy() {

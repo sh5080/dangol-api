@@ -1,10 +1,42 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
+import { CreateUserDto } from "../user/dtos/create-user.dto";
 
 @Injectable()
 export class PrismaRepository {
   constructor(private readonly prisma: PrismaClient) {}
+  async ensureUser(
+    dto: CreateUserDto,
+    userId: string,
+    authProviderId: number
+  ): Promise<void> {
+    const {
+      certificationCode,
+      authType,
+      isEventAgree,
+      affiliation,
+      class: className,
+      ...user
+    } = dto;
 
+    const userExists = await this.prisma.user.findFirst({
+      where: { id: userId },
+    });
+
+    if (!userExists) {
+      await this.prisma.user.create({
+        data: {
+          id: userId,
+          ...user,
+          authProviderId,
+          events: { create: { eventId: 1, isAgreed: isEventAgree } },
+          profile: { create: { affiliation, class: className } },
+        },
+        include: { profile: true, events: true },
+      });
+      console.log(`User "${userId}" created successfully`);
+    }
+  }
   /** 이벤트 존재 확인 및 생성 */
   async ensureEvent(name: string, description: string): Promise<void> {
     const eventExists = await this.prisma.event.findFirst({
@@ -26,6 +58,17 @@ export class PrismaRepository {
     if (!authProviderExists) {
       await this.prisma.authProvider.create({ data: { name } });
       console.log(`AuthProvider "${name}" created successfully`);
+    }
+  }
+
+  async ensureBlockReason(description: string): Promise<void> {
+    const blockReasonExists = await this.prisma.blockReason.findFirst({
+      where: { description },
+    });
+
+    if (!blockReasonExists) {
+      await this.prisma.blockReason.create({ data: { description } });
+      console.log(`BlockReason "${description}" created successfully`);
     }
   }
 }
