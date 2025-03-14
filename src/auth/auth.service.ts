@@ -63,8 +63,8 @@ export class AuthService {
     }
     // 가입되어 있는 authType이 호환되지 않는 경우
     if (!INTEGRATED_AUTH_PROVIDERS[authType].includes(user.authProviderId)) {
-      throw new BadRequestException(
-        `Can login with ${AUTH_PROVIDER_ID_MAP_REVERSE[user.authProviderId]}`
+      throw new ForbiddenException(
+        `로그인 가능한 인증방법: ${AUTH_PROVIDER_ID_MAP_REVERSE[user.authProviderId]}`
       );
     }
 

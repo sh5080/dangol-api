@@ -3,6 +3,7 @@ import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
 } from "@nestjs/common";
 
 import { CreateUserDto, CertificationDto } from "./dtos/create-user.dto";
@@ -45,26 +46,32 @@ export class UserService implements IUserService {
   async checkUser(key: CheckUserValueType, value: string) {
     const user = await this.userRepository.checkUserByValue(key, value);
     if (!user) {
-      throw new BadRequestException(UserErrorMessage.USER_NOT_FOUND);
+      throw new ForbiddenException(UserErrorMessage.USER_NOT_FOUND);
     }
     return user;
   }
 
   async createUser(dto: CreateUserDto) {
     const { email, password, certificationCode, authType } = dto;
-
+    if (authType === AuthProvider.NUCODE && !certificationCode) {
+      throw new ForbiddenException(
+        "누코드 로그인은 이메일 인증이 선행되어야 합니다."
+      );
+    }
     // 이메일 중복 검사
     const existingUser = await this.userRepository.getUserByEmail(email);
     if (existingUser) {
-      throw new BadRequestException(UserErrorMessage.EMAIL_CONFLICTED);
+      throw new ConflictException(UserErrorMessage.EMAIL_CONFLICTED);
     }
 
     // 이메일 인증번호 체크
-    await this.checkCertification({
-      email,
-      type: Certification.SIGNUP,
-      code: certificationCode,
-    });
+    if (certificationCode) {
+      await this.checkCertification({
+        email,
+        type: Certification.SIGNUP,
+        code: certificationCode,
+      });
+    }
     const authProviderId = AUTH_PROVIDER_ID_MAP[authType];
     // authType nucode인 경우 비밀번호 해싱 / 그 외에는 undefined
     const hashedPassword =
@@ -93,9 +100,9 @@ export class UserService implements IUserService {
 
     // 이메일 유효성 검증
     if (type === Certification.SIGNUP && existingUser) {
-      throw new BadRequestException(UserErrorMessage.EMAIL_CONFLICTED);
+      throw new ConflictException(UserErrorMessage.EMAIL_CONFLICTED);
     } else if (type === Certification.PASSWORD_RESET && !existingUser) {
-      throw new BadRequestException(UserErrorMessage.USER_NOT_FOUND);
+      throw new NotFoundException(UserErrorMessage.USER_NOT_FOUND);
     }
 
     // 인증번호 생성 및 이메일 전송
@@ -127,7 +134,7 @@ export class UserService implements IUserService {
     const redisKey = this.redisService.certificationKey(type, email);
     const storedCode = await this.redis.get(redisKey);
     if (!storedCode) {
-      throw new BadRequestException("Email must be verified.");
+      throw new NotFoundException("이메일 인증이 선행되어야 합니다.");
     }
     if (storedCode !== code) {
       throw new BadRequestException(UserErrorMessage.INVALID_CODE);
@@ -179,7 +186,7 @@ export class UserService implements IUserService {
     const profile = await this.userRepository.getUserProfileById(id);
     if (!profile) {
       throw new NotFoundException(
-        "[User Profile]: " + DefaultErrorMessage.NOT_FOUND
+        "유저 프로필" + DefaultErrorMessage.NOT_FOUND
       );
     }
     return profile as UserWithProfile;

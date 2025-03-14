@@ -1,8 +1,11 @@
 import { ResponseStatusType } from "./enum.type";
-
-export interface ReturnResponse {
+export interface BaseResponse {
   status: ResponseStatusType;
   message?: string;
+}
+
+export interface ErrorResponse extends BaseResponse {}
+export interface ReturnResponse extends BaseResponse {
   data?: any;
 }
 
