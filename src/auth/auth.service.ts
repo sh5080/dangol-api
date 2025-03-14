@@ -29,6 +29,9 @@ import {
   TokenEnum,
   TokenEnumType,
   INTEGRATED_AUTH_PROVIDERS,
+  BlackListEnum,
+  BlackListStatus,
+  Blacklist,
 } from "../types/enum.type";
 import { Token, UserPayload } from "../types/data.type";
 import Redis from "ioredis";
@@ -122,40 +125,37 @@ export class AuthService {
     );
     await this.redis.del(failedAttemptsKey);
   }
-  // async setBlacklist(
-  //   userId: string,
-  //   accessToken: string
-  // ): Promise<BlackListStatus> {
-  //   const key = this.redisService.userKey(
-  //     RedisKey.BLACKLIST,
-  //     userId
-  //   );
+  async setBlacklist(
+    userId: string,
+    accessToken: string
+  ): Promise<BlackListStatus> {
+    const key = this.redisService.userKey(RedisKey.BLACKLIST, userId);
 
-  //   await this.redis.hmset(
-  //     key,
-  //     "accessToken",
-  //     accessToken,
-  //     "logoutTime",
-  //     new Date().toISOString()
-  //   );
+    await this.redis.hmset(
+      key,
+      "accessToken",
+      accessToken,
+      "time",
+      new Date().toISOString()
+    );
 
-  //   await this.redis.expire(key, 7 * 24 * 60 * 60);
-  //   return { message: BlackListEnum.BLACKLISTED };
-  // }
-  // TODO 블랙리스트 추가
-  // async getBlacklist(userId: number, token: string): Promise<BlackListStatus> {
-  //   const logoutRedis = await this.redis.hgetall(
-  //     this.redisService.userKey(RedisKey.BLACKLIST, userId)
-  //   );
-  //   const { accessToken } = logoutRedis as Blacklist;
-  //   const blacklist: Blacklist = { accessToken: accessToken };
+    await this.redis.expire(key, env.auth.ACCESS_JWT_EXPIRATION);
+    return { message: BlackListEnum.BLACKLISTED };
+  }
 
-  //   let response: BlackListStatus = { message: null };
-  //   if (blacklist.accessToken === token) {
-  //     response.message = BlackListEnum.BLACKLISTED;
-  //   } else response.message = BlackListEnum.NON_BLACKLISTED;
-  //   return response;
-  // }
+  async getBlacklist(userId: string, token: string): Promise<BlackListStatus> {
+    const logoutRedis = await this.redis.hgetall(
+      this.redisService.userKey(RedisKey.BLACKLIST, userId)
+    );
+    const { accessToken } = logoutRedis;
+    const blacklist: Blacklist = { accessToken: accessToken };
+
+    let response: BlackListStatus = { message: BlackListEnum.BLACKLISTED };
+    if (blacklist.accessToken === token) {
+      response.message = BlackListEnum.BLACKLISTED;
+    } else response.message = BlackListEnum.NON_BLACKLISTED;
+    return response;
+  }
 
   async createTokens(
     userId: string,
@@ -227,8 +227,8 @@ export class AuthService {
         const payload = jwt.verify(jwtString, secret, {
           algorithms: ["HS256"],
         }) as jwt.JwtPayload & UserPayload;
-        const { userId } = payload;
-        return { userId };
+        const { userId, exp } = payload;
+        return { userId, exp };
       }
     } catch (err) {
       this.logger.error(err);
