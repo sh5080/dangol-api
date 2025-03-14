@@ -8,7 +8,10 @@ interface EqualLoginDto {
 }
 
 export interface LoginDto extends EqualLoginDto {
-  password: string & tags.MinLength<8> & tags.MaxLength<16>;
+  password: string &
+    tags.MinLength<8> &
+    tags.MaxLength<16> &
+    tags.Example<"test123123!">;
 }
 
 export interface SocialLoginDto extends EqualLoginDto {}
