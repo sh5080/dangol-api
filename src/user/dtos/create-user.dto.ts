@@ -19,7 +19,7 @@ export interface CreateUserDto {
     tags.Example<"010-1234-5678">;
   class: string & tags.MinLength<2> & tags.MaxLength<10> & tags.Example<"학생">;
   isEventAgree: boolean & tags.Example<true>;
-  certificationCode: string &
+  certificationCode?: string &
     tags.Pattern<"^[0-9]{6}$"> &
     tags.MinLength<6> &
     tags.MaxLength<6> &
