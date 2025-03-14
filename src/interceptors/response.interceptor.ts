@@ -41,7 +41,7 @@ export class ResponseInterceptor implements NestInterceptor {
             response.setHeader("Authorization", `Bearer ${accessToken}`);
             response.cookie("Refresh", refreshToken, {
               httpOnly: true,
-              secure: env.NODE_ENV === "production",
+              secure: env.NODE_ENV !== "development",
             });
           }
 

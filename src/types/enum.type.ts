@@ -14,14 +14,21 @@ export const CheckUserValue = {
 export type CheckUserValueType =
   (typeof CheckUserValue)[keyof typeof CheckUserValue];
 
+export interface Blacklist {
+  logoutTime?: string;
+  accessToken: string;
+}
 export const BlackListEnum = {
-  BLACKLISTED: "blacklisted",
-  NON_BLACKLISTED: "non-blacklisted",
+  BLACKLISTED: true,
+  NON_BLACKLISTED: false,
 } as const;
 
 export type BlackListEnumType =
   (typeof BlackListEnum)[keyof typeof BlackListEnum];
 
+export interface BlackListStatus {
+  message: BlackListEnumType;
+}
 export const TokenEnum = {
   ACCESS: "access",
   REFRESH: "refresh",

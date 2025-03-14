@@ -5,7 +5,7 @@ export const AuthErrorMessage = {
   PASSWORD_MISMATCH: "Password is incorrect.",
   MISMATCH_COUNTED: "Account is restricted after 5 errors.",
   ACCOUNT_BLOCKED: "Restricted account.",
-  FORBIDDEN: "Unauthorized access.",
+  FORBIDDEN: "Forbidden access.",
   SESSION_NOT_FOUND: "Session not found.",
 } as const;
 export const TokenErrorMessage = {
