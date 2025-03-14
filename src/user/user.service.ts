@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from "@nestjs/common";
 
 import { CreateUserDto, CertificationDto } from "./dtos/create-user.dto";
@@ -13,8 +14,12 @@ import * as bcrypt from "bcrypt";
 
 import { MailService } from "../mail/mail.service";
 import { UserRepository } from "./user.repository";
-import { UserErrorMessage } from "../types/message.type";
-import { UpdateUserDto } from "./dtos/update-user.dto";
+import {
+  AuthErrorMessage,
+  DefaultErrorMessage,
+  UserErrorMessage,
+} from "../types/message.type";
+import { UpdateUserProfileDto } from "./dtos/update-user.dto";
 import {
   AUTH_PROVIDER_ID_MAP,
   AuthProvider,
@@ -27,6 +32,8 @@ import Redis from "ioredis";
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import { env } from "../configs/env.config";
 import { RedisService } from "../redis/redis.service";
+import { UserWithProfile } from "./dtos/response.dto";
+
 @Injectable()
 export class UserService implements IUserService {
   constructor(
@@ -131,13 +138,27 @@ export class UserService implements IUserService {
   }
 
   async updatePassword(id: string, dto: UpdatePasswordDto) {
-    const { password } = dto;
+    const { currentPassword, newPassword } = dto;
 
     // 사용자 조회
-    await this.checkUser(CheckUserValue.ID, id);
+    const user = await this.userRepository.getUserById(id);
+    if (!user) {
+      throw new NotFoundException(UserErrorMessage.USER_NOT_FOUND);
+    }
+    if (!user.password) {
+      throw new ForbiddenException(AuthErrorMessage.FORBIDDEN);
+    }
+    // 비밀번호 검증
+    const isPasswordMatch = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+    if (!isPasswordMatch) {
+      throw new BadRequestException(AuthErrorMessage.PASSWORD_MISMATCH);
+    }
 
     // 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // 비밀번호 업데이트
     await this.userRepository.updatePassword(id, hashedPassword);
@@ -153,9 +174,20 @@ export class UserService implements IUserService {
     return user;
   }
 
-  async updateUser(id: string, dto: UpdateUserDto) {
+  async getUserProfileById(id: string) {
+    await this.checkUser(CheckUserValue.ID, id);
+    const profile = await this.userRepository.getUserProfileById(id);
+    if (!profile) {
+      throw new NotFoundException(
+        "[User Profile]: " + DefaultErrorMessage.NOT_FOUND
+      );
+    }
+    return profile as UserWithProfile;
+  }
+
+  async updateUserProfile(id: string, dto: UpdateUserProfileDto) {
     await this.checkUser(CheckUserValue.ID, id);
 
-    return await this.userRepository.updateUser(id, dto);
+    return await this.userRepository.updateUserProfile(id, dto);
   }
 }

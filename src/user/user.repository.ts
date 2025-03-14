@@ -3,7 +3,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { Prisma } from "@prisma/client";
 import { CreateUserDto } from "./dtos/create-user.dto";
 import { CheckUserValueType } from "../types/enum.type";
-import { UpdateUserDto } from "./dtos/update-user.dto";
+import { UpdateUserProfileDto } from "./dtos/update-user.dto";
 import { v4 as uuidv4 } from "uuid";
 @Injectable()
 export class UserRepository {
@@ -19,7 +19,7 @@ export class UserRepository {
       authType,
       isEventAgree,
       affiliation,
-      education,
+      class: className,
       ...user
     } = dto;
 
@@ -29,7 +29,7 @@ export class UserRepository {
         ...user,
         authProviderId,
         events: { create: { eventId: 1, isAgreed: isEventAgree } },
-        profile: { create: { affiliation, education } },
+        profile: { create: { affiliation, class: className } },
       },
       include: { profile: true, events: true },
     });
@@ -38,6 +38,13 @@ export class UserRepository {
   async getUserByEmail(email: string) {
     return await this.prisma.user.findUnique({
       where: { email: email },
+    });
+  }
+
+  async getUserProfileById(id: string) {
+    return await this.prisma.user.findUnique({
+      where: { id: id },
+      include: { profile: true, events: true },
     });
   }
 
@@ -71,10 +78,12 @@ export class UserRepository {
     });
   }
 
-  async updateUser(id: string, dto: UpdateUserDto) {
+  async updateUserProfile(id: string, dto: UpdateUserProfileDto) {
     return await this.prisma.user.update({
       where: { id: id },
-      data: dto,
+      data: {
+        profile: { update: { data: dto } },
+      },
     });
   }
 

@@ -1,20 +1,24 @@
 import { tags } from "typia";
 import { CertificationType } from "../../types/enum.type";
 
-export interface UpdateUserDto {
-  name?: string & tags.MinLength<2> & tags.MaxLength<10>;
-  subject?: string & tags.MinLength<2> & tags.MaxLength<10>;
-  affiliation?: string & tags.MinLength<2> & tags.MaxLength<10>;
-  description?: string & tags.MinLength<2> & tags.MaxLength<10>;
-  thumbnail?: File;
-}
-
 export interface UpdatePasswordDto {
-  password: string & tags.MinLength<8> & tags.MaxLength<16>;
+  currentPassword: string & tags.MinLength<8> & tags.MaxLength<16>;
+  newPassword: string & tags.MinLength<8> & tags.MaxLength<16>;
 }
 
 export interface CheckCertificationDto {
   type: CertificationType;
   email: string & tags.Format<"email">;
   code: string & tags.MinLength<6> & tags.MaxLength<6> & tags.Example<"123456">;
+}
+
+export interface UpdateUserProfileDto {
+  nickname: string & tags.MinLength<2> & tags.MaxLength<10>;
+  interests: string & tags.MinLength<2> & tags.MaxLength<10>;
+  affiliation: string &
+    tags.MinLength<2> &
+    tags.MaxLength<10> &
+    tags.Example<"00대학교">;
+  introduction: string & tags.MinLength<2> & tags.MaxLength<10>;
+  image: string & tags.Format<"url">;
 }

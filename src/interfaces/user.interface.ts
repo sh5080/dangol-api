@@ -4,16 +4,21 @@ import { CheckUserValueType } from "../types/enum.type";
 import {
   CheckCertificationDto,
   UpdatePasswordDto,
-  UpdateUserDto,
+  UpdateUserProfileDto,
 } from "../user/dtos/update-user.dto";
 import { UserWithoutPassword } from "../auth/dtos/create-auth.dto";
+import { UserWithProfile } from "../user/dtos/response.dto";
 
 export interface IUserService {
   createUser(dto: CreateUserDto): Promise<UserWithoutPassword>;
   checkUser(key: CheckUserValueType, value: string): Promise<boolean>;
   getUserByEmail(email: string): Promise<User>;
+  getUserProfileById(id: string): Promise<UserWithProfile>;
   updatePassword(id: string, dto: UpdatePasswordDto): Promise<void>;
-  updateUser(id: string, dto: UpdateUserDto): Promise<UserWithoutPassword>;
+  updateUserProfile(
+    id: string,
+    dto: UpdateUserProfileDto
+  ): Promise<UserWithoutPassword>;
   sendCertification(dto: CertificationDto): Promise<void>;
   checkCertification(dto: CheckCertificationDto): Promise<void>;
 }
