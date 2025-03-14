@@ -20,6 +20,10 @@ const NESTIA_CONFIG: INestiaConfig = {
     },
     servers: [
       {
+        url: `https://alive-mollusk-mildly.ngrok-free.app`,
+        description: "Dev Server",
+      },
+      {
         url: `http://localhost:${env.PORT}`,
         description: "Local Server",
       },
