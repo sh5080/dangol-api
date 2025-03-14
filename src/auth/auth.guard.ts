@@ -9,10 +9,10 @@ import {
 } from "@nestjs/common";
 import { AuthRequest } from "../types/request.type";
 import { AuthService } from "./auth.service";
-import { AuthErrorMessage } from "../types/message.type";
+import { AuthErrorMessage, DefaultErrorMessage } from "../types/message.type";
 import { decode } from "jsonwebtoken";
 import { env } from "../configs/env.config";
-import { TokenEnum } from "../types/enum.type";
+import { BlackListEnum, TokenEnum } from "../types/enum.type";
 import { UserPayload } from "../types/data.type";
 
 @Injectable()
@@ -53,21 +53,27 @@ export class AuthGuard implements CanActivate {
     }
 
     const accessSecret = env.auth.ACCESS_JWT_SECRET;
-
     try {
-      const { userId } = await this.authService.verify(
+      const { userId, exp } = await this.authService.verify(
         accessToken,
         accessSecret,
         TokenEnum.ACCESS
       );
-      // TODO 블랙리스트 추가
-      // const blacklistData = await this.authService.getBlacklist(
-      //   userId,
-      //   accessToken
-      // );
-      // if (blacklistData.message === BlackListEnum.BLACKLISTED) {
-      //   throw new ForbiddenException(DefaultErrorMessage.FORBIDDEN);
+      // 토큰 만료 시간 확인
+      // if (exp) {
+      //   const currentTime = Math.floor(Date.now() / 1000);
+      //   const remainingTime = exp - currentTime;
+      //   console.log(">remainingTime: ", remainingTime);
       // }
+
+      const blacklistData = await this.authService.getBlacklist(
+        userId,
+        accessToken
+      );
+      if (blacklistData.message === BlackListEnum.BLACKLISTED) {
+        throw new ForbiddenException(DefaultErrorMessage.FORBIDDEN);
+      }
+
       req.user = { userId, tokens: { accessToken, refreshToken: "" } };
       next();
     } catch (err) {
@@ -111,7 +117,12 @@ export class AuthGuard implements CanActivate {
             refreshToken: newRefreshToken,
           },
         };
-
+        // 토큰 재발급 (RTR)
+        res.setHeader("Authorization", `Bearer ${newAccessToken}`);
+        res.cookie("refresh", newRefreshToken, {
+          httpOnly: true,
+          secure: env.NODE_ENV !== "development",
+        });
         next();
       } else {
         throw err;
