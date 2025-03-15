@@ -1,6 +1,7 @@
-import { User, UserProfile, UserEvent } from "@prisma/client";
+import { User, UserProfile } from "@prisma/client";
 
-export type UserWithProfile = User & {
+export interface UserWithoutPassword extends Omit<User, "password"> {}
+
+export interface UserWithProfile extends UserWithoutPassword {
   profile: UserProfile;
-  events: UserEvent[];
-};
+}

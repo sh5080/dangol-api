@@ -6,11 +6,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import * as jwt from "jsonwebtoken";
-import {
-  LoginDto,
-  SocialLoginDto,
-  UserWithoutPassword,
-} from "./dtos/create-auth.dto";
+import { LoginDto, SocialLoginDto } from "./dtos/create-auth.dto";
 import { UserRepository } from "../user/user.repository";
 import {
   AuthErrorMessage,
@@ -37,6 +33,7 @@ import { Token, UserPayload } from "../types/data.type";
 import Redis from "ioredis";
 import { env } from "../configs/env.config";
 import { RedisService } from "../redis/redis.service";
+import { UserWithoutPassword } from "../user/dtos/response.dto";
 
 @Injectable()
 export class AuthService {

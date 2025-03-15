@@ -15,5 +15,3 @@ export interface LoginDto extends BaseLoginDto {
 }
 
 export interface SocialLoginDto extends BaseLoginDto {}
-
-export interface UserWithoutPassword extends Omit<User, "password"> {}

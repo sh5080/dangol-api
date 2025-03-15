@@ -6,8 +6,10 @@ import {
   UpdatePasswordDto,
   UpdateUserProfileDto,
 } from "../user/dtos/update-user.dto";
-import { UserWithoutPassword } from "../auth/dtos/create-auth.dto";
-import { UserWithProfile } from "../user/dtos/response.dto";
+import {
+  UserWithoutPassword,
+  UserWithProfile,
+} from "../user/dtos/response.dto";
 
 export interface IUserService {
   createUser(dto: CreateUserDto): Promise<UserWithoutPassword>;
@@ -18,7 +20,7 @@ export interface IUserService {
   updateUserProfile(
     id: string,
     dto: UpdateUserProfileDto
-  ): Promise<UserWithoutPassword>;
+  ): Promise<UserWithProfile>;
   sendCertification(dto: CertificationDto): Promise<void>;
   checkCertification(dto: CheckCertificationDto): Promise<void>;
 }

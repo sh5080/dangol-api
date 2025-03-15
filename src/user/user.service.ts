@@ -183,18 +183,24 @@ export class UserService implements IUserService {
 
   async getUserProfileById(id: string) {
     await this.checkUser(CheckUserValue.ID, id);
-    const profile = await this.userRepository.getUserProfileById(id);
-    if (!profile) {
+    const userProfile = await this.userRepository.getUserProfileById(id);
+    if (!userProfile) {
       throw new NotFoundException(
         "유저 프로필" + DefaultErrorMessage.NOT_FOUND
       );
     }
-    return profile as UserWithProfile;
+    return userProfile as UserWithProfile;
   }
 
   async updateUserProfile(id: string, dto: UpdateUserProfileDto) {
     await this.checkUser(CheckUserValue.ID, id);
 
-    return await this.userRepository.updateUserProfile(id, dto);
+    const userProfile = await this.userRepository.updateUserProfile(id, dto);
+    if (!userProfile) {
+      throw new NotFoundException(
+        "유저 프로필" + DefaultErrorMessage.NOT_FOUND
+      );
+    }
+    return userProfile as UserWithProfile;
   }
 }
