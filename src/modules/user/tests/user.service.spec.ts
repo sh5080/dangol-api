@@ -109,7 +109,7 @@ describe("UserService", () => {
       expect(userRepository.checkUserNickname).toHaveBeenCalledWith(
         createUserDto.nickname
       );
-      expect(userRepository.create).toHaveBeenCalledWith(
+      expect(userRepository.createUser).toHaveBeenCalledWith(
         createUserDto,
         AUTH_PROVIDER_ID_MAP.kakao
       );
