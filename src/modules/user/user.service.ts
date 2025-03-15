@@ -50,7 +50,7 @@ export class UserService implements IUserService {
 
     const authProviderId = AUTH_PROVIDER_ID_MAP[authType];
 
-    return await this.userRepository.create(dto, authProviderId);
+    return await this.userRepository.createUser(dto, authProviderId);
   }
 
   async getUserByEmail(email: string) {
