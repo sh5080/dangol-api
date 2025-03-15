@@ -14,11 +14,11 @@ export interface CheckCertificationDto {
 
 export interface UpdateUserProfileDto {
   nickname: string & tags.MinLength<2> & tags.MaxLength<10>;
-  interests: string & tags.MinLength<2> & tags.MaxLength<10>;
-  affiliation: string &
+  interests?: string & tags.MinLength<2> & tags.MaxLength<40>;
+  affiliation?: string &
     tags.MinLength<2> &
-    tags.MaxLength<10> &
+    tags.MaxLength<40> &
     tags.Example<"00대학교">;
-  introduction: string & tags.MinLength<2> & tags.MaxLength<10>;
-  image: string & tags.Format<"url">;
+  introduction?: string & tags.MinLength<2> & tags.MaxLength<40>;
+  image: string;
 }
