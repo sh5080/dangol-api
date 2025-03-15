@@ -8,6 +8,7 @@ export interface CreateUserDto {
     tags.MaxLength<16> &
     tags.Example<"test123123!">;
   name: string & tags.MinLength<2> & tags.MaxLength<10>;
+  nickname: string & tags.MinLength<2> & tags.MaxLength<10>;
   affiliation: string &
     tags.MinLength<2> &
     tags.MaxLength<10> &

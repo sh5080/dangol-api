@@ -19,6 +19,7 @@ export class UserRepository {
       authType,
       isEventAgree,
       affiliation,
+      nickname,
       class: className,
       ...user
     } = dto;
@@ -29,7 +30,7 @@ export class UserRepository {
         ...user,
         authProviderId,
         events: { create: { eventId: 1, isAgreed: isEventAgree } },
-        profile: { create: { affiliation, class: className } },
+        profile: { create: { affiliation, class: className, nickname } },
       },
       include: { profile: true, events: true },
     });
@@ -84,6 +85,7 @@ export class UserRepository {
       data: {
         profile: { update: { data: dto } },
       },
+      include: { profile: true },
     });
   }
 
