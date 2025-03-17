@@ -33,7 +33,8 @@ import Redis from "ioredis";
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import { env } from "../configs/env.config";
 import { RedisService } from "../redis/redis.service";
-import { UserWithProfile } from "./dtos/response.dto";
+import { UserWithProfile, UserWithRole } from "./dtos/response.dto";
+import { CheckNicknameDto } from "./dtos/get-user.dto";
 
 @Injectable()
 export class UserService implements IUserService {
@@ -51,8 +52,17 @@ export class UserService implements IUserService {
     return user;
   }
 
+  async checkNickname(dto: CheckNicknameDto) {
+    const { nickname } = dto;
+    const checkNickname = await this.userRepository.checkUserNickname(nickname);
+    if (checkNickname) {
+      throw new ConflictException(UserErrorMessage.NICKNAME_CONFLICTED);
+    }
+    return checkNickname;
+  }
+
   async createUser(dto: CreateUserDto) {
-    const { email, password, certificationCode, authType } = dto;
+    const { email, password, certificationCode, authType, nickname } = dto;
     if (authType === AuthProvider.NUCODE && !certificationCode) {
       throw new ForbiddenException(
         "누코드 로그인은 이메일 인증이 선행되어야 합니다."
@@ -63,6 +73,7 @@ export class UserService implements IUserService {
     if (existingUser) {
       throw new ConflictException(UserErrorMessage.EMAIL_CONFLICTED);
     }
+    await this.checkNickname({ nickname });
 
     // 이메일 인증번호 체크
     if (certificationCode) {
@@ -119,11 +130,7 @@ export class UserService implements IUserService {
     );
 
     // 인증번호 이메일 전송
-    await this.mailService.sendCertificationMail(
-      email,
-      verifyCode,
-      Certification.SIGNUP
-    );
+    await this.mailService.sendCertificationMail(email, verifyCode, type);
 
     return;
   }
@@ -144,31 +151,46 @@ export class UserService implements IUserService {
     return;
   }
 
-  async updatePassword(id: string, dto: UpdatePasswordDto) {
-    const { currentPassword, newPassword } = dto;
+  async updatePassword(dto: UpdatePasswordDto) {
+    const { email, currentPassword, newPassword, certificationCode } = dto;
 
     // 사용자 조회
-    const user = await this.userRepository.getUserById(id);
+    const user = await this.userRepository.getUserByEmail(email);
     if (!user) {
       throw new NotFoundException(UserErrorMessage.USER_NOT_FOUND);
     }
     if (!user.password) {
       throw new ForbiddenException(AuthErrorMessage.FORBIDDEN);
     }
-    // 비밀번호 검증
+    // 이메일 인증번호 체크
+    await this.checkCertification({
+      email: user.email,
+      type: Certification.PASSWORD_RESET,
+      code: certificationCode,
+    });
+
+    // 수정 후
     const isPasswordMatch = await bcrypt.compare(
       currentPassword,
       user.password
     );
     if (!isPasswordMatch) {
-      throw new BadRequestException(AuthErrorMessage.PASSWORD_MISMATCH);
+      throw new BadRequestException("현재 비밀번호가 일치하지 않습니다.");
+    }
+
+    // 새 비밀번호가 현재 비밀번호와 같은지 확인
+    const isSameAsNew = await bcrypt.compare(newPassword, user.password);
+    if (isSameAsNew) {
+      throw new BadRequestException(
+        "새 비밀번호는 현재 비밀번호와 달라야 합니다."
+      );
     }
 
     // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // 비밀번호 업데이트
-    await this.userRepository.updatePassword(id, hashedPassword);
+    await this.userRepository.updatePassword(user.id, hashedPassword);
     return;
   }
 
@@ -178,7 +200,7 @@ export class UserService implements IUserService {
       throw new NotFoundException(UserErrorMessage.USER_NOT_FOUND);
     }
 
-    return user;
+    return user as UserWithRole;
   }
 
   async getUserProfileById(id: string) {

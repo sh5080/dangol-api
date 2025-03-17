@@ -2,8 +2,13 @@ import { tags } from "typia";
 import { CertificationType } from "../../types/enum.type";
 
 export interface UpdatePasswordDto {
+  email: string & tags.Format<"email">;
   currentPassword: string & tags.MinLength<8> & tags.MaxLength<16>;
   newPassword: string & tags.MinLength<8> & tags.MaxLength<16>;
+  certificationCode: string &
+    tags.MinLength<6> &
+    tags.MaxLength<6> &
+    tags.Example<"123456">;
 }
 
 export interface CheckCertificationDto {

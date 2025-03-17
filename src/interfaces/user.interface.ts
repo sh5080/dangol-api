@@ -9,14 +9,17 @@ import {
 import {
   UserWithoutPassword,
   UserWithProfile,
+  UserWithRole,
 } from "../user/dtos/response.dto";
+import { CheckNicknameDto } from "../user/dtos/get-user.dto";
 
 export interface IUserService {
   createUser(dto: CreateUserDto): Promise<UserWithoutPassword>;
   checkUser(key: CheckUserValueType, value: string): Promise<boolean>;
-  getUserByEmail(email: string): Promise<User>;
+  checkNickname(dto: CheckNicknameDto): Promise<boolean>;
+  getUserByEmail(email: string): Promise<UserWithRole>;
   getUserProfileById(id: string): Promise<UserWithProfile>;
-  updatePassword(id: string, dto: UpdatePasswordDto): Promise<void>;
+  updatePassword(dto: UpdatePasswordDto): Promise<void>;
   updateUserProfile(
     id: string,
     dto: UpdateUserProfileDto

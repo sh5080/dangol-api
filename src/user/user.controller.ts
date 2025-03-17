@@ -10,6 +10,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { TypedBody, TypedRoute } from "@nestia/core";
 import { AuthGuard } from "../auth/auth.guard";
 import { AuthRequest } from "../types/request.type";
+import { CheckNicknameDto } from "./dtos/get-user.dto";
 
 @ApiTags("유저")
 @Controller("user")
@@ -59,24 +60,33 @@ export class UserController {
   async checkCertification(@TypedBody() dto: CheckCertificationDto) {
     return this.userService.checkCertification(dto);
   }
+  /**
+   * @summary 닉네임 중복 확인 (1차 완료)
+   * @param dto 닉네임 중복 확인 dto
+   * @returns 닉네임 중복 확인 결과
+   * @throws 409 닉네임 중복
+   */
+  @TypedRoute.Post("nickname/check")
+  async checkNickname(@TypedBody() dto: CheckNicknameDto) {
+    return this.userService.checkNickname(dto);
+  }
 
   /**
    * @summary 유저 비밀번호 업데이트 (완료)
-   * @security bearer
    * @param dto 유저 비밀번호 업데이트 dto
    * @param req 인증 요청
    * @throws 404 유저 없음 (이메일 불일치)
    * @throws 403 소셜로그인(누코드 통합x) 사용자가 비밀번호 재설정 시도
-   * @throws 400 비밀번호 불일치
+   * @throws 404 이메일 인증이 선행되어야 합니다.
+   * @throws 400 이메일 인증 코드 불일치
+   * @throws 400 동일한 패스워드는 입력할 수 없습니다.
    */
   @TypedRoute.Patch("password")
-  @UseGuards(AuthGuard)
   async updatePassword(
     @TypedBody() dto: UpdatePasswordDto,
     @Req() req: AuthRequest
   ) {
-    const userId = req.user.userId;
-    return this.userService.updatePassword(userId, dto);
+    return this.userService.updatePassword(dto);
   }
 
   /**
