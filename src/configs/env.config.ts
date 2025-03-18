@@ -1,5 +1,8 @@
 import { z } from "zod";
+import dotenv from "dotenv";
+import { join } from "path";
 
+dotenv.config({ path: join(process.cwd(), ".env") });
 const envSchema = z.object({
   // ********* server settings *********
   PORT: z.string().regex(/^\d+$/).transform(Number).optional().default("8080"),
