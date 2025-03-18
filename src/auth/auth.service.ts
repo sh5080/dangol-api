@@ -7,7 +7,6 @@ import {
 } from "@nestjs/common";
 import * as jwt from "jsonwebtoken";
 import { LoginDto, SocialLoginDto } from "./dtos/create-auth.dto";
-import { UserRepository } from "../user/user.repository";
 import {
   AuthErrorMessage,
   TokenErrorMessage,
@@ -34,6 +33,7 @@ import Redis from "ioredis";
 import { env } from "../configs/env.config";
 import { RedisService } from "../redis/redis.service";
 import { UserWithoutPassword } from "../user/dtos/response.dto";
+import { Role } from "@prisma/client";
 
 @Injectable()
 export class AuthService {
@@ -41,7 +41,6 @@ export class AuthService {
     @Inject("IUserService") private readonly userService: IUserService,
     @InjectRedis() private readonly redis: Redis,
     private readonly redisService: RedisService,
-    private readonly userRepository: UserRepository,
     private readonly encryptionService: EncryptionService,
     private readonly logger: Logger
   ) {}
@@ -77,8 +76,10 @@ export class AuthService {
       }
     }
     delete (user as any).password;
+    // 어드민인 경우에만 token payload 추가
+    const role = user.role?.role === Role.ADMIN ? Role.ADMIN : null;
 
-    const tokens = await this.createTokens(user.id, ip, userAgent);
+    const tokens = await this.createTokens(user.id, ip, userAgent, role);
     await this.resetFailedLoginAttempts(user.id);
 
     return { user: user as UserWithoutPassword, ...tokens };
@@ -97,7 +98,7 @@ export class AuthService {
       const attemptsCount = parseInt(attempts, 10);
       if (attemptsCount > maxAttempts - 1) {
         const reasonId = BlockStatus.PASSWORD_ATTEMPT_EXCEEDED;
-        await this.userRepository.blockUser(userId, reasonId);
+        await this.userService.blockUser(userId, reasonId);
         throw new UnauthorizedException(AuthErrorMessage.ACCOUNT_BLOCKED);
       }
       await this.redis.incr(failedAttemptsKey);
@@ -157,9 +158,10 @@ export class AuthService {
   async createTokens(
     userId: string,
     ip: string,
-    userAgent: string
+    userAgent: string,
+    role?: string | null
   ): Promise<Token> {
-    const accessTokenPayload = { userId };
+    const accessTokenPayload = { userId, role };
     const refreshTokenPayload = { uuid: crypto.randomUUID() };
 
     const accessToken = jwt.sign(
@@ -224,8 +226,8 @@ export class AuthService {
         const payload = jwt.verify(jwtString, secret, {
           algorithms: ["HS256"],
         }) as jwt.JwtPayload & UserPayload;
-        const { userId, exp } = payload;
-        return { userId, exp };
+        const { userId, role, exp } = payload;
+        return { userId, role, exp };
       }
     } catch (err) {
       this.logger.error(err);
