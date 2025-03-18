@@ -54,7 +54,7 @@ export class AuthGuard implements CanActivate {
 
     const accessSecret = env.auth.ACCESS_JWT_SECRET;
     try {
-      const { userId, exp } = await this.authService.verify(
+      const { userId, role, exp } = await this.authService.verify(
         accessToken,
         accessSecret,
         TokenEnum.ACCESS
@@ -74,7 +74,7 @@ export class AuthGuard implements CanActivate {
         throw new ForbiddenException(DefaultErrorMessage.FORBIDDEN);
       }
 
-      req.user = { userId, tokens: { accessToken, refreshToken: "" } };
+      req.user = { userId, role, tokens: { accessToken, refreshToken: "" } };
       next();
     } catch (err) {
       /** 리프레시 토큰 재발급

@@ -27,20 +27,20 @@ model User {
   authProvider AuthProvider @relation(fields: [authProviderId], references: [id])
   blocks       UserBlock[]
   events       UserEvent[]
-  admin        AdminUser?
+  role         UserRole?
   profile      UserProfile?
 }
 
-enum UserRole {
+enum Role {
   USER
   ADMIN
 }
 
-model AdminUser {
-  id     Int      @id @default(autoincrement())
-  userId String   @unique
-  role   UserRole @default(USER)
-  user   User     @relation(fields: [userId], references: [id])
+model UserRole {
+  id     Int    @id @default(autoincrement())
+  userId String @unique
+  role   Role   @default(USER)
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model UserProfile {

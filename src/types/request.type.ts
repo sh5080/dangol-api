@@ -4,6 +4,7 @@ export interface AuthRequest extends Request {
   user: {
     userId: string;
     tokens?: { accessToken: string; refreshToken: string };
+    role?: string;
   };
   fileUrl: string;
 }

@@ -39,6 +39,7 @@ export class UserRepository {
   async getUserByEmail(email: string) {
     return await this.prisma.user.findUnique({
       where: { email: email },
+      include: { role: true },
     });
   }
 
@@ -68,6 +69,12 @@ export class UserRepository {
   ): Promise<boolean> {
     const existingCount = await this.prisma.user.count({
       where: { [key]: value },
+    });
+    return existingCount > 0;
+  }
+  async checkUserNickname(nickname: string): Promise<boolean> {
+    const existingCount = await this.prisma.user.count({
+      where: { profile: { nickname: nickname } },
     });
     return existingCount > 0;
   }
