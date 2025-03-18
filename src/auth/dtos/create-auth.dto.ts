@@ -1,4 +1,3 @@
-import { User } from "@prisma/client";
 import { tags } from "typia";
 import { AuthProviderType } from "../../types/enum.type";
 

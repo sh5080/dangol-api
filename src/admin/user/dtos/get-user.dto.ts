@@ -1,3 +1,3 @@
-import { PaginationDto } from "../../../common/dto";
+import { PaginationDto } from "../../../common/dtos/common.dto";
 
 export interface GetUserListDto extends PaginationDto {}
