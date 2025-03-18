@@ -4,6 +4,7 @@ import { EncryptionService } from "../utils/encryption.util";
 import { PrismaRepository } from "./prisma.repository";
 import { promises as fs } from "fs";
 import * as path from "path";
+import { env } from "../configs/env.config";
 
 type ExtendedPrismaClient = PrismaClient & {
   user: {
@@ -24,8 +25,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     private readonly encryptionService: EncryptionService,
     private readonly repository: PrismaRepository
   ) {
-    this._prisma = new PrismaClient();
-    // const encryption = this.encryptionService;
+    this._prisma = new PrismaClient({
+      datasources: {
+        db: { url: env.DATABASE_URL },
+      },
+    });
+    const encryption = this.encryptionService;
     const prismaInstance = this._prisma;
 
     this.prisma = this._prisma.$extends({
@@ -34,75 +39,129 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
           async create(params: Prisma.UserCreateArgs) {
             const { data } = params;
 
-            // if (data.email) {
-            //   params.email = await encryption.encrypt(
-            //     email,
-            //     env.ENCRYPTION_KEY
-            //   );
-            // }
+            if (data.email) {
+              data.email = await encryption.encrypt(
+                data.email,
+                env.ENCRYPTION_KEY
+              );
+            }
+            if (data.phoneNumber) {
+              data.phoneNumber = await encryption.encrypt(
+                data.phoneNumber,
+                env.ENCRYPTION_KEY
+              );
+            }
+
             const user = await prismaInstance.user.create(params);
+            user.email = await encryption.decrypt(
+              user.email,
+              env.ENCRYPTION_KEY
+            );
+
+            user.phoneNumber = await encryption.decrypt(
+              user.phoneNumber,
+              env.ENCRYPTION_KEY
+            );
+
             delete (user as any).password;
             return user;
           },
-          // async findUnique(params: Prisma.UserFindUniqueArgs) {
-          //   if (params.where.email) {
-          //     params.where.email = await encryption.encrypt(
-          //       params.where.email,
-          //       env.ENCRYPTION_KEY
-          //     );
-          //   }
-          //   const result = await prismaInstance.user.findUnique(params);
-          //   if (result && result.email) {
-          //     result.email = await encryption.decrypt(
-          //       result.email,
-          //       env.ENCRYPTION_KEY
-          //     );
-          //   }
-          //   return result;
-          // },
-          // async findFirst(params: Prisma.UserFindFirstArgs) {
-          //   if (params.where?.email) {
-          //     params.where.email = await encryption.encrypt(
-          //       params.where.email as string,
-          //       env.ENCRYPTION_KEY
-          //     );
-          //   }
-          //   const result = await prismaInstance.user.findFirst(params);
-          //   if (result && result.email) {
-          //     result.email = await encryption.decrypt(
-          //       result.email,
-          //       env.ENCRYPTION_KEY
-          //     );
-          //   }
-          //   return result;
-          // },
-          // async findMany(params: Prisma.UserFindManyArgs) {
-          //   if (params?.where?.email) {
-          //     params.where.email = await encryption.encrypt(
-          //       params.where.email as string,
-          //       env.ENCRYPTION_KEY
-          //     );
-          //   }
-          //   const results = await prismaInstance.user.findMany(params);
-          //   for (const result of results) {
-          //     if (result.email) {
-          //       result.email = await encryption.decrypt(
-          //         result.email,
-          //         env.ENCRYPTION_KEY
-          //       );
-          //     }
-          //   }
-          //   return results;
-          // },
-          // async count(params: Prisma.UserCountArgs) {
-          //   if (params?.where?.email) {
-          //     params.where.email = await encryption.encrypt(
-          //       params.where.email as string,
-          //       env.ENCRYPTION_KEY
-          //     );
-          //   }
-          //   return prismaInstance.user.count(params);
-          // },
+          async findUnique(params: Prisma.UserFindUniqueArgs) {
+            if (params.where.email) {
+              params.where.email = await encryption.encrypt(
+                params.where.email,
+                env.ENCRYPTION_KEY
+              );
+            }
+            const result = await prismaInstance.user.findUnique(params);
+            if (result && result.email) {
+              result.email = await encryption.decrypt(
+                result.email,
+                env.ENCRYPTION_KEY
+              );
+            }
+            if (result && result.phoneNumber) {
+              result.phoneNumber = await encryption.decrypt(
+                result.phoneNumber,
+                env.ENCRYPTION_KEY
+              );
+            }
+            return result;
+          },
+          async findFirst(params: Prisma.UserFindFirstArgs) {
+            if (params.where?.email) {
+              params.where.email = await encryption.encrypt(
+                params.where.email as string,
+                env.ENCRYPTION_KEY
+              );
+            }
+            const result = await prismaInstance.user.findFirst(params);
+            if (result && result.email) {
+              result.email = await encryption.decrypt(
+                result.email,
+                env.ENCRYPTION_KEY
+              );
+            }
+            if (result && result.phoneNumber) {
+              result.phoneNumber = await encryption.decrypt(
+                result.phoneNumber,
+                env.ENCRYPTION_KEY
+              );
+            }
+            return result;
+          },
+          async findMany(params: Prisma.UserFindManyArgs) {
+            if (params?.where?.email) {
+              params.where.email = await encryption.encrypt(
+                params.where.email as string,
+                env.ENCRYPTION_KEY
+              );
+            }
+            const results = await prismaInstance.user.findMany(params);
+            for (const result of results) {
+              if (result.email) {
+                result.email = await encryption.decrypt(
+                  result.email,
+                  env.ENCRYPTION_KEY
+                );
+              }
+              if (result.phoneNumber) {
+                result.phoneNumber = await encryption.decrypt(
+                  result.phoneNumber,
+                  env.ENCRYPTION_KEY
+                );
+              }
+            }
+            return results;
+          },
+          async count(params: Prisma.UserCountArgs) {
+            if (params?.where?.email) {
+              params.where.email = await encryption.encrypt(
+                params.where.email as string,
+                env.ENCRYPTION_KEY
+              );
+            }
+            return prismaInstance.user.count(params);
+          },
+          async update(params: Prisma.UserUpdateArgs) {
+            const { data } = params;
+
+            const result = await prismaInstance.user.update(params);
+            if (result.email) {
+              result.email = await encryption.decrypt(
+                result.email,
+                env.ENCRYPTION_KEY
+              );
+            }
+            if (result.phoneNumber) {
+              result.phoneNumber = await encryption.decrypt(
+                result.phoneNumber,
+                env.ENCRYPTION_KEY
+              );
+            }
+            delete (result as any).password;
+            return result;
+          },
         },
       },
     }) as unknown as ExtendedPrismaClient;
