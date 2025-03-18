@@ -1,10 +1,11 @@
+import { Role } from "@prisma/client";
 import { Request } from "express";
 
 export interface AuthRequest extends Request {
   user: {
     userId: string;
     tokens?: { accessToken: string; refreshToken: string };
-    role?: string;
+    role?: Role;
   };
   fileUrl: string;
 }
