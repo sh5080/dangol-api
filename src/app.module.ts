@@ -12,6 +12,7 @@ import { pinoHttpOptions } from "./utils/pino.util";
 import { env } from "./configs/env.config";
 import { RedisModule } from "./redis/redis.module";
 import { UserModule as AdminUserModule } from "./admin/user/user.module";
+import { CommonModule } from "./common/common.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UserModule as AdminUserModule } from "./admin/user/user.module";
     PrismaModule,
     RedisModule,
     AuthModule,
+    CommonModule,
     UserModule,
     AdminUserModule,
     LoggerModule.forRoot({ pinoHttp: pinoHttpOptions }),
