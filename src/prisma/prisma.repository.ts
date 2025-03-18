@@ -5,6 +5,16 @@ import { CreateUserDto } from "../user/dtos/create-user.dto";
 @Injectable()
 export class PrismaRepository {
   constructor(private readonly prisma: PrismaClient) {}
+  async ensurePermission(name: string, description: string): Promise<void> {
+    const permissionExists = await this.prisma.permission.findFirst({
+      where: { name },
+    });
+
+    if (!permissionExists) {
+      await this.prisma.permission.create({ data: { name, description } });
+      console.log(`Permission "${name}" created successfully`);
+    }
+  }
   async ensureUser(
     dto: CreateUserDto,
     userId: string,

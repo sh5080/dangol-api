@@ -178,6 +178,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
       "이벤트 수신동의",
       "마케팅 및 이벤트 정보 수신에 동의합니다."
     );
+    await this.repository.ensurePermission("post", "게시글 권한");
     await this.repository.ensureAuthProvider("NUCODE");
     await this.repository.ensureAuthProvider("KAKAO");
     await this.repository.ensureAuthProvider("GOOGLE");

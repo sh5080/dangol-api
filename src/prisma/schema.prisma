@@ -24,11 +24,12 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  authProvider AuthProvider @relation(fields: [authProviderId], references: [id])
+  authProvider AuthProvider     @relation(fields: [authProviderId], references: [id])
   blocks       UserBlock[]
   events       UserEvent[]
   role         UserRole?
   profile      UserProfile?
+  permissions  UserPermission[]
 }
 
 enum Role {
@@ -86,4 +87,24 @@ model UserEvent {
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   event Event @relation(fields: [eventId], references: [id])
+}
+
+model Permission {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  description     String?
+  userPermissions UserPermission[]
+}
+
+model UserPermission {
+  id           Int      @id @default(autoincrement())
+  userId       String
+  permissionId Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([userId, permissionId])
 }
