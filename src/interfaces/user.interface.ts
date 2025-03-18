@@ -1,4 +1,3 @@
-import { User } from "@prisma/client";
 import { CreateUserDto, CertificationDto } from "../user/dtos/create-user.dto";
 import { CheckUserValueType } from "../types/enum.type";
 import {
@@ -24,6 +23,7 @@ export interface IUserService {
     id: string,
     dto: UpdateUserProfileDto
   ): Promise<UserWithProfile>;
+  blockUser(id: string, reasonId: number): Promise<void>;
   sendCertification(dto: CertificationDto): Promise<void>;
   checkCertification(dto: CheckCertificationDto): Promise<void>;
 }

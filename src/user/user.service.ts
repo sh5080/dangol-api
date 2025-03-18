@@ -225,4 +225,8 @@ export class UserService implements IUserService {
     }
     return userProfile as UserWithProfile;
   }
+
+  async blockUser(id: string, reasonId: number) {
+    await this.userRepository.blockUser(id, reasonId);
+  }
 }
