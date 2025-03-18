@@ -53,9 +53,10 @@ export class MailService {
         title = "회원가입";
         break;
       case Certification.PASSWORD_RESET:
-        title = "비밀번호 찾기";
+        title = "비밀번호 변경";
         break;
     }
+
     const options = {
       ...this.mailOptions,
       to: email,
