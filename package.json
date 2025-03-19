@@ -29,6 +29,7 @@
   "devDependencies": {
     "@golevelup/ts-jest": "^0.6.2",
     "@nestia/benchmark": "^0.4.3",
+    "@nestjs/schematics": "^11.0.4",
     "@nestjs/testing": "^11.0.13",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
