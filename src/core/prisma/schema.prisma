@@ -107,7 +107,7 @@ model Tag {
 
 model RestaurantTag {
   id           Int        @id @default(autoincrement())
-  restaurantId Int
+  restaurantId String
   tagId        Int
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
   tag          Tag        @relation(fields: [tagId], references: [id])
@@ -124,7 +124,7 @@ model RestaurantOwner {
 }
 
 model Restaurant {
-  id                Int                      @id @default(autoincrement())
+  id                String                   @id
   name              String
   description       String?
   imageUrl          String?                  @db.Text
@@ -144,7 +144,7 @@ model Restaurant {
 
 model BusinessHour {
   id           Int        @id @default(autoincrement())
-  restaurantId Int
+  restaurantId String
   openTime     String     @db.VarChar(4) // HHmm
   closeTime    String     @db.VarChar(4) // HHmm
   dayOfWeek    DayOfWeek
@@ -166,7 +166,7 @@ enum DayOfWeek {
 model UserRestaurantFavorite {
   id           Int        @id @default(autoincrement())
   userId       String
-  restaurantId Int
+  restaurantId String
   user         User       @relation(fields: [userId], references: [id])
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 
