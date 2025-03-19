@@ -5,6 +5,7 @@ import { CreateUserDto } from "./dtos/create-user.dto";
 import { CheckUserValueType } from "../types/enum.type";
 import { UpdateUserProfileDto } from "./dtos/update-user.dto";
 import { v4 as uuidv4 } from "uuid";
+import { userDetail } from "./queries/include.query";
 @Injectable()
 export class UserRepository {
   private readonly prisma: Prisma.TransactionClient;
@@ -32,7 +33,7 @@ export class UserRepository {
         events: { create: { eventId: 1, isAgreed: isEventAgree } },
         profile: { create: { affiliation, class: className, nickname } },
       },
-      include: { profile: true, events: true },
+      include: userDetail,
     });
   }
 
@@ -46,14 +47,13 @@ export class UserRepository {
   async getUserProfileById(id: string) {
     return await this.prisma.user.findUnique({
       where: { id: id },
-      include: { profile: true, events: true },
+      include: userDetail,
     });
   }
 
   async getUserWithBlocksByEmail(email: string) {
     return await this.prisma.user.findUnique({
       where: { email: email },
-      // select: selectUserValidate(),
     });
   }
 
@@ -92,7 +92,7 @@ export class UserRepository {
       data: {
         profile: { update: { data: dto } },
       },
-      include: { profile: true },
+      include: userDetail,
     });
   }
 
