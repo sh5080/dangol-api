@@ -5,8 +5,8 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { AuthRequest } from "../types/request.type";
-import { DefaultErrorMessage } from "../types/message.type";
+import { AuthRequest } from "../../types/request.type";
+import { DefaultErrorMessage } from "../../types/message.type";
 
 @Injectable()
 export class RoleGuard implements CanActivate {

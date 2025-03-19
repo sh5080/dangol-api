@@ -4,7 +4,7 @@ import { LoginDto, SocialLoginDto } from "./dtos/create-auth.dto";
 import { TypedBody, TypedRoute } from "@nestia/core";
 import { ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
-import { AuthGuard } from "./auth.guard";
+import { AuthGuard } from "./guards/auth.guard";
 
 @ApiTags("인증")
 @Controller("auth")

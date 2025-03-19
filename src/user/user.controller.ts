@@ -8,7 +8,7 @@ import {
 import { UpdateUserProfileDto } from "./dtos/update-user.dto";
 import { ApiTags } from "@nestjs/swagger";
 import { TypedBody, TypedRoute } from "@nestia/core";
-import { AuthGuard } from "../auth/auth.guard";
+import { AuthGuard } from "../auth/guards/auth.guard";
 import { AuthRequest } from "../types/request.type";
 import { CheckNicknameDto } from "./dtos/get-user.dto";
 

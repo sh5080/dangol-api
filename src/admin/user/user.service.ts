@@ -19,7 +19,7 @@ export class UserService implements IUserService {
     if (!userList) {
       throw new ForbiddenException(UserErrorMessage.USER_NOT_FOUND);
     }
-    return userList;
+    return userList as UserDetail[];
   }
 
   async getUserDetail(id: string) {

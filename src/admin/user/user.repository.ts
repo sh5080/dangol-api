@@ -15,6 +15,7 @@ export class UserRepository {
     return await this.prisma.user.findMany({
       skip: (page - 1) * pageSize,
       take: pageSize,
+      include: { profile: true, events: true, permissions: true },
     });
   }
 

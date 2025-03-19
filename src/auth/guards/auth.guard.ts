@@ -7,13 +7,16 @@ import {
   UnauthorizedException,
   ForbiddenException,
 } from "@nestjs/common";
-import { AuthRequest } from "../types/request.type";
-import { AuthService } from "./auth.service";
-import { AuthErrorMessage, DefaultErrorMessage } from "../types/message.type";
+import { AuthRequest } from "../../types/request.type";
+import { AuthService } from "../auth.service";
+import {
+  AuthErrorMessage,
+  DefaultErrorMessage,
+} from "../../types/message.type";
 import { decode } from "jsonwebtoken";
-import { env } from "../configs/env.config";
-import { BlackListEnum, TokenEnum } from "../types/enum.type";
-import { UserPayload } from "../types/data.type";
+import { env } from "../../configs/env.config";
+import { BlackListEnum, TokenEnum } from "../../types/enum.type";
+import { UserPayload } from "../../types/data.type";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -82,8 +85,9 @@ export class AuthGuard implements CanActivate {
        */
       if (err instanceof UnauthorizedException) {
         const cookies = req.headers.cookie?.split("; ") || [];
+        console.log(">cookies: ", cookies);
         const refreshToken = cookies
-          .find((cookie) => cookie.startsWith("refresh="))
+          .find((cookie) => cookie.startsWith("Refresh="))
           ?.split("=")[1] as string;
         if (!refreshToken) {
           throw new UnauthorizedException(
@@ -119,7 +123,7 @@ export class AuthGuard implements CanActivate {
         };
         // 토큰 재발급 (RTR)
         res.setHeader("Authorization", `Bearer ${newAccessToken}`);
-        res.cookie("refresh", newRefreshToken, {
+        res.cookie("Refresh", newRefreshToken, {
           httpOnly: true,
           secure: env.NODE_ENV !== "development",
         });

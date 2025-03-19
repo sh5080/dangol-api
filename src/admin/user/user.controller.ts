@@ -1,11 +1,11 @@
 import { TypedBody, TypedParam, TypedQuery, TypedRoute } from "@nestia/core";
 import { Controller, UseGuards, Req, Inject } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { AuthGuard } from "../../auth/auth.guard";
-import { Roles } from "../../decorators/role.decorator";
+import { AuthGuard } from "../../auth/guards/auth.guard";
+import { Roles } from "../../decorators/access-control.decorator";
 import { GetUserListDto } from "./dtos/get-user.dto";
 import { IUserService } from "../interfaces/user.interface";
-import { RoleGuard } from "../../auth/role.guard";
+import { RoleGuard } from "../../auth/guards/role.guard";
 import { Role } from "@prisma/client";
 import { UpdateUserPermissionDto } from "./dtos/update-user.dto";
 
