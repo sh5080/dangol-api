@@ -25,6 +25,7 @@ export const DefaultErrorMessage = {
   SYNTAX: "유효하지 않은 입력값입니다.",
   UNCORRECTED_FORM: "유효하지 않은 형식입니다.",
   REQUIRED: "필수 입력값을 입력해주세요.",
+  BAD_REQUEST: "잘못된 요청입니다.",
   UNEXPECTED_1: "예기치 않은 오류입니다.",
   UNEXPECTED_2: "일시적인 오류입니다. 잠시 후 다시 시도해주세요.",
   SEARCH_NOT_FOUND: "검색 결과가 없습니다.",
