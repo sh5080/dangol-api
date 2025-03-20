@@ -21,13 +21,13 @@ export class PermissionGuard implements CanActivate {
       "permissions",
       context.getHandler()
     );
+
     if (!requiredPermissions) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-
     if (!user || !user.userId) {
       throw new ForbiddenException("인증이 필요합니다.");
     }
@@ -39,7 +39,7 @@ export class PermissionGuard implements CanActivate {
     const userPermissions =
       await this.prismaService.prisma.userPermission.findMany({
         where: { userId: user.userId },
-        include: { permission: true },
+        select: { permission: { select: { name: true } } },
       });
 
     // 필요한 권한이 있는지 확인
