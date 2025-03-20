@@ -12,16 +12,18 @@ import { RedisService } from "./redis.service";
         url: `redis://${env.REDIS_HOST}:${env.REDIS_PORT}`,
         options: {
           password: env.REDIS_PASSWORD,
-          maxRetriesPerRequest: 1,
+          connectTimeout: 10000,
+          commandTimeout: 5000,
+          keepAlive: 10000,
+          maxRetriesPerRequest: 3,
           enableReadyCheck: false,
+          retryStrategy: (times) => {
+            return Math.min(times * 200, 5000);
+          },
           reconnectOnError: (err) => {
             console.error("Redis reconnectOnError:", err);
             return true;
           },
-          retryStrategy: (times) => {
-            return Math.min(times * 100, 3000);
-          },
-          disconnectTimeout: 2000,
         },
       }),
     }),
