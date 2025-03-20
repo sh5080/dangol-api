@@ -14,6 +14,7 @@ import { RedisModule } from "@core/redis/redis.module";
 import { CommonModule } from "@modules/common/common.module";
 import { MetricsModule } from "@modules/metrics/metrics.module";
 import { MetricsInterceptor } from "@shared/interceptors/metrics.interceptor";
+import { RestaurantModule } from "./modules/restaurant/restaurant.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MetricsInterceptor } from "@shared/interceptors/metrics.interceptor";
     UserModule,
     LoggerModule.forRoot({ pinoHttp: pinoHttpOptions }),
     MetricsModule,
+    RestaurantModule,
   ],
   controllers: [AppController],
   providers: [
