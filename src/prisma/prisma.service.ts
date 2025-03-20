@@ -190,15 +190,26 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     await this.repository.ensureBlockReason("user reported");
     await this.repository.ensureBlockReason("other inquiries");
     await this.seedUsers();
+    await this.seedCategories();
   }
 
   async seedUsers() {
-    const filePath = path.join(__dirname, "../../data/test-user.json");
+    const filePath = path.join(__dirname, "../../test/data/user.json");
     const data = await fs.readFile(filePath, "utf-8");
     const users = JSON.parse(data);
 
     for (const user of users) {
       await this.repository.ensureUser(user, user.id, 1);
+    }
+  }
+
+  async seedCategories() {
+    const filePath = path.join(__dirname, "../../test/data/post-category.json");
+    const data = await fs.readFile(filePath, "utf-8");
+    const categories = JSON.parse(data);
+
+    for (const category of categories) {
+      await this.repository.ensureCategory(category.name);
     }
   }
 

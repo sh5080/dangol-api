@@ -13,6 +13,7 @@ import { env } from "./configs/env.config";
 import { RedisModule } from "./redis/redis.module";
 import { UserModule as AdminUserModule } from "./admin/user/user.module";
 import { CommonModule } from "./common/common.module";
+import { PostModule } from "./post/post.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CommonModule } from "./common/common.module";
     AuthModule,
     CommonModule,
     UserModule,
+    PostModule,
     AdminUserModule,
     LoggerModule.forRoot({ pinoHttp: pinoHttpOptions }),
   ],

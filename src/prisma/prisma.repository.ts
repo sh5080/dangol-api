@@ -81,4 +81,14 @@ export class PrismaRepository {
       console.log(`BlockReason "${description}" created successfully`);
     }
   }
+  async ensureCategory(name: string): Promise<void> {
+    const categoryExists = await this.prisma.category.findFirst({
+      where: { name },
+    });
+
+    if (!categoryExists) {
+      await this.prisma.category.create({ data: { name } });
+      console.log(`Category "${name}" created successfully`);
+    }
+  }
 }
