@@ -108,3 +108,7 @@ export const Order = {
   ASC: "asc",
   DESC: "desc",
 } as const;
+
+export const Permission = {
+  POST_CREATE: "post:create",
+} as const;
