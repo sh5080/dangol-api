@@ -114,6 +114,7 @@ model Post {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
+  image       String?  @db.Text
   content     String
   authorId    String
   createdAt   DateTime @default(now())
