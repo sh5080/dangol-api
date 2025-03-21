@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { CreatePostDto } from "./dtos/create-post.dto";
 import { postDetail } from "./queries/include.query";
 import { PaginationDto } from "../common/dtos/common.dto";
+import { UpdatePostDto } from "./dtos/update-post.dto";
 
 @Injectable()
 export class PostRepository {
@@ -42,6 +43,30 @@ export class PostRepository {
       include: postDetail,
       skip: (page - 1) * pageSize,
       take: pageSize,
+    });
+  }
+
+  async updatePost(id: number, dto: UpdatePostDto) {
+    const { categoryIds, ...rest } = dto;
+
+    return await this.prismaService.prisma.$transaction(async (tx) => {
+      // 1. 기존 카테고리 연결 모두 삭제
+      await tx.postCategory.deleteMany({ where: { postId: id } });
+
+      // 2. 새 카테고리 연결 생성
+      return await tx.post.update({
+        where: { id },
+        data: {
+          ...rest,
+          categories: {
+            create:
+              categoryIds?.map((categoryId) => ({
+                category: { connect: { id: categoryId } },
+              })) || [],
+          },
+        },
+        include: { categories: true },
+      });
     });
   }
 }

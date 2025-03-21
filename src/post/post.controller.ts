@@ -9,6 +9,7 @@ import { AuthRequest } from "../types/request.type";
 import { Permissions } from "../decorators/access-control.decorator";
 import { Permission } from "../types/enum.type";
 import { PaginationDto } from "../common/dtos/common.dto";
+import { UpdatePostDto } from "./dtos/update-post.dto";
 
 @ApiTags("게시글")
 @Controller("post")
@@ -24,17 +25,27 @@ export class PostController {
    */
   @TypedRoute.Post()
   @UseGuards(AuthGuard, PermissionGuard)
-  @Permissions(Permission.POST_CREATE)
+  @Permissions(Permission.POST)
   async createPost(@Req() req: AuthRequest, @TypedBody() dto: CreatePostDto) {
     const userId = req.user.userId;
     return this.postService.createPost(userId, dto);
+  }
+  /**
+   * @summary 게시글 목록 조회
+   * @param dto 페이지네이션 dto
+   * @returns 게시글 목록
+   * @throws 404 검색 결과가 존재하지 않습니다.
+   */
+  @TypedRoute.Get("list")
+  async getPostList(@TypedQuery() dto: PaginationDto) {
+    return this.postService.getPostList(dto);
   }
 
   /**
    * @summary 특정 게시글 조회
    * @param id 게시글 id
    * @returns 게시글
-   * @throws 404 게시글을 찾을 수 없습니다.
+   * @throws 404 검색 결과가 존재하지 않습니다.
    */
   @TypedRoute.Get(":id")
   async getPost(@TypedParam("id") id: number) {
@@ -42,12 +53,23 @@ export class PostController {
   }
 
   /**
-   * @summary 게시글 목록 조회
-   * @param dto 페이지네이션 dto
-   * @returns 게시글 목록
+   * @summary 게시글 수정
+   * @security bearer
+   * @param id 게시글 id
+   * @param dto 게시글 수정 dto
+   * @returns 게시글
+   * @throws 404 검색 결과가 존재하지 않습니다.
+   * @throws 403 접근 권한이 없습니다.
    */
-  @TypedRoute.Get("list")
-  async getPostList(@TypedQuery() dto: PaginationDto) {
-    return this.postService.getPostList(dto);
+  @TypedRoute.Put(":id")
+  @UseGuards(AuthGuard, PermissionGuard)
+  @Permissions(Permission.POST)
+  async updatePost(
+    @Req() req: AuthRequest,
+    @TypedParam("id") id: number,
+    @TypedBody() dto: UpdatePostDto
+  ) {
+    const userId = req.user.userId;
+    return this.postService.updatePost(userId, id, dto);
   }
 }
