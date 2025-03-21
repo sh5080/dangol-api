@@ -8,8 +8,8 @@ export class CommonService {
 
   async getCommonSettings(): Promise<Settings> {
     const permissions = await this.commonRepository.getPermissionList();
+    const categories = await this.commonRepository.getCategoryList();
 
-    const settings: Settings = { permissions };
-    return settings;
+    return { permissions, categories };
   }
 }
