@@ -28,8 +28,8 @@ export const DefaultErrorMessage = {
   BAD_REQUEST: "잘못된 요청입니다.",
   UNEXPECTED_1: "예기치 않은 오류입니다.",
   UNEXPECTED_2: "일시적인 오류입니다. 잠시 후 다시 시도해주세요.",
-  SEARCH_NOT_FOUND: "검색 결과가 없습니다.",
-  FORBIDDEN: "접근이 금지되었습니다.",
+  SEARCH_NOT_FOUND: "검색 결과가 존재하지 않습니다.",
+  FORBIDDEN: "접근 권한이 없습니다.",
   DUPLICATED_ID: "ID는 중복될 수 없습니다.",
   NOT_FOUND: "값이 존재하지 않습니다.",
 } as const;

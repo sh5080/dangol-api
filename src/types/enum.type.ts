@@ -110,5 +110,5 @@ export const Order = {
 } as const;
 
 export const Permission = {
-  POST_CREATE: "post:create",
+  POST: "post",
 } as const;
