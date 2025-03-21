@@ -18,6 +18,7 @@ export const UserErrorMessage = {
   EMAIL_CONFLICTED: "이메일이 이미 사용 중입니다.",
   NICKNAME_CONFLICTED: "닉네임이 이미 사용 중입니다.",
   INVALID_CODE: "유효하지 않은 코드입니다.",
+  PERMISSION_NOT_FOUND: "권한이 없습니다.",
 } as const;
 
 export const DefaultErrorMessage = {
