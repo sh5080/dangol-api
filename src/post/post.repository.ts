@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { Prisma } from "@prisma/client";
 import { CreatePostDto } from "./dtos/create-post.dto";
+import { postDetail } from "./queries/include.query";
+import { PaginationDto } from "../common/dtos/common.dto";
 
 @Injectable()
 export class PostRepository {
@@ -24,6 +26,22 @@ export class PostRepository {
         },
       },
       include: { categories: true },
+    });
+  }
+
+  async getPost(id: number) {
+    return await this.prisma.post.findUnique({
+      where: { id },
+      include: postDetail,
+    });
+  }
+
+  async getPostList(dto: PaginationDto) {
+    const { page, pageSize } = dto;
+    return await this.prisma.post.findMany({
+      include: postDetail,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
   }
 }
