@@ -14,6 +14,16 @@ import { UpdatePostDto } from "./dtos/update-post.dto";
 export class PostService implements IPostService {
   constructor(private readonly postRepository: PostRepository) {}
 
+  private async checkPostAuthor(userId: string, id: number) {
+    const post = await this.postRepository.getPost(id);
+    if (!post) {
+      throw new NotFoundException(DefaultErrorMessage.SEARCH_NOT_FOUND);
+    }
+    if (post.authorId !== userId) {
+      throw new ForbiddenException(DefaultErrorMessage.FORBIDDEN);
+    }
+  }
+
   async createPost(userId: string, dto: CreatePostDto) {
     return await this.postRepository.createPost(userId, dto);
   }
@@ -35,13 +45,12 @@ export class PostService implements IPostService {
   }
 
   async updatePost(userId: string, id: number, dto: UpdatePostDto) {
-    const post = await this.postRepository.getPost(id);
-    if (!post) {
-      throw new NotFoundException(DefaultErrorMessage.SEARCH_NOT_FOUND);
-    }
-    if (post.authorId !== userId) {
-      throw new ForbiddenException(DefaultErrorMessage.FORBIDDEN);
-    }
+    await this.checkPostAuthor(userId, id);
     return await this.postRepository.updatePost(id, dto);
+  }
+
+  async deletePost(userId: string, id: number) {
+    await this.checkPostAuthor(userId, id);
+    return await this.postRepository.deletePost(id);
   }
 }

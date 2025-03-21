@@ -72,4 +72,20 @@ export class PostController {
     const userId = req.user.userId;
     return this.postService.updatePost(userId, id, dto);
   }
+
+  /**
+   * @summary 게시글 삭제
+   * @security bearer
+   * @param id 게시글 id
+   * @returns 게시글
+   * @throws 404 검색 결과가 존재하지 않습니다.
+   * @throws 403 접근 권한이 없습니다.
+   */
+  @TypedRoute.Delete(":id")
+  @UseGuards(AuthGuard, PermissionGuard)
+  @Permissions(Permission.POST)
+  async deletePost(@Req() req: AuthRequest, @TypedParam("id") id: number) {
+    const userId = req.user.userId;
+    return this.postService.deletePost(userId, id);
+  }
 }

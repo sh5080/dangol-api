@@ -69,4 +69,11 @@ export class PostRepository {
       });
     });
   }
+
+  async deletePost(id: number) {
+    return await this.prisma.post.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
 }
