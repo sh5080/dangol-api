@@ -4,17 +4,16 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { UserRepository } from "./user.repository";
-import { GetUserListDto } from "./dtos/get-user.dto";
 import { IUserService } from "../interfaces/user.interface";
 import { UserErrorMessage } from "../../types/message.type";
 import { UserDetail } from "./dtos/response.dto";
 import { UpdateUserPermissionDto } from "./dtos/update-user.dto";
-
+import { PaginationDto } from "../../common/dtos/common.dto";
 @Injectable()
 export class UserService implements IUserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async getUserList(dto: GetUserListDto) {
+  async getUserList(dto: PaginationDto) {
     const userList = await this.userRepository.getUserList(dto);
     if (!userList) {
       throw new ForbiddenException(UserErrorMessage.USER_NOT_FOUND);

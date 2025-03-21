@@ -3,11 +3,11 @@ import { Controller, UseGuards, Req, Inject } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "../../auth/guards/auth.guard";
 import { Roles } from "../../decorators/access-control.decorator";
-import { GetUserListDto } from "./dtos/get-user.dto";
 import { IUserService } from "../interfaces/user.interface";
 import { RoleGuard } from "../../auth/guards/role.guard";
 import { Role } from "@prisma/client";
 import { UpdateUserPermissionDto } from "./dtos/update-user.dto";
+import { PaginationDto } from "../../common/dtos/common.dto";
 
 @ApiTags("어드민")
 @Controller("admin/user")
@@ -26,7 +26,7 @@ export class UserController {
   @TypedRoute.Get("list")
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(Role.ADMIN)
-  async getUserList(@TypedQuery() dto: GetUserListDto) {
+  async getUserList(@TypedQuery() dto: PaginationDto) {
     return this.userService.getUserList(dto);
   }
   /**

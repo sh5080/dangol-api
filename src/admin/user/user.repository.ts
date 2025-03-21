@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { Prisma } from "@prisma/client";
-import { GetUserListDto } from "./dtos/get-user.dto";
 import { UpdateUserPermissionDto } from "./dtos/update-user.dto";
+import { PaginationDto } from "../../common/dtos/common.dto";
+import { userDetail } from "../../user/queries/include.query";
 @Injectable()
 export class UserRepository {
   private readonly prisma: Prisma.TransactionClient;
@@ -10,19 +11,19 @@ export class UserRepository {
   constructor(private readonly prismaService: PrismaService) {
     this.prisma = this.prismaService.prisma;
   }
-  async getUserList(dto: GetUserListDto) {
+  async getUserList(dto: PaginationDto) {
     const { page, pageSize } = dto;
     return await this.prisma.user.findMany({
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: { profile: true, events: true, permissions: true },
+      include: userDetail,
     });
   }
 
   async getUserDetail(id: string) {
     return await this.prisma.user.findUnique({
       where: { id },
-      include: { profile: true, events: true, permissions: true },
+      include: userDetail,
     });
   }
   async getUserPermissions(userId: string) {
