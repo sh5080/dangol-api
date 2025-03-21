@@ -43,8 +43,6 @@ export class AuthGuard implements CanActivate {
     next: NextFunction
   ) {
     const authorization = req.headers.authorization;
-    console.log(">req.url: ", req.url);
-    console.log(">req.headers: ", req.headers);
 
     if (!authorization) {
       throw new BadRequestException(AuthErrorMessage.LOGIN_REQUIRED);
@@ -85,7 +83,6 @@ export class AuthGuard implements CanActivate {
        */
       if (err instanceof UnauthorizedException) {
         const cookies = req.headers.cookie?.split("; ") || [];
-        console.log(">cookies: ", cookies);
         const refreshToken = cookies
           .find((cookie) => cookie.startsWith("Refresh="))
           ?.split("=")[1] as string;

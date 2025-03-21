@@ -14,7 +14,7 @@
     "start:dev": "NODE_ENV=development PORT=8080 nest start --watch",
     "start:test": "NODE_ENV=test PORT=8082 nest start --watch",
     "start:debug": "NODE_ENV=development nest start --debug --watch",
-    "start:prod": "NODE_ENV=production nest start",
+    "start:prod": "NODE_ENV=production PORT=8082 nest start",
     "build": "nest build",
     "nestia": "npx nestia swagger",
     "patch": "ts-patch install && typia patch",

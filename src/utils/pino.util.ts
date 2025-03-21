@@ -1,8 +1,8 @@
 import { randomUUID } from "crypto";
 import { Options } from "pino-http";
 
-const isDevelopment = process.env.NODE_ENV === "development";
-
+const isDevelopment =
+  process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development";
 export const pinoHttpOptions: Options = {
   base: undefined,
   genReqId: (req, res) => req.id,
