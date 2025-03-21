@@ -39,27 +39,27 @@ export class UserRepository {
 
   async getUserByEmail(email: string) {
     return await this.prisma.user.findUnique({
-      where: { email: email },
+      where: { email: email, deletedAt: null },
       include: { role: true },
     });
   }
 
   async getUserProfileById(id: string) {
     return await this.prisma.user.findUnique({
-      where: { id: id },
+      where: { id: id, deletedAt: null },
       include: userDetail,
     });
   }
 
   async getUserWithBlocksByEmail(email: string) {
     return await this.prisma.user.findUnique({
-      where: { email: email },
+      where: { email: email, deletedAt: null },
     });
   }
 
   async getUserById(id: string) {
     return await this.prisma.user.findUnique({
-      where: { id: id },
+      where: { id: id, deletedAt: null },
     });
   }
 
@@ -68,27 +68,27 @@ export class UserRepository {
     value: string
   ): Promise<boolean> {
     const existingCount = await this.prisma.user.count({
-      where: { [key]: value },
+      where: { [key]: value, deletedAt: null },
     });
     return existingCount > 0;
   }
   async checkUserNickname(nickname: string): Promise<boolean> {
     const existingCount = await this.prisma.user.count({
-      where: { profile: { nickname: nickname } },
+      where: { profile: { nickname: nickname }, deletedAt: null },
     });
     return existingCount > 0;
   }
 
   async updatePassword(id: string, newPassword: string) {
     return await this.prisma.user.update({
-      where: { id: id },
+      where: { id: id, deletedAt: null },
       data: { password: newPassword },
     });
   }
 
   async updateUserProfile(id: string, dto: UpdateUserProfileDto) {
     return await this.prisma.user.update({
-      where: { id: id },
+      where: { id: id, deletedAt: null },
       data: {
         profile: { update: { data: dto } },
       },
