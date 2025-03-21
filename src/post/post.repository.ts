@@ -32,7 +32,7 @@ export class PostRepository {
 
   async getPost(id: number) {
     return await this.prisma.post.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: postDetail,
     });
   }
@@ -40,6 +40,7 @@ export class PostRepository {
   async getPostList(dto: PaginationDto) {
     const { page, pageSize } = dto;
     return await this.prisma.post.findMany({
+      where: { deletedAt: null },
       include: postDetail,
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -55,7 +56,7 @@ export class PostRepository {
 
       // 2. 새 카테고리 연결 생성
       return await tx.post.update({
-        where: { id },
+        where: { id, deletedAt: null },
         data: {
           ...rest,
           categories: {
@@ -72,7 +73,7 @@ export class PostRepository {
 
   async deletePost(id: number) {
     return await this.prisma.post.update({
-      where: { id },
+      where: { id, deletedAt: null },
       data: { deletedAt: new Date() },
     });
   }

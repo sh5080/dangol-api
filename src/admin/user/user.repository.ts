@@ -14,6 +14,7 @@ export class UserRepository {
   async getUserList(dto: PaginationDto) {
     const { page, pageSize } = dto;
     return await this.prisma.user.findMany({
+      where: { deletedAt: null },
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: userDetail,
@@ -22,7 +23,7 @@ export class UserRepository {
 
   async getUserDetail(id: string) {
     return await this.prisma.user.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: userDetail,
     });
   }

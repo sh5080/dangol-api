@@ -15,22 +15,22 @@ model AuthProvider {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
+  id             String           @id @default(uuid())
+  email          String           @unique
   password       String? // 소셜 로그인만 사용하는 경우 null 가능
   name           String
   authProviderId Int // 인증 제공자
   phoneNumber    String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  authProvider AuthProvider     @relation(fields: [authProviderId], references: [id])
-  blocks       UserBlock[]
-  events       UserEvent[]
-  role         UserRole?
-  profile      UserProfile?
-  permissions  UserPermission[]
-  posts        Post[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  authProvider   AuthProvider     @relation(fields: [authProviderId], references: [id])
+  blocks         UserBlock[]
+  events         UserEvent[]
+  role           UserRole?
+  profile        UserProfile?
+  permissions    UserPermission[]
+  posts          Post[]
 }
 
 enum Role {
@@ -111,17 +111,17 @@ model UserPermission {
 }
 
 model Post {
-  id          Int      @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   title       String
   description String?
-  image       String?  @db.Text
+  image       String?        @db.Text
   content     String
   authorId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  author     User           @relation(fields: [authorId], references: [id])
-  categories PostCategory[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?
+  author      User           @relation(fields: [authorId], references: [id])
+  categories  PostCategory[]
 }
 
 model Category {
