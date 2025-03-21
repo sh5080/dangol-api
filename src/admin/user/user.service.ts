@@ -15,7 +15,7 @@ export class UserService implements IUserService {
 
   async getUserList(dto: PaginationDto) {
     const userList = await this.userRepository.getUserList(dto);
-    if (!userList) {
+    if (!userList.length) {
       throw new ForbiddenException(UserErrorMessage.USER_NOT_FOUND);
     }
     return userList as UserDetail[];
