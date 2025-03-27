@@ -10,12 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   app.enableCors({
-    origin: [
-      "http://localhost:3000",
-      "https://dev.nuworks.io",
-      "https://nuworks.io",
-      "https://www.nuworks.io",
-    ],
+    origin: ["http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     exposedHeaders: ["Authorization"],

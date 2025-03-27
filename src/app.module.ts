@@ -11,7 +11,6 @@ import { LoggerModule } from "nestjs-pino";
 import { pinoHttpOptions } from "./utils/pino.util";
 import { env } from "./configs/env.config";
 import { RedisModule } from "./redis/redis.module";
-import { UserModule as AdminUserModule } from "./admin/user/user.module";
 import { CommonModule } from "./common/common.module";
 import { PostModule } from "./post/post.module";
 
@@ -27,7 +26,6 @@ import { PostModule } from "./post/post.module";
     CommonModule,
     UserModule,
     PostModule,
-    AdminUserModule,
     LoggerModule.forRoot({ pinoHttp: pinoHttpOptions }),
   ],
   controllers: [AppController],
