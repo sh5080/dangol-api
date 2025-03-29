@@ -1,0 +1,15 @@
+name: Deployment Notification
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send webhook to Swit
+        run: |
+          curl -X POST -H "Content-type: application/json" \
+          --data '{"text":"Master 브랜치에 변경사항이 감지되었습니다. 배포를 시작합니다."}' \
+          "${{ secrets.SWIT_WEBHOOK_URL }}"
