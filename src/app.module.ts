@@ -12,7 +12,6 @@ import { pinoHttpOptions } from "./utils/pino.util";
 import { env } from "./configs/env.config";
 import { RedisModule } from "./redis/redis.module";
 import { CommonModule } from "./common/common.module";
-import { PostModule } from "./post/post.module";
 
 @Module({
   imports: [
@@ -25,7 +24,6 @@ import { PostModule } from "./post/post.module";
     AuthModule,
     CommonModule,
     UserModule,
-    PostModule,
     LoggerModule.forRoot({ pinoHttp: pinoHttpOptions }),
   ],
   controllers: [AppController],

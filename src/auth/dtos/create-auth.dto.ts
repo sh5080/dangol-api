@@ -7,10 +7,8 @@ interface BaseLoginDto {
 }
 
 export interface LoginDto extends BaseLoginDto {
-  password: string &
-    tags.MinLength<8> &
-    tags.MaxLength<16> &
-    tags.Example<"test123123!">;
+  // password: string &
+  //   tags.MinLength<8> &
+  //   tags.MaxLength<16> &
+  //   tags.Example<"test123123!">;
 }
-
-export interface SocialLoginDto extends BaseLoginDto {}

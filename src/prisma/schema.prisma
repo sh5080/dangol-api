@@ -15,22 +15,22 @@ model AuthProvider {
 }
 
 model User {
-  id             String           @id @default(uuid())
-  email          String           @unique
-  password       String? // 소셜 로그인만 사용하는 경우 null 가능
-  name           String
-  authProviderId Int // 인증 제공자
-  phoneNumber    String
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  deletedAt      DateTime?
-  authProvider   AuthProvider     @relation(fields: [authProviderId], references: [id])
-  blocks         UserBlock[]
-  events         UserEvent[]
-  role           UserRole?
-  profile        UserProfile?
-  permissions    UserPermission[]
-  posts          Post[]
+  id                  String                   @id
+  email               String                   @unique
+  name                String
+  authProviderId      Int
+  phoneNumber         String
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  deletedAt           DateTime?
+  role                Role                     @default(USER)
+  authProvider        AuthProvider             @relation(fields: [authProviderId], references: [id])
+  blocks              UserBlock[]
+  events              UserEvent[]
+  permissions         UserPermission[]
+  profile             UserProfile?
+  restaurantOwner     RestaurantOwner?
+  restaurantFavorites UserRestaurantFavorite[]
 }
 
 enum Role {
@@ -38,23 +38,11 @@ enum Role {
   ADMIN
 }
 
-model UserRole {
-  id     Int    @id @default(autoincrement())
-  userId String @unique
-  role   Role   @default(USER)
-  user   User   @relation(fields: [userId], references: [id])
-}
-
 model UserProfile {
-  id           Int     @id @default(autoincrement())
-  userId       String  @unique
-  nickname     String? // 닉네임
-  introduction String? // 자기소개
-  interests    String? // 관심사
-  image        String? @db.Text // 프로필 이미지 url
-  affiliation  String? // 소속
-  class        String? // 학력 /직장
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String  @unique
+  nickname String?
+  imageUrl String? @db.Text
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserBlock {
@@ -110,31 +98,77 @@ model UserPermission {
   @@unique([userId, permissionId])
 }
 
-model Post {
-  id          Int            @id @default(autoincrement())
-  title       String
-  description String?
-  image       String?        @db.Text
-  content     String
-  authorId    String
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  deletedAt   DateTime?
-  author      User           @relation(fields: [authorId], references: [id])
-  categories  PostCategory[]
-}
-
-model Category {
-  id          Int            @id @default(autoincrement())
+model Tag {
+  id          Int             @id @default(autoincrement())
   name        String
   description String?
-  posts       PostCategory[]
+  restaurants RestaurantTag[]
 }
 
-model PostCategory {
-  id         Int      @id @default(autoincrement())
-  postId     Int
-  categoryId Int
-  post       Post     @relation(fields: [postId], references: [id])
-  category   Category @relation(fields: [categoryId], references: [id])
+model RestaurantTag {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  tagId        Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  tag          Tag        @relation(fields: [tagId], references: [id])
+}
+
+model RestaurantOwner {
+  id          Int          @id @default(autoincrement())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id])
+  restaurants Restaurant[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+}
+
+model Restaurant {
+  id                Int                      @id @default(autoincrement())
+  name              String
+  description       String?
+  imageUrl          String?                  @db.Text
+  address           String
+  phoneNumber       String
+  ownerId           Int
+  isClosed          Boolean                  @default(false)
+  deliveryAvailable Boolean                  @default(false)
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  deletedAt         DateTime?
+  owner             RestaurantOwner          @relation(fields: [ownerId], references: [id])
+  businessHours     BusinessHour[]
+  tags              RestaurantTag[]
+  userFavorite      UserRestaurantFavorite[]
+}
+
+model BusinessHour {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  openTime     String     @db.VarChar(4) // HHmm
+  closeTime    String     @db.VarChar(4) // HHmm
+  dayOfWeek    DayOfWeek
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@unique([restaurantId, dayOfWeek])
+}
+
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+model UserRestaurantFavorite {
+  id           Int        @id @default(autoincrement())
+  userId       String
+  restaurantId Int
+  user         User       @relation(fields: [userId], references: [id])
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@unique([userId, restaurantId])
 }

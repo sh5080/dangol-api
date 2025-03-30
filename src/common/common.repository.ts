@@ -12,7 +12,4 @@ export class CommonRepository {
   async getPermissionList() {
     return await this.prisma.permission.findMany();
   }
-  async getCategoryList() {
-    return await this.prisma.category.findMany();
-  }
 }

@@ -20,7 +20,7 @@ const NESTIA_CONFIG: INestiaConfig = {
     },
     servers: [
       {
-        url: `https://alive-mollusk-mildly.ngrok-free.app`,
+        url: `https://gratefully-genuine-katydid.ngrok-free.app`,
         description: "Dev Server",
       },
       {

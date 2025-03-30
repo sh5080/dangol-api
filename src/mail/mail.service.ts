@@ -17,7 +17,7 @@ export class MailService {
       requireTLS: true,
       auth: { user: env.mail.MAIL_USER, pass: env.mail.MAIL_PASSWORD },
     });
-    this.mailOptions = { from: "info@nucode.co.kr" };
+    this.mailOptions = { from: "info@test.co.kr" };
   }
 
   /**
@@ -26,10 +26,10 @@ export class MailService {
   private getCertificationTemplate(authNum: number, purpose: string): string {
     return `
       <div style="width: 600px; height: 600px; text-align: center;">
-          <h2 style="color: #006452;">NUCODE</h2>
-          <p style="color: #151515;">누코드 ${purpose} 메일인증</p>
+          <h2 style="color: #006452;">test</h2>
+          <p style="color: #151515;">테스트 ${purpose} 메일인증</p>
           <br/>
-          <p style="color: #151515;">누코드 계정에 등록한 이메일 주소가 올바른지 확인하기 위한 인증번호입니다.</p>
+          <p style="color: #151515;">테스트 계정에 등록한 이메일 주소가 올바른지 확인하기 위한 인증번호입니다.</p>
           <p style="color: #151515;">아래의 인증번호를 복사하여 이메일 인증을 완료해 주세요.</p>
           <p style="color: #151515;">인증번호: <span style="color: #006452; font-weight: 700; font-size: 20px">${authNum}</span></p>
           <br/>
@@ -60,7 +60,7 @@ export class MailService {
     const options = {
       ...this.mailOptions,
       to: email,
-      subject: `누코드 ${title} 인증 메일입니다.`,
+      subject: `테스트 ${title} 인증 메일입니다.`,
       html: this.getCertificationTemplate(authNum, title),
     };
 

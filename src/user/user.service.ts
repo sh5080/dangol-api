@@ -63,11 +63,7 @@ export class UserService implements IUserService {
 
   async createUser(dto: CreateUserDto) {
     const { email, password, certificationCode, authType, nickname } = dto;
-    if (authType === AuthProvider.NUCODE && !certificationCode) {
-      throw new ForbiddenException(
-        "누코드 로그인은 이메일 인증이 선행되어야 합니다."
-      );
-    }
+
     // 이메일 중복 검사
     const existingUser = await this.userRepository.getUserByEmail(email);
     if (existingUser) {
@@ -85,10 +81,7 @@ export class UserService implements IUserService {
     }
     const authProviderId = AUTH_PROVIDER_ID_MAP[authType];
     // authType nucode인 경우 비밀번호 해싱 / 그 외에는 undefined
-    const hashedPassword =
-      authType === AuthProvider.NUCODE && password
-        ? await bcrypt.hash(password, 10)
-        : undefined;
+    const hashedPassword = await bcrypt.hash(password!, 10);
 
     // 유저 생성
     const createdUser = await this.userRepository.create(

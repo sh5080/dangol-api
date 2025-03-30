@@ -38,11 +38,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (isTypiaError) {
       const firstError = exception.response.errors[0];
+      console.log("firstError>>: ", firstError);
       if (firstError && firstError.path) {
         const fieldMatch = firstError.path.match(/\$input\.(\w+)/);
+        const expected = firstError.expected;
         if (fieldMatch && fieldMatch[1]) {
           const fieldName = fieldMatch[1];
-          jsonRes.message = `Invalid ${fieldName}`;
+          jsonRes.message = `Invalid ${fieldName}: ${expected}`;
           status = HttpStatus.BAD_REQUEST;
           return response.status(status).json(jsonRes);
         }
@@ -66,10 +68,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       } else if (message.message) {
         jsonRes.message = message.message;
       }
-    } else if (
-      exception instanceof PrismaClientKnownRequestError ||
-      exception instanceof PrismaClientValidationError
-    ) {
+    } else if (exception instanceof PrismaClientKnownRequestError) {
+      status = HttpStatus.BAD_REQUEST;
+      jsonRes.message = DefaultErrorMessage.BAD_REQUEST;
+    } else if (exception instanceof PrismaClientValidationError) {
       status = HttpStatus.UNPROCESSABLE_ENTITY;
       jsonRes.message = DefaultErrorMessage.UNEXPECTED_1;
     } else {
