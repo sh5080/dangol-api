@@ -30,7 +30,6 @@ import { Token, UserPayload } from "../types/data.type";
 import Redis from "ioredis";
 import { env } from "../configs/env.config";
 import { RedisService } from "../redis/redis.service";
-import { UserWithoutPassword } from "../user/dtos/response.dto";
 
 @Injectable()
 export class AuthService {
@@ -56,15 +55,10 @@ export class AuthService {
       );
     }
 
-    const tokens = await this.createTokens(
-      user.id,
-      ip,
-      userAgent,
-      user.role?.role
-    );
+    const tokens = await this.createTokens(user.id, ip, userAgent, user.role);
     await this.resetFailedLoginAttempts(user.id);
 
-    return { user: user as UserWithoutPassword, ...tokens };
+    return { user, ...tokens };
   }
 
   async incrementFailedLoginAttempts(userId: string) {

@@ -5,20 +5,15 @@ import {
   UpdatePasswordDto,
   UpdateUserProfileDto,
 } from "../user/dtos/update-user.dto";
-import {
-  UserWithoutPassword,
-  UserWithProfile,
-  UserWithRole,
-} from "../user/dtos/response.dto";
+import { UserWithProfile } from "../user/dtos/response.dto";
 import { CheckNicknameDto } from "../user/dtos/get-user.dto";
-
+import { User } from "@prisma/client";
 export interface IUserService {
-  createUser(dto: CreateUserDto): Promise<UserWithoutPassword>;
+  createUser(dto: CreateUserDto): Promise<User>;
   checkUser(key: CheckUserValueType, value: string): Promise<boolean>;
   checkNickname(dto: CheckNicknameDto): Promise<boolean>;
-  getUserByEmail(email: string): Promise<UserWithRole>;
+  getUserByEmail(email: string): Promise<User>;
   getUserProfileById(id: string): Promise<UserWithProfile>;
-  updatePassword(dto: UpdatePasswordDto): Promise<void>;
   updateUserProfile(
     id: string,
     dto: UpdateUserProfileDto

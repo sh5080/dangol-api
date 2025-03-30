@@ -33,7 +33,7 @@ import Redis from "ioredis";
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import { env } from "../configs/env.config";
 import { RedisService } from "../redis/redis.service";
-import { UserWithProfile, UserWithRole } from "./dtos/response.dto";
+import { UserWithProfile } from "./dtos/response.dto";
 import { CheckNicknameDto } from "./dtos/get-user.dto";
 
 @Injectable()
@@ -144,56 +144,13 @@ export class UserService implements IUserService {
     return;
   }
 
-  async updatePassword(dto: UpdatePasswordDto) {
-    const { email, currentPassword, newPassword, certificationCode } = dto;
-
-    // 사용자 조회
-    const user = await this.userRepository.getUserByEmail(email);
-    if (!user) {
-      throw new NotFoundException(UserErrorMessage.USER_NOT_FOUND);
-    }
-    if (!user.password) {
-      throw new ForbiddenException(AuthErrorMessage.FORBIDDEN);
-    }
-    // 이메일 인증번호 체크
-    await this.checkCertification({
-      email: user.email,
-      type: Certification.PASSWORD_RESET,
-      code: certificationCode,
-    });
-
-    // 수정 후
-    const isPasswordMatch = await bcrypt.compare(
-      currentPassword,
-      user.password
-    );
-    if (!isPasswordMatch) {
-      throw new BadRequestException("현재 비밀번호가 일치하지 않습니다.");
-    }
-
-    // 새 비밀번호가 현재 비밀번호와 같은지 확인
-    const isSameAsNew = await bcrypt.compare(newPassword, user.password);
-    if (isSameAsNew) {
-      throw new BadRequestException(
-        "새 비밀번호는 현재 비밀번호와 달라야 합니다."
-      );
-    }
-
-    // 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // 비밀번호 업데이트
-    await this.userRepository.updatePassword(user.id, hashedPassword);
-    return;
-  }
-
   async getUserByEmail(email: string) {
     const user = await this.userRepository.getUserByEmail(email);
     if (!user) {
       throw new NotFoundException(UserErrorMessage.USER_NOT_FOUND);
     }
 
-    return user as UserWithRole;
+    return user;
   }
 
   async getUserProfileById(id: string) {

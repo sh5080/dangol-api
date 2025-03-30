@@ -32,8 +32,6 @@
     "@types/ioredis": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/multer": "^1.4.12",
-    "@types/multer-s3": "^3.0.3",
     "@types/nodemailer": "^6.4.17",
     "jest": "^29.7.0",
     "jest-mock-extended": "^4.0.0-beta1",
@@ -44,6 +42,7 @@
     "typescript": "~5.8.2"
   },
   "dependencies": {
+    "@nestjs/cli": "^10.0.0",
     "@aws-sdk/client-s3": "^3.703.0",
     "@nestia/core": "^5.0.0",
     "@nestia/e2e": "^0.8.2",
