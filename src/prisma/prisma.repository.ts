@@ -20,14 +20,7 @@ export class PrismaRepository {
     userId: string,
     authProviderId: number
   ): Promise<void> {
-    const {
-      certificationCode,
-      authType,
-      isEventAgree,
-      affiliation,
-      class: className,
-      ...user
-    } = dto;
+    const { certificationCode, authType, isEventAgree, ...user } = dto;
 
     const userExists = await this.prisma.user.findFirst({
       where: { id: userId },
@@ -40,7 +33,6 @@ export class PrismaRepository {
           ...user,
           authProviderId,
           events: { create: { eventId: 1, isAgreed: isEventAgree } },
-          profile: { create: { affiliation, class: className } },
         },
         include: { profile: true, events: true },
       });
@@ -79,16 +71,6 @@ export class PrismaRepository {
     if (!blockReasonExists) {
       await this.prisma.blockReason.create({ data: { description } });
       console.log(`BlockReason "${description}" created successfully`);
-    }
-  }
-  async ensureCategory(name: string): Promise<void> {
-    const categoryExists = await this.prisma.category.findFirst({
-      where: { name },
-    });
-
-    if (!categoryExists) {
-      await this.prisma.category.create({ data: { name } });
-      console.log(`Category "${name}" created successfully`);
     }
   }
 }
