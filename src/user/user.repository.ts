@@ -31,7 +31,6 @@ export class UserRepository {
         ...user,
         authProviderId,
         events: { create: { eventId: 1, isAgreed: isEventAgree } },
-        profile: { create: { affiliation, class: className, nickname } },
       },
       include: userDetail,
     });
@@ -40,7 +39,6 @@ export class UserRepository {
   async getUserByEmail(email: string) {
     return await this.prisma.user.findUnique({
       where: { email: email, deletedAt: null },
-      include: { role: true },
     });
   }
 
@@ -77,13 +75,6 @@ export class UserRepository {
       where: { profile: { nickname: nickname }, deletedAt: null },
     });
     return existingCount > 0;
-  }
-
-  async updatePassword(id: string, newPassword: string) {
-    return await this.prisma.user.update({
-      where: { id: id, deletedAt: null },
-      data: { password: newPassword },
-    });
   }
 
   async updateUserProfile(id: string, dto: UpdateUserProfileDto) {

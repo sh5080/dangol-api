@@ -68,23 +68,6 @@ export class UserController {
   }
 
   /**
-   * @summary 유저 비밀번호 업데이트 (완료)
-   * @param dto 유저 비밀번호 업데이트 dto
-   * @param req 인증 요청
-   * @throws 404 유저 없음 (이메일 불일치)
-   * @throws 404 이메일 인증이 선행되어야 합니다.
-   * @throws 400 이메일 인증 코드 불일치
-   * @throws 400 동일한 패스워드는 입력할 수 없습니다.
-   */
-  @TypedRoute.Patch("password")
-  async updatePassword(
-    @TypedBody() dto: UpdatePasswordDto,
-    @Req() req: AuthRequest
-  ) {
-    return this.userService.updatePassword(dto);
-  }
-
-  /**
    * @summary 유저 프로필 조회 (완료)
    * @security bearer
    * @returns 유저 프로필
