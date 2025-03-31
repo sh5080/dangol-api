@@ -5,7 +5,7 @@ RUN yarn install
 
 COPY . .
 
-RUN yarn db:pull && yarn db:gen
+RUN yarn db:gen
 RUN yarn build
 
 EXPOSE $PORT
