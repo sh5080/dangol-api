@@ -1,7 +1,24 @@
 version: "3"
 
 services:
-  baemin-api:
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/ngrok.yml"
+    volumes:
+      - ./ngrok.yml:/ngrok.yml:ro
+    ports:
+      - 4040:4040
+    networks:
+      - default
+    depends_on:
+      - api
+      - log
+  api:
     build: .
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
@@ -10,3 +27,20 @@ services:
 
     volumes:
       - ./.env:/app/.env
+
+  log:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9999:8080"
+    environment:
+      DOZZLE_HOSTNAME: localhost
+    restart: unless-stopped
+    networks:
+      - default
+
+networks:
+  default:
+    name: dozzle

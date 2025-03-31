@@ -1,4 +1,4 @@
-import { Controller } from "@nestjs/common";
+import { Controller, Get } from "@nestjs/common";
 import { TypedRoute } from "@nestia/core";
 import { ApiTags } from "@nestjs/swagger";
 
@@ -13,5 +13,21 @@ export class AppController {
   @TypedRoute.Get("health")
   getHello(): string {
     return "Hello World";
+  }
+  /**
+   * ngrok 터널 목록 조회
+   */
+  @Get("tunnels")
+  async getTunnels() {
+    const ngrokResponse = await fetch(
+      `http://host.docker.internal:4040/api/tunnels`
+    );
+
+    const data = await ngrokResponse.json();
+
+    return data.tunnels.map((tunnel: any) => ({
+      name: tunnel.name,
+      url: tunnel.public_url,
+    }));
   }
 }
