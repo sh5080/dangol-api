@@ -8,3 +8,6 @@ dist
 *.json
 
 logs/
+
+# ngrok
+ngrok.yml
