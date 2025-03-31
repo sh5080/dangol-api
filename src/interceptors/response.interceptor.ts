@@ -27,9 +27,9 @@ export class ResponseInterceptor implements NestInterceptor {
       map((res) => {
         const response = context.switchToHttp().getResponse<Response>();
 
-        if (response.getHeader("content-type") === "text/event-stream") {
-          console.log("Sending SSE message:", res);
-
+        if (Array.isArray(res)) {
+          return res;
+        } else if (response.getHeader("content-type") === "text/event-stream") {
           return res;
         } else if (res) {
           const { accessToken, refreshToken, statusCode, ...data } =
