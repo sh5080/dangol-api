@@ -9,6 +9,7 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  TUNNEL_KEY: z.string(),
 
   // ********* database *********
   DATABASE_URL: z.string().url(),

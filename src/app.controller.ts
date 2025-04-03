@@ -1,6 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
-import { TypedRoute } from "@nestia/core";
+import { TypedParam, TypedRoute } from "@nestia/core";
 import { ApiTags } from "@nestjs/swagger";
+import { env } from "./configs/env.config";
 
 @ApiTags("앱")
 @Controller("app")
@@ -17,17 +18,25 @@ export class AppController {
   /**
    * ngrok 터널 목록 조회
    */
-  @Get("tunnels")
-  async getTunnels() {
+  @Get("tunnels/:key")
+  async getTunnels(@TypedParam("key") key: string) {
     const ngrokResponse = await fetch(
       `http://host.docker.internal:4040/api/tunnels`
     );
 
     const data = await ngrokResponse.json();
-
-    return data.tunnels.map((tunnel: any) => ({
-      name: tunnel.name,
-      url: tunnel.public_url,
-    }));
+    if (key === env.TUNNEL_KEY) {
+      return data.tunnels.map((tunnel: any) => ({
+        name: tunnel.name,
+        url: tunnel.public_url,
+      }));
+    } else {
+      return data.tunnels
+        .map((tunnel: any) => ({
+          name: tunnel.name,
+          url: tunnel.public_url,
+        }))
+        .filter((tunnel: any) => tunnel.name === "grafana");
+    }
   }
 }
