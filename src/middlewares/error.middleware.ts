@@ -11,7 +11,7 @@ import {
 } from "@prisma/client/runtime/library";
 import { Response } from "express";
 import { Logger } from "nestjs-pino";
-import { ReturnResponse } from "../types/response.type";
+import { ErrorResponse } from "../types/response.type";
 import { ResponseStatus } from "../types/enum.type";
 import { DefaultErrorMessage } from "../types/message.type";
 
@@ -24,9 +24,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = exception;
     this.logger.error(message);
-    console.error("error in middleware: ", message);
 
-    const jsonRes: ReturnResponse = {
+    const jsonRes: ErrorResponse = {
       status: ResponseStatus.ERROR,
       message,
     };
@@ -38,7 +37,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (isTypiaError) {
       const firstError = exception.response.errors[0];
-      console.log("firstError>>: ", firstError);
       if (firstError && firstError.path) {
         const fieldMatch = firstError.path.match(/\$input\.(\w+)/);
         const expected = firstError.expected;

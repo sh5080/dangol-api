@@ -4,7 +4,9 @@ export interface BaseResponse {
   message?: string;
 }
 
-export interface ErrorResponse extends BaseResponse {}
+export interface ErrorResponse extends BaseResponse {
+  details?: any;
+}
 export interface ReturnResponse extends BaseResponse {
   data?: any;
 }
