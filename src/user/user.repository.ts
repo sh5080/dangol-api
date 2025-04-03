@@ -15,15 +15,7 @@ export class UserRepository {
   }
 
   async create(dto: CreateUserDto, authProviderId: number) {
-    const {
-      certificationCode,
-      authType,
-      isEventAgree,
-      affiliation,
-      nickname,
-      class: className,
-      ...user
-    } = dto;
+    const { authType, isEventAgree, nickname, ...user } = dto;
 
     return await this.prisma.user.create({
       data: {

@@ -20,7 +20,7 @@ export class PrismaRepository {
     userId: string,
     authProviderId: number
   ): Promise<void> {
-    const { certificationCode, authType, isEventAgree, ...user } = dto;
+    const { authType, isEventAgree, ...user } = dto;
 
     const userExists = await this.prisma.user.findFirst({
       where: { id: userId },
