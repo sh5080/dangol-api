@@ -33,30 +33,6 @@ export class UserController {
   }
 
   /**
-   * @summary 유저 인증 이메일 발송 (1차 완료)
-   * @param dto 유저 인증 이메일 발송 dto
-   * @returns 인증 이메일 발송 결과
-   * @throws 409 이메일 중복 (회원가입시 발생)
-   * @throws 404 조회된 유저가 없습니다. (비밀번호 재설정시 발생)
-
-   */
-  @TypedRoute.Post("certification")
-  async sendCertification(@TypedBody() dto: CertificationDto) {
-    return this.userService.sendCertification(dto);
-  }
-
-  /**
-   * @summary 유저 인증 이메일 확인 (1차 완료)
-   * @param dto 유저 인증 이메일 확인 dto
-   * @returns 인증 이메일 확인 결과
-   * @throws 404 이메일에 해당하는 인증번호가 없음(인증번호 선행하지 않거나 이메일 발송 전후 관련 오류)
-   * @throws 400 이메일 인증 코드 불일치
-   */
-  @TypedRoute.Post("certification/check")
-  async checkCertification(@TypedBody() dto: CheckCertificationDto) {
-    return this.userService.checkCertification(dto);
-  }
-  /**
    * @summary 닉네임 중복 확인 (1차 완료)
    * @param dto 닉네임 중복 확인 dto
    * @returns 닉네임 중복 확인 결과

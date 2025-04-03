@@ -1,10 +1,6 @@
-import { CreateUserDto, CertificationDto } from "../user/dtos/create-user.dto";
+import { CreateUserDto } from "../user/dtos/create-user.dto";
 import { CheckUserValueType } from "../types/enum.type";
-import {
-  CheckCertificationDto,
-  UpdatePasswordDto,
-  UpdateUserProfileDto,
-} from "../user/dtos/update-user.dto";
+import { UpdateUserProfileDto } from "../user/dtos/update-user.dto";
 import { UserWithProfile } from "../user/dtos/response.dto";
 import { CheckNicknameDto } from "../user/dtos/get-user.dto";
 import { User } from "@prisma/client";
@@ -19,6 +15,4 @@ export interface IUserService {
     dto: UpdateUserProfileDto
   ): Promise<UserWithProfile>;
   blockUser(id: string, reasonId: number): Promise<void>;
-  sendCertification(dto: CertificationDto): Promise<void>;
-  checkCertification(dto: CheckCertificationDto): Promise<void>;
 }
