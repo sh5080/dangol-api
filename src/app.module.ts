@@ -12,6 +12,8 @@ import { pinoHttpOptions } from "./utils/pino.util";
 import { env } from "./configs/env.config";
 import { RedisModule } from "./redis/redis.module";
 import { CommonModule } from "./common/common.module";
+import { MetricsModule } from "./metrics/metrics.module";
+import { MetricsInterceptor } from "./interceptors/metrics.interceptor";
 
 @Module({
   imports: [
@@ -25,11 +27,13 @@ import { CommonModule } from "./common/common.module";
     CommonModule,
     UserModule,
     LoggerModule.forRoot({ pinoHttp: pinoHttpOptions }),
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: MetricsInterceptor },
   ],
 })
 export class AppModule {}

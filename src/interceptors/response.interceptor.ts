@@ -26,7 +26,9 @@ export class ResponseInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((res) => {
         const response = context.switchToHttp().getResponse<Response>();
-
+        if (request.url === "/api/metrics") {
+          return res;
+        }
         if (Array.isArray(res)) {
           return res;
         } else if (response.getHeader("content-type") === "text/event-stream") {
