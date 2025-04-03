@@ -11,3 +11,5 @@ logs/
 
 # ngrok
 ngrok.yml
+/monitoring
+/data
