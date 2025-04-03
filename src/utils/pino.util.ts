@@ -1,8 +1,7 @@
 import { randomUUID } from "crypto";
 import { Options } from "pino-http";
 
-const isDevelopment =
-  process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development";
+const isProduction = process.env.NODE_ENV === "production";
 export const pinoHttpOptions: Options = {
   base: undefined,
   genReqId: (req, res) => req.id,
@@ -16,17 +15,18 @@ export const pinoHttpOptions: Options = {
       delete res.headers;
       return res;
     },
-    err(err) {
-      err["config"] && delete err["config"]["transitional"];
-      err["config"] && delete err["config"]["adapter"];
-      err["config"] && delete err["config"]["transformRequest"];
-      err["config"] && delete err["config"]["transformResponse"];
-      err["config"] && delete err["config"]["xsrfCookieName"];
-      err["config"] && delete err["config"]["xsrfHeaderName"];
-      err["config"] && delete err["config"]["maxContentLength"];
-      err["config"] && delete err["config"]["maxBodyLength"];
-      err["config"] && delete err["config"]["env"];
-      return err;
+    err: (err) => {
+      if (!err) return undefined;
+      return {
+        type: err.constructor?.name || "Error",
+        message: err.message,
+        stack: err.stack ? err.stack.replace(/\n\s*/g, " | ") : undefined,
+        response: err.response,
+        status: err.status || err.statusCode,
+        path: err.path,
+        method: err.method,
+        ...err,
+      };
     },
   },
   customAttributeKeys: {
@@ -37,36 +37,42 @@ export const pinoHttpOptions: Options = {
   },
   quietReqLogger: true,
   level: process.env.NODE_ENV !== "production" ? "debug" : "info",
+  customLogLevel: (req, res) => {
+    if (req.url === "/api/metrics") {
+      return "silent";
+    }
+    if (res.statusCode >= 400) {
+      return "error";
+    }
+    if (res.statusCode >= 300) {
+      return "warn";
+    }
+    return "info";
+  },
   transport: {
     targets: [
-      // 프로덕션 로그
-      {
-        target: "pino-pretty",
-        options: {
-          destination: "logs/app_prod.log",
-          colorize: false,
-          ignore: "context",
-          translateTime: "SYS:yyyy-mm-dd HH:MM:ss.l",
-        },
-        level: "info",
-      },
-      {
-        target: "pino-pretty",
-        options: {
-          destination: "logs/error_prod.log",
-          colorize: false,
-          ignore: "context",
-          translateTime: "SYS:yyyy-mm-dd HH:MM:ss.l",
-        },
-        level: "error",
-      },
-      // 개발 환경 로그
-      ...(isDevelopment
+      ...(isProduction
         ? [
             {
               target: "pino-pretty",
               options: {
-                destination: 1, // 콘솔 출력
+                destination: 1,
+                colorize: false,
+                singleLine: true,
+                messageFormat: "{msg} {err.message}",
+                ignore: "pid,hostname,context",
+                errorLikeObjectKeys: ["err", "error"],
+                errorProps: "*",
+                minimumLevel: "info",
+              },
+              level: "info",
+            },
+          ]
+        : [
+            {
+              target: "pino-pretty",
+              options: {
+                destination: 1,
                 colorize: true,
                 ignore: "context",
                 translateTime: "SYS:yyyy-mm-dd HH:MM:ss.l",
@@ -83,18 +89,7 @@ export const pinoHttpOptions: Options = {
               },
               level: "debug",
             },
-            {
-              target: "pino-pretty",
-              options: {
-                destination: "logs/error_dev.log",
-                colorize: false,
-                ignore: "context",
-                translateTime: "SYS:yyyy-mm-dd HH:MM:ss.l",
-              },
-              level: "error",
-            },
-          ]
-        : []),
+          ]),
     ],
   },
 };

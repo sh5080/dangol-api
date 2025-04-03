@@ -18,3 +18,9 @@ export interface SearchResult<T> {
 export interface UserPayload {
   userId: string;
 }
+
+export interface MetricConfig {
+  name: string;
+  help: string;
+  type: "histogram" | "counter";
+}
