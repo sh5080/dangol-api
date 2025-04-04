@@ -5,3 +5,11 @@ export interface UserWithProfile extends User {
   events: UserEvent[];
   permissions: UserPermission[];
 }
+
+export interface ChatUser {
+  profile: {
+    nickname: string;
+    imageUrl: string | null;
+    userId: string;
+  } | null;
+}
