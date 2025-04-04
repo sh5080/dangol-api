@@ -22,6 +22,7 @@ export class UserRepository {
         id: uuidv4(),
         ...user,
         authProviderId,
+        profile: { create: { nickname } },
         events: { create: { eventId: 1, isAgreed: isEventAgree } },
       },
       include: userDetail,
