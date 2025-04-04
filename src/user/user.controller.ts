@@ -1,16 +1,12 @@
 import { Inject, Controller, UseGuards, Req } from "@nestjs/common";
 import { IUserService } from "../interfaces/user.interface";
-import { CreateUserDto, CertificationDto } from "./dtos/create-user.dto";
-import {
-  CheckCertificationDto,
-  UpdatePasswordDto,
-} from "./dtos/update-user.dto";
+import { CreateUserDto } from "./dtos/create-user.dto";
 import { UpdateUserProfileDto } from "./dtos/update-user.dto";
 import { ApiTags } from "@nestjs/swagger";
 import { TypedBody, TypedRoute } from "@nestia/core";
 import { AuthGuard } from "../auth/guards/auth.guard";
 import { AuthRequest } from "../types/request.type";
-import { CheckNicknameDto } from "./dtos/get-user.dto";
+import { CheckNicknameDto, GetChatParticipantsDto } from "./dtos/get-user.dto";
 
 @ApiTags("유저")
 @Controller("user")
@@ -73,5 +69,18 @@ export class UserController {
   ) {
     const userId = req.user.userId;
     return this.userService.updateUserProfile(userId, dto);
+  }
+
+  /**
+   * @summary 채팅 참여자 조회
+   * @security bearer
+   * @param dto 채팅 참여자 조회 dto
+   * @returns 채팅 참여자 정보
+   * @throws 404 채팅 참여자 없음
+   */
+  @TypedRoute.Post("chat/participants")
+  @UseGuards(AuthGuard)
+  async getChatParticipants(@TypedBody() dto: GetChatParticipantsDto) {
+    return this.userService.getChatParticipants(dto);
   }
 }

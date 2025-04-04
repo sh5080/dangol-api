@@ -19,7 +19,7 @@ import {
 import { IUserService } from "../interfaces/user.interface";
 
 import { UserWithProfile } from "./dtos/response.dto";
-import { CheckNicknameDto } from "./dtos/get-user.dto";
+import { CheckNicknameDto, GetChatParticipantsDto } from "./dtos/get-user.dto";
 
 @Injectable()
 export class UserService implements IUserService {
@@ -88,5 +88,10 @@ export class UserService implements IUserService {
 
   async blockUser(id: string, reasonId: number) {
     await this.userRepository.blockUser(id, reasonId);
+  }
+
+  async getChatParticipants(dto: GetChatParticipantsDto) {
+    const { userIds } = dto;
+    return await this.userRepository.getChatParticipants(userIds);
   }
 }

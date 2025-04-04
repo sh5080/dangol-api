@@ -41,6 +41,12 @@ export class UserRepository {
       include: userDetail,
     });
   }
+  async getChatParticipants(userIds: string[]) {
+    return await this.prisma.user.findMany({
+      where: { id: { in: userIds }, deletedAt: null },
+      select: { profile: true },
+    });
+  }
 
   async getUserWithBlocksByEmail(email: string) {
     return await this.prisma.user.findUnique({
