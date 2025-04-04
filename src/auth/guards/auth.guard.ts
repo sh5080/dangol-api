@@ -110,7 +110,8 @@ export class AuthGuard implements CanActivate {
             req.ip as string,
             req.headers["user-agent"] as string
           );
-
+        // 리프레시 후 기존 토큰 블랙리스트 처리
+        await this.authService.setBlacklist(userId, accessToken);
         req.user = {
           userId,
           tokens: {

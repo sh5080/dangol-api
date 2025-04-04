@@ -216,4 +216,11 @@ export class AuthService {
       }
     }
   }
+
+  async logout(userId: string, accessToken: string) {
+    const sessionKey = this.redisService.userKey(RedisKey.SESSION, userId);
+    await this.redis.del(sessionKey);
+    await this.setBlacklist(userId, accessToken);
+    return true;
+  }
 }
