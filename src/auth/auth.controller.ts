@@ -5,6 +5,7 @@ import { TypedBody, TypedRoute } from "@nestia/core";
 import { ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 import { AuthGuard } from "./guards/auth.guard";
+import { AuthRequest } from "../types/request.type";
 
 @ApiTags("인증")
 @Controller("auth")
@@ -40,5 +41,18 @@ export class AuthController {
   @UseGuards(AuthGuard)
   async token() {
     return true;
+  }
+
+  /**
+   * @summary 로그아웃
+   * @security bearer
+   * @returns 로그아웃 결과 true
+   * @throws 400 Authorization 헤더 없는 경우 / access 토큰 없는 경우
+   */
+  @TypedRoute.Post("logout")
+  @UseGuards(AuthGuard)
+  async logout(@Req() req: AuthRequest) {
+    const { userId, tokens } = req.user;
+    return this.authService.logout(userId, tokens!.accessToken);
   }
 }
