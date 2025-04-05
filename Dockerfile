@@ -8,5 +8,5 @@ COPY . .
 RUN yarn db:gen
 RUN yarn build
 
-EXPOSE $PORT
+EXPOSE 8082
 CMD ["yarn", "start:prod"]
