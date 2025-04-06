@@ -9,4 +9,4 @@ RUN yarn db:gen
 RUN yarn build
 
 EXPOSE 8082
-CMD ["yarn", "start:prod"]
+CMD ["node", "dist/src/main.js"]
