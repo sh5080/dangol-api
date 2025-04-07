@@ -68,23 +68,6 @@ export const pinoHttpOptions: Options = {
               },
               level: "info",
             },
-            {
-              target: "pino-loki",
-              options: {
-                batching: true,
-                interval: 5,
-                host: "https://logs-prod-us-central1.grafana.net",
-                basicAuth: {
-                  username: env.GRAFANA_CLOUD_USER || "",
-                  password: env.GRAFANA_CLOUD_API_KEY || "",
-                },
-                labels: {
-                  app: "jdg-api",
-                  env: env.NODE_ENV || "development",
-                },
-              },
-              level: "info",
-            },
           ]
         : [
             {
