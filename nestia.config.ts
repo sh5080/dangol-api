@@ -4,12 +4,16 @@ import { AppModule } from "./src/app.module";
 import { env } from "./src/configs/env.config";
 
 const SERVER_URLS = {
-  production: "https://boilerplate-api-r9f3.onrender.com",
-  stage: "https://gratefully-genuine-katydid.ngrok-free.app",
-  development: `http://localhost:${env.PORT}`,
+  production: env.serverUrl.PRD,
+  stage: env.serverUrl.STG,
+  development: env.serverUrl.DEV,
+  local: `http://localhost:${env.PORT}`,
 };
 
-const servers = [{ url: SERVER_URLS[env.NODE_ENV], description: env.NODE_ENV }];
+const servers = [
+  { url: SERVER_URLS[env.NODE_ENV], description: env.NODE_ENV },
+  { url: SERVER_URLS.local, description: "local" },
+];
 
 const NESTIA_CONFIG: INestiaConfig = {
   input: async () => {

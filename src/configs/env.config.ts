@@ -10,6 +10,11 @@ const envSchema = z.object({
     .enum(["development", "production", "stage"])
     .default("development"),
   TUNNEL_KEY: z.string(),
+
+  PRD_SERVER_URL: z.string(),
+  STG_SERVER_URL: z.string(),
+  DEV_SERVER_URL: z.string(),
+
   GRAFANA_CLOUD_USER: z.string(),
   GRAFANA_CLOUD_API_KEY: z.string(),
 
@@ -46,7 +51,11 @@ const parsedEnv = envSchema.parse(process.env);
 
 export const env = {
   ...parsedEnv,
-
+  serverUrl: {
+    PRD: parsedEnv.PRD_SERVER_URL,
+    STG: parsedEnv.STG_SERVER_URL,
+    DEV: parsedEnv.DEV_SERVER_URL,
+  },
   db: {
     DATABASE_URL: parsedEnv.DATABASE_URL,
     REDIS_HOST: parsedEnv.REDIS_HOST,
