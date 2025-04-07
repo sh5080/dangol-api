@@ -10,6 +10,8 @@ const envSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   TUNNEL_KEY: z.string(),
+  GRAFANA_CLOUD_USER: z.string(),
+  GRAFANA_CLOUD_API_KEY: z.string(),
 
   // ********* database *********
   DATABASE_URL: z.string().url(),
