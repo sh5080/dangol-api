@@ -7,7 +7,7 @@ const envSchema = z.object({
   // ********* server settings *********
   PORT: z.string().regex(/^\d+$/).transform(Number).optional().default("8080"),
   NODE_ENV: z
-    .enum(["development", "production", "test"])
+    .enum(["development", "production", "stage"])
     .default("development"),
   TUNNEL_KEY: z.string(),
   GRAFANA_CLOUD_USER: z.string(),
