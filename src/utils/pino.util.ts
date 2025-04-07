@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { Options } from "pino-http";
+import { env } from "../configs/env.config";
 
 const isProduction = process.env.NODE_ENV === "production";
 export const pinoHttpOptions: Options = {
@@ -64,6 +65,23 @@ export const pinoHttpOptions: Options = {
                 errorLikeObjectKeys: ["err", "error"],
                 errorProps: "*",
                 minimumLevel: "info",
+              },
+              level: "info",
+            },
+            {
+              target: "pino-loki",
+              options: {
+                batching: true,
+                interval: 5,
+                host: "https://logs-prod-us-central1.grafana.net",
+                basicAuth: {
+                  username: env.GRAFANA_CLOUD_USER || "",
+                  password: env.GRAFANA_CLOUD_API_KEY || "",
+                },
+                labels: {
+                  app: "jdg-api",
+                  env: env.NODE_ENV || "development",
+                },
               },
               level: "info",
             },

@@ -1,12 +1,39 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
-import { Counter, Histogram, register } from "prom-client";
+import { Counter, Histogram, register, Registry } from "prom-client";
 import { MetricConfig } from "../types/data.type";
+import { env } from "../configs/env.config";
 
 @Injectable()
 export class MetricsService implements OnModuleInit {
   private requestSuccessHistogram!: Histogram<string>;
   private requestFailHistogram!: Histogram<string>;
   private failureCounter!: Counter<string>;
+  private readonly registry: Registry;
+  private readonly httpRequestsTotal: Counter;
+
+  constructor() {
+    this.registry = new Registry();
+    this.httpRequestsTotal = new Counter({
+      name: "http_requests_total",
+      help: "Total number of HTTP requests",
+      labelNames: ["method", "route", "status_code"],
+      registers: [this.registry],
+    });
+
+    // Grafana Cloud Prometheus 설정
+    if (env.GRAFANA_CLOUD_USER && env.GRAFANA_CLOUD_API_KEY) {
+      const { setupPushgateway } = require("prom-client");
+      setupPushgateway({
+        url: "https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push",
+        basicAuth: {
+          username: env.GRAFANA_CLOUD_USER,
+          password: env.GRAFANA_CLOUD_API_KEY,
+        },
+        jobName: "jdg-api",
+        interval: 15000, // 15초
+      });
+    }
+  }
 
   onModuleInit() {
     this.initializeMetrics();
