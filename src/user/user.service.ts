@@ -4,10 +4,7 @@ import {
   ForbiddenException,
   ConflictException,
 } from "@nestjs/common";
-
 import { CreateUserDto } from "./dtos/create-user.dto";
-import * as bcrypt from "bcrypt";
-
 import { UserRepository } from "./user.repository";
 import { DefaultErrorMessage, UserErrorMessage } from "../types/message.type";
 import { UpdateUserProfileDto } from "./dtos/update-user.dto";
@@ -17,7 +14,6 @@ import {
   CheckUserValueType,
 } from "../types/enum.type";
 import { IUserService } from "../interfaces/user.interface";
-
 import { UserWithProfile } from "./dtos/response.dto";
 import { CheckNicknameDto, GetChatParticipantsDto } from "./dtos/get-user.dto";
 

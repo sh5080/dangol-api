@@ -15,10 +15,11 @@ async function bootstrap() {
     stage: env.serverUrl.STG,
     development: env.serverUrl.DEV,
     local: `http://localhost:12000`,
+    chat: env.serverUrl.CHAT,
   };
 
   app.enableCors({
-    origin: [SERVER_URLS[env.NODE_ENV], SERVER_URLS.local],
+    origin: [SERVER_URLS[env.NODE_ENV], SERVER_URLS.local, SERVER_URLS.chat],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     exposedHeaders: ["Authorization"],
