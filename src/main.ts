@@ -9,8 +9,16 @@ import { Logger } from "nestjs-pino";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
+
+  const SERVER_URLS = {
+    production: env.serverUrl.PRD,
+    stage: env.serverUrl.STG,
+    development: env.serverUrl.DEV,
+    local: `http://localhost:12000`,
+  };
+
   app.enableCors({
-    origin: ["http://localhost:3000"],
+    origin: [SERVER_URLS[env.NODE_ENV], SERVER_URLS.local],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     exposedHeaders: ["Authorization"],
