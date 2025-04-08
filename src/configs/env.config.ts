@@ -14,7 +14,7 @@ const envSchema = z.object({
   PRD_SERVER_URL: z.string(),
   STG_SERVER_URL: z.string(),
   DEV_SERVER_URL: z.string(),
-
+  CHAT_SERVER_URL: z.string(),
   GRAFANA_CLOUD_USER: z.string(),
   GRAFANA_CLOUD_API_KEY: z.string(),
 
@@ -55,6 +55,7 @@ export const env = {
     PRD: parsedEnv.PRD_SERVER_URL,
     STG: parsedEnv.STG_SERVER_URL,
     DEV: parsedEnv.DEV_SERVER_URL,
+    CHAT: parsedEnv.CHAT_SERVER_URL,
   },
   db: {
     DATABASE_URL: parsedEnv.DATABASE_URL,
