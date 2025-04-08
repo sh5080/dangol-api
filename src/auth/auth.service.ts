@@ -40,7 +40,12 @@ export class AuthService {
     private readonly logger: Logger
   ) {}
 
-  async authenticate(dto: LoginDto, ip: string, userAgent: string) {
+  async authenticate(
+    dto: LoginDto,
+    ip: string,
+    userAgent: string,
+    isTest?: boolean
+  ) {
     const { email, authType } = dto;
 
     const user = await this.userService.getUserByEmail(email);
@@ -55,7 +60,13 @@ export class AuthService {
       );
     }
 
-    const tokens = await this.createTokens(user.id, ip, userAgent, user.role);
+    const tokens = await this.createTokens(
+      user.id,
+      ip,
+      userAgent,
+      user.role,
+      isTest
+    );
     await this.resetFailedLoginAttempts(user.id);
 
     return { user, ...tokens };
@@ -135,14 +146,15 @@ export class AuthService {
     userId: string,
     ip: string,
     userAgent: string,
-    role?: string | null
+    role?: string | null,
+    isTest?: boolean
   ): Promise<Token> {
     const accessTokenPayload = { userId, role };
     const refreshTokenPayload = { uuid: crypto.randomUUID() };
 
     const accessToken = jwt.sign(
       accessTokenPayload,
-      env.auth.ACCESS_JWT_SECRET,
+      !isTest ? env.auth.ACCESS_JWT_SECRET : "99999999999999999999999999999999",
       {
         expiresIn: env.auth.ACCESS_JWT_EXPIRATION,
         audience: "boilerplate-api",
@@ -151,7 +163,9 @@ export class AuthService {
     );
     const refreshToken = jwt.sign(
       refreshTokenPayload,
-      env.auth.REFRESH_JWT_SECRET,
+      !isTest
+        ? env.auth.REFRESH_JWT_SECRET
+        : "99999999999999999999999999999999",
       {
         expiresIn: env.auth.REFRESH_JWT_EXPIRATION,
         audience: "boilerplate-api",
