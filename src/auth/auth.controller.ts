@@ -55,4 +55,21 @@ export class AuthController {
     const { userId, tokens } = req.user;
     return this.authService.logout(userId, tokens!.accessToken);
   }
+
+  /**
+   * @summary 로그인 (유효기간 없는 토큰 제공)
+   * @param dto 로그인 dto
+   * @param req 인증 요청
+   * @returns 인증 결과 (accessToken, refreshToken은 response header, cookie에 포함)
+   * @throws 401 비밀번호 불일치
+   * @throws 403 계정 제한 (비밀번호 불일치 5회)
+   * @throws 404 유저 없음 (이메일 불일치)
+   * @throws 405 인증방법 불일치 (kakao / google)
+   */
+  @TypedRoute.Post("login/test")
+  async testLogin(@TypedBody() dto: LoginDto, @Req() req: Request) {
+    const ip = req.ip as string;
+    const userAgent = req.headers["user-agent"] as string;
+    return this.authService.authenticate(dto, ip, userAgent);
+  }
 }
