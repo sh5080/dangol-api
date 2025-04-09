@@ -184,7 +184,7 @@ export class AuthService {
       "userAgent",
       userAgent
     );
-
+    console.log("@@@@@@: ", accessToken, refreshToken);
     await this.redis.expire(sessionKey, env.auth.REFRESH_JWT_EXPIRATION);
     return { accessToken, refreshToken };
   }
