@@ -1,13 +1,12 @@
 import { z } from "zod";
 import dotenv from "dotenv";
 import { join } from "path";
-
 dotenv.config({ path: join(process.cwd(), ".env") });
 const envSchema = z.object({
   // ********* server settings *********
   PORT: z.string().regex(/^\d+$/).transform(Number).optional().default("8080"),
   NODE_ENV: z
-    .enum(["development", "production", "stage"])
+    .enum(["development", "production", "stage", "test"])
     .default("development"),
   TUNNEL_KEY: z.string(),
 

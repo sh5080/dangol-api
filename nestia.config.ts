@@ -6,6 +6,7 @@ import { env } from "./src/shared/configs/env.config";
 const SERVER_URLS = {
   production: env.serverUrl.PRD,
   stage: env.serverUrl.STG,
+  test: env.serverUrl.STG,
   development: env.serverUrl.DEV,
   local: `http://localhost:${env.PORT}`,
 };
