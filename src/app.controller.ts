@@ -1,7 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
 import { TypedParam, TypedRoute } from "@nestia/core";
 import { ApiTags } from "@nestjs/swagger";
-import { env } from "./configs/env.config";
+import { env } from "./shared/configs/env.config";
 
 @ApiTags("앱")
 @Controller("app")
