@@ -157,8 +157,8 @@ export class AuthService {
       !isTest ? env.auth.ACCESS_JWT_SECRET : "99999999999999999999999999999999",
       {
         expiresIn: env.auth.ACCESS_JWT_EXPIRATION,
-        audience: "boilerplate-api",
-        issuer: "boilerplate",
+        audience: "dangol-api",
+        issuer: "jjindangol@gmail.com",
       }
     );
     const refreshToken = jwt.sign(
@@ -168,8 +168,8 @@ export class AuthService {
         : "99999999999999999999999999999999",
       {
         expiresIn: env.auth.REFRESH_JWT_EXPIRATION,
-        audience: "boilerplate-api",
-        issuer: "boilerplate",
+        audience: "dangol-api",
+        issuer: "jjindangol@gmail.com",
       }
     );
     const sessionKey = this.redisService.userKey(RedisKey.SESSION, userId);

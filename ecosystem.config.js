@@ -4,7 +4,7 @@ require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 module.exports = {
   apps: [
     {
-      name: "boilerplate-api",
+      name: "dangol-api",
       script: "dist/src/main.js",
       instances: "max",
       exec_mode: "cluster",
