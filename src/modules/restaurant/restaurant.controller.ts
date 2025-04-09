@@ -18,7 +18,6 @@ export class RestaurantController {
    * @returns 식당
    */
   @TypedRoute.Get(":id")
-  @UseGuards(AuthGuard)
   async getRestaurant(@TypedParam("id") id: string) {
     return this.restaurantService.getRestaurant(id);
   }
