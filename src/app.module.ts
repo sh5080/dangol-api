@@ -1,19 +1,19 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
-import { AuthModule } from "./auth/auth.module";
-import { UserModule } from "./user/user.module";
-import { PrismaModule } from "./prisma/prisma.module";
+import { AuthModule } from "@modules/auth/auth.module";
+import { UserModule } from "@modules/user/user.module";
+import { PrismaModule } from "@core/prisma/prisma.module";
 import { ConfigModule } from "@nestjs/config";
 import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
-import { GlobalExceptionFilter } from "./middlewares/error.middleware";
-import { ResponseInterceptor } from "./interceptors/response.interceptor";
+import { GlobalExceptionFilter } from "@shared/middlewares/error.middleware";
+import { ResponseInterceptor } from "@shared/interceptors/response.interceptor";
 import { LoggerModule } from "nestjs-pino";
-import { pinoHttpOptions } from "./utils/pino.util";
-import { env } from "./configs/env.config";
-import { RedisModule } from "./redis/redis.module";
-import { CommonModule } from "./common/common.module";
-import { MetricsModule } from "./metrics/metrics.module";
-import { MetricsInterceptor } from "./interceptors/metrics.interceptor";
+import { pinoHttpOptions } from "@shared/utils/pino.util";
+import { env } from "@shared/configs/env.config";
+import { RedisModule } from "@core/redis/redis.module";
+import { CommonModule } from "@modules/common/common.module";
+import { MetricsModule } from "@modules/metrics/metrics.module";
+import { MetricsInterceptor } from "@shared/interceptors/metrics.interceptor";
 
 @Module({
   imports: [

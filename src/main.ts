@@ -2,7 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { NestiaSwaggerComposer } from "@nestia/sdk";
 import { SwaggerModule } from "@nestjs/swagger";
-import { env } from "./configs/env.config";
+import { env } from "./shared/configs/env.config";
 import NESTIA_CONFIG from "../nestia.config";
 import { Logger } from "nestjs-pino";
 

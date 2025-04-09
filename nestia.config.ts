@@ -1,7 +1,7 @@
 import { INestiaConfig } from "@nestia/sdk";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./src/app.module";
-import { env } from "./src/configs/env.config";
+import { env } from "./src/shared/configs/env.config";
 
 const SERVER_URLS = {
   production: env.serverUrl.PRD,
