@@ -7,32 +7,13 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { CheckUserValue, AUTH_PROVIDER_ID_MAP } from "@shared/types/enum.type";
-
+import { mockUserServiceModule, mockUserRepository } from "./user.mock";
 describe("UserService", () => {
   let service: UserService;
   let userRepository: UserRepository;
 
-  const mockUserRepository = {
-    checkUserByValue: jest.fn(),
-    checkUserNickname: jest.fn(),
-    getUserByEmail: jest.fn(),
-    create: jest.fn(),
-    getUserProfileById: jest.fn(),
-    updateUserProfile: jest.fn(),
-    blockUser: jest.fn(),
-    getChatParticipants: jest.fn(),
-  };
-
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UserService,
-        {
-          provide: UserRepository,
-          useValue: mockUserRepository,
-        },
-      ],
-    }).compile();
+    const module: TestingModule = await mockUserServiceModule();
 
     service = module.get<UserService>(UserService);
     userRepository = module.get<UserRepository>(UserRepository);
@@ -99,7 +80,7 @@ describe("UserService", () => {
 
       mockUserRepository.getUserByEmail.mockResolvedValue(null);
       mockUserRepository.checkUserNickname.mockResolvedValue(false);
-      mockUserRepository.create.mockResolvedValue(mockUser);
+      mockUserRepository.createUser.mockResolvedValue(mockUser);
 
       const result = await service.createUser(createUserDto as any);
 

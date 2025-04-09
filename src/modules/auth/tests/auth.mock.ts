@@ -1,6 +1,13 @@
 import { AuthController } from "../auth.controller";
 import { AuthService } from "../auth.service";
 import { Test } from "@nestjs/testing";
+import { mockUserService } from "@/modules/user/tests/user.mock";
+import { mockRedis } from "@/core/redis/tests/redis.mock";
+import { mockRedisService } from "@/core/redis/tests/redis.mock";
+import { mockLogger } from "@/shared/tests/util.mock";
+import { getRedisConnectionToken } from "@nestjs-modules/ioredis";
+import { RedisService } from "@core/redis/redis.service";
+import { Logger } from "nestjs-pino";
 
 export async function mockAuthModule() {
   return await Test.createTestingModule({
@@ -14,6 +21,29 @@ export async function mockAuthModule() {
   }).compile();
 }
 
+export async function mockAuthServiceModule() {
+  return await Test.createTestingModule({
+    providers: [
+      AuthService,
+      {
+        provide: "IUserService",
+        useValue: mockUserService,
+      },
+      {
+        provide: getRedisConnectionToken("default"),
+        useValue: mockRedis,
+      },
+      {
+        provide: RedisService,
+        useValue: mockRedisService,
+      },
+      {
+        provide: Logger,
+        useValue: mockLogger,
+      },
+    ],
+  }).compile();
+}
 export const mockAuthService = {
   authenticate: jest.fn(),
   logout: jest.fn(),

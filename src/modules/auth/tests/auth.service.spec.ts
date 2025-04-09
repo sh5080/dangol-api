@@ -1,7 +1,5 @@
-import { Test, TestingModule } from "@nestjs/testing";
+import { TestingModule } from "@nestjs/testing";
 import { AuthService } from "../auth.service";
-import { RedisService } from "@core/redis/redis.service";
-import { Logger } from "nestjs-pino";
 import {
   BadRequestException,
   ForbiddenException,
@@ -14,13 +12,11 @@ import {
   BlackListEnum,
   TokenEnum,
 } from "@shared/types/enum.type";
-import { getRedisConnectionToken } from "@nestjs-modules/ioredis";
 import { TokenErrorMessage } from "@/shared/types/message.type";
 import { Role } from "@prisma/client";
+import { mockAuthServiceModule } from "./auth.mock";
 import { mockUserService } from "@/modules/user/tests/user.mock";
 import { mockRedis } from "@/core/redis/tests/redis.mock";
-import { mockRedisService } from "@/core/redis/tests/redis.mock";
-import { mockLogger } from "@/shared/tests/util.mock";
 
 describe("AuthService", () => {
   let service: AuthService;
@@ -28,27 +24,7 @@ describe("AuthService", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        {
-          provide: "IUserService",
-          useValue: mockUserService,
-        },
-        {
-          provide: getRedisConnectionToken("default"),
-          useValue: mockRedis,
-        },
-        {
-          provide: RedisService,
-          useValue: mockRedisService,
-        },
-        {
-          provide: Logger,
-          useValue: mockLogger,
-        },
-      ],
-    }).compile();
+    const module: TestingModule = await mockAuthServiceModule();
 
     service = module.get<AuthService>(AuthService);
   });
