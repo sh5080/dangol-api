@@ -13,6 +13,7 @@ async function bootstrap() {
   const SERVER_URLS = {
     production: env.serverUrl.PRD,
     stage: env.serverUrl.STG,
+    test: env.serverUrl.STG,
     development: env.serverUrl.DEV,
     local: `http://localhost:12000`,
     chat: env.serverUrl.CHAT,
