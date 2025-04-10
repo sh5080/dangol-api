@@ -1,8 +1,8 @@
 import { TestingModule } from "@nestjs/testing";
 import { AuthService } from "../auth.service";
 import {
-  BadRequestException,
   ForbiddenException,
+  NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { LoginDto } from "../dtos/create-auth.dto";
@@ -34,7 +34,7 @@ describe("AuthService", () => {
   });
 
   describe("authenticate", () => {
-    it("유저가 존재하지 않으면 BadRequestException을 던져야 함", async () => {
+    it("유저가 존재하지 않으면 NotFoundException을 던져야 함", async () => {
       const loginDto: LoginDto = {
         email: "test@example.com",
         authType: AuthProvider.KAKAO,
@@ -43,7 +43,7 @@ describe("AuthService", () => {
 
       await expect(
         service.authenticate(loginDto, "127.0.0.1", "test-agent")
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(NotFoundException);
     });
 
     it("인증방법이 호환되지 않으면 ForbiddenException을 던져야 함", async () => {
