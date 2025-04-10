@@ -40,8 +40,12 @@ describe("UserService", () => {
         CheckUserValue.ID,
         "1"
       );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        mockUser,
+        UserErrorMessage.USER_NOT_FOUND,
+        403
+      );
       expect(result).toEqual(mockUser);
-      expect(ExceptionUtil.default).toHaveBeenCalled();
     });
 
     it("유저가 존재하지 않으면 ForbiddenException을 던져야 함", async () => {
@@ -69,7 +73,12 @@ describe("UserService", () => {
 
       expect(userRepository.checkUserNickname).toHaveBeenCalledWith("testuser");
       expect(result).toEqual(false);
-      expect(ExceptionUtil.default).toHaveBeenCalled();
+      // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        true,
+        UserErrorMessage.NICKNAME_CONFLICTED,
+        409
+      );
     });
 
     it("닉네임이 중복되면 ConflictException을 던져야 함", async () => {
@@ -80,6 +89,7 @@ describe("UserService", () => {
       await expect(
         service.checkNickname({ nickname: "testuser" })
       ).rejects.toThrow(ConflictException);
+      // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
       expect(ExceptionUtil.default).toHaveBeenCalledWith(
         false,
         UserErrorMessage.NICKNAME_CONFLICTED,
@@ -104,8 +114,10 @@ describe("UserService", () => {
       mockUserRepository.getUserByEmail.mockResolvedValue(null);
       mockUserRepository.checkUserNickname.mockResolvedValue(false);
       mockUserRepository.createUser.mockResolvedValue(mockUser);
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
+      jest
+        .spyOn(ExceptionUtil, "default")
+        .mockImplementationOnce(() => {})
+        .mockImplementationOnce(() => {});
 
       const result = await service.createUser(createUserDto as any);
 
@@ -121,8 +133,20 @@ describe("UserService", () => {
       );
 
       expect(result).toEqual(mockUser);
-      expect(ExceptionUtil.default).toHaveBeenCalled();
-      expect(ExceptionUtil.default).toHaveBeenCalled();
+      expect(ExceptionUtil.default).toHaveBeenCalledTimes(2);
+      // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
+      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(
+        1,
+        true,
+        UserErrorMessage.EMAIL_CONFLICTED,
+        409
+      );
+      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(
+        2,
+        true,
+        UserErrorMessage.NICKNAME_CONFLICTED,
+        409
+      );
     });
 
     it("이메일이 중복되면 ConflictException을 던져야 함", async () => {
@@ -141,6 +165,7 @@ describe("UserService", () => {
       await expect(service.createUser(createUserDto as any)).rejects.toThrow(
         ConflictException
       );
+      // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
       expect(ExceptionUtil.default).toHaveBeenCalledWith(
         false,
         UserErrorMessage.EMAIL_CONFLICTED,
@@ -160,7 +185,10 @@ describe("UserService", () => {
         "test@example.com"
       );
       expect(result).toEqual(mockUser);
-      expect(ExceptionUtil.default).toHaveBeenCalled();
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        mockUser,
+        UserErrorMessage.USER_NOT_FOUND
+      );
     });
 
     it("유저가 존재하지 않으면 NotFoundException을 던져야 함", async () => {
@@ -204,7 +232,7 @@ describe("UserService", () => {
       );
       expect(userRepository.getUserProfileById).toHaveBeenCalledWith(userId);
       expect(result).toEqual(mockProfile);
-      expect(ExceptionUtil.default).toHaveBeenCalled();
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(mockProfile);
     });
 
     it("유저가 존재하지 않으면 ForbiddenException을 던져야 함", async () => {
@@ -233,12 +261,10 @@ describe("UserService", () => {
       mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
       mockUserRepository.getUserProfileById.mockResolvedValue(null);
 
-      // 모킹 함수가 호출 순서에 따라 다르게 동작하도록 설정
       jest
         .spyOn(ExceptionUtil, "default")
-        .mockImplementationOnce(() => {}) // 첫 번째 호출: 사용자 존재 검증 (오류 없음)
+        .mockImplementationOnce(() => {})
         .mockImplementationOnce(() => {
-          // 두 번째 호출: 프로필 존재 검증 (404 오류)
           throw new NotFoundException();
         });
 
@@ -288,7 +314,7 @@ describe("UserService", () => {
         updateDto
       );
       expect(result).toEqual(mockUpdatedProfile);
-      expect(ExceptionUtil.default).toHaveBeenCalled();
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(mockUpdatedProfile);
     });
 
     it("프로필이 존재하지 않으면 NotFoundException을 던져야 함", async () => {
