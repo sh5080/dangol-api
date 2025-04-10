@@ -3,7 +3,6 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  BadRequestException,
   UnauthorizedException,
   ForbiddenException,
 } from "@nestjs/common";
@@ -17,6 +16,7 @@ import { decode } from "jsonwebtoken";
 import { env } from "@shared/configs/env.config";
 import { BlackListEnum, TokenEnum } from "@shared/types/enum.type";
 import { UserPayload } from "@shared/types/data.type";
+import { ExceptionUtil } from "@/shared/utils/exception.util";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -43,15 +43,15 @@ export class AuthGuard implements CanActivate {
     next: NextFunction
   ) {
     const authorization = req.headers.authorization;
-
-    if (!authorization) {
-      throw new BadRequestException(AuthErrorMessage.LOGIN_REQUIRED);
-    }
+    ExceptionUtil.default(authorization, AuthErrorMessage.LOGIN_REQUIRED, 400);
 
     const accessToken = authorization.split("Bearer ")[1];
-    if (!accessToken) {
-      throw new BadRequestException(AuthErrorMessage.ACCESS_TOKEN_MISSING);
-    }
+
+    ExceptionUtil.default(
+      accessToken,
+      AuthErrorMessage.ACCESS_TOKEN_MISSING,
+      400
+    );
 
     const accessSecret = env.auth.ACCESS_JWT_SECRET;
     try {
@@ -86,15 +86,14 @@ export class AuthGuard implements CanActivate {
         const refreshToken = cookies
           .find((cookie) => cookie.startsWith("Refresh="))
           ?.split("=")[1] as string;
-        if (!refreshToken) {
-          throw new UnauthorizedException(
-            AuthErrorMessage.REFRESH_TOKEN_MISSING
-          );
-        }
+        ExceptionUtil.default(
+          refreshToken,
+          AuthErrorMessage.REFRESH_TOKEN_MISSING,
+          401
+        );
         const decodedToken = decode(accessToken);
-        if (!decodedToken) {
-          throw new ForbiddenException(AuthErrorMessage.FORBIDDEN);
-        }
+        ExceptionUtil.default(decodedToken, AuthErrorMessage.FORBIDDEN, 403);
+
         const userId = (decodedToken as UserPayload).userId;
         const refreshSecret = env.auth.REFRESH_JWT_SECRET;
         await this.authService.verify(

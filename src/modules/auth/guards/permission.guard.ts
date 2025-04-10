@@ -8,6 +8,7 @@ import { Reflector } from "@nestjs/core";
 import { PrismaService } from "@core/prisma/prisma.service";
 import { Role } from "@prisma/client";
 import { UserErrorMessage } from "@shared/types/message.type";
+import { ExceptionUtil } from "@/shared/utils/exception.util";
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -47,9 +48,11 @@ export class PermissionGuard implements CanActivate {
       requiredPermissions.includes(up.permission.name)
     );
 
-    if (!hasPermission) {
-      throw new ForbiddenException(UserErrorMessage.PERMISSION_NOT_FOUND);
-    }
+    ExceptionUtil.default(
+      hasPermission,
+      UserErrorMessage.PERMISSION_NOT_FOUND,
+      403
+    );
 
     return true;
   }

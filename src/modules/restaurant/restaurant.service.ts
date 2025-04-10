@@ -14,7 +14,7 @@ export class RestaurantService implements IRestaurantService {
 
   async getRestaurant(id: string) {
     const restaurant = await this.restaurantRepository.getRestaurant(id);
-    ExceptionUtil.notExists(restaurant);
+    ExceptionUtil.default(restaurant);
     return restaurant;
   }
 
@@ -29,7 +29,7 @@ export class RestaurantService implements IRestaurantService {
       userId,
       dto
     );
-    ExceptionUtil.notExists(restaurant);
+    ExceptionUtil.default(restaurant);
     return restaurant;
   }
 
@@ -47,7 +47,7 @@ export class RestaurantService implements IRestaurantService {
         dto.status,
         dto.rejectReason
       );
-    ExceptionUtil.notExists(restaurantRequest);
+    ExceptionUtil.default(restaurantRequest);
     return restaurantRequest;
   }
 }

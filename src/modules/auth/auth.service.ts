@@ -1,7 +1,6 @@
 import {
   Inject,
   Injectable,
-  BadRequestException,
   ForbiddenException,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -30,6 +29,7 @@ import { Token, UserPayload } from "@shared/types/data.type";
 import Redis from "ioredis";
 import { env } from "@shared/configs/env.config";
 import { RedisService } from "@core/redis/redis.service";
+import { ExceptionUtil } from "@/shared/utils/exception.util";
 
 @Injectable()
 export class AuthService {
@@ -49,10 +49,7 @@ export class AuthService {
     const { email, authType } = dto;
 
     const user = await this.userService.getUserByEmail(email);
-
-    if (!user) {
-      throw new BadRequestException(UserErrorMessage.USER_NOT_FOUND);
-    }
+    ExceptionUtil.default(user, UserErrorMessage.USER_NOT_FOUND);
     // 가입되어 있는 authType이 호환되지 않는 경우
     if (AUTH_PROVIDER_ID_MAP[authType] !== user.authProviderId) {
       throw new ForbiddenException(
@@ -184,7 +181,7 @@ export class AuthService {
       "userAgent",
       userAgent
     );
-    console.log("@@@@@@: ", accessToken, refreshToken);
+
     await this.redis.expire(sessionKey, env.auth.REFRESH_JWT_EXPIRATION);
     return { accessToken, refreshToken };
   }
@@ -197,9 +194,8 @@ export class AuthService {
   ) {
     try {
       if (type === TokenEnum.REFRESH) {
-        if (!userId) {
-          throw new UnauthorizedException(AuthErrorMessage.SESSION_NOT_FOUND);
-        }
+        ExceptionUtil.default(userId, AuthErrorMessage.SESSION_NOT_FOUND, 401);
+
         const sessionKey = this.redisService.userKey(RedisKey.SESSION, userId);
         const redisSession = await this.redis.hgetall(sessionKey);
 

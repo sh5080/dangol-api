@@ -1,15 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  ConflictException,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { CreateUserDto } from "./dtos/create-user.dto";
 import { UserRepository } from "./user.repository";
-import {
-  DefaultErrorMessage,
-  UserErrorMessage,
-} from "@shared/types/message.type";
+import { UserErrorMessage } from "@shared/types/message.type";
 import { UpdateUserProfileDto } from "./dtos/update-user.dto";
 import {
   AUTH_PROVIDER_ID_MAP,
@@ -19,57 +11,44 @@ import {
 import { IUserService } from "@shared/interfaces/user.interface";
 import { UserWithProfile } from "./dtos/response.dto";
 import { CheckNicknameDto, GetChatParticipantsDto } from "./dtos/get-user.dto";
+import { ExceptionUtil } from "@/shared/utils/exception.util";
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(private readonly userRepository: UserRepository) {}
   async checkUser(key: CheckUserValueType, value: string) {
     const user = await this.userRepository.checkUserByValue(key, value);
-    if (!user) {
-      throw new ForbiddenException(UserErrorMessage.USER_NOT_FOUND);
-    }
+    ExceptionUtil.default(user, UserErrorMessage.USER_NOT_FOUND, 403);
     return user;
   }
 
   async checkNickname(dto: CheckNicknameDto) {
     const { nickname } = dto;
-    const checkNickname = await this.userRepository.checkUserNickname(nickname);
-    if (checkNickname) {
-      throw new ConflictException(UserErrorMessage.NICKNAME_CONFLICTED);
-    }
-    return checkNickname;
+    const isExist = await this.userRepository.checkUserNickname(nickname);
+    ExceptionUtil.default(!isExist, UserErrorMessage.NICKNAME_CONFLICTED, 409);
+    return isExist;
   }
 
   async createUser(dto: CreateUserDto) {
     const { email, authType, nickname } = dto;
-    const existingUser = await this.userRepository.getUserByEmail(email);
-    if (existingUser) {
-      throw new ConflictException(UserErrorMessage.EMAIL_CONFLICTED);
-    }
+    const isExist = await this.userRepository.getUserByEmail(email);
+    ExceptionUtil.default(!isExist, UserErrorMessage.EMAIL_CONFLICTED, 409);
     await this.checkNickname({ nickname });
 
     const authProviderId = AUTH_PROVIDER_ID_MAP[authType];
-
     return await this.userRepository.createUser(dto, authProviderId);
   }
 
   async getUserByEmail(email: string) {
     const user = await this.userRepository.getUserByEmail(email);
-    if (!user) {
-      throw new NotFoundException(UserErrorMessage.USER_NOT_FOUND);
-    }
-
+    ExceptionUtil.default(user, UserErrorMessage.USER_NOT_FOUND);
     return user;
   }
 
   async getUserProfileById(id: string) {
     await this.checkUser(CheckUserValue.ID, id);
     const userProfile = await this.userRepository.getUserProfileById(id);
-    if (!userProfile) {
-      throw new NotFoundException(
-        "유저 프로필" + DefaultErrorMessage.NOT_FOUND
-      );
-    }
+    ExceptionUtil.default(userProfile);
     return userProfile as UserWithProfile;
   }
 
@@ -77,11 +56,7 @@ export class UserService implements IUserService {
     await this.checkUser(CheckUserValue.ID, id);
 
     const userProfile = await this.userRepository.updateUserProfile(id, dto);
-    if (!userProfile) {
-      throw new NotFoundException(
-        "유저 프로필" + DefaultErrorMessage.NOT_FOUND
-      );
-    }
+    ExceptionUtil.default(userProfile);
     return userProfile as UserWithProfile;
   }
 
