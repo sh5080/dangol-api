@@ -16,7 +16,17 @@ jobs:
           RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
             https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys)
 
-          DEPLOY_ID=$(echo $RESPONSE | jq -r '.[0].id')
+          DEPLOY_ID=$(echo $RESPONSE | jq -r '.[0].deploy.id')
+
+          # DEPLOY_ID가 null이거나 비어있는지 확인
+          if [ "$DEPLOY_ID" = "null" ] || [ -z "$DEPLOY_ID" ]; then
+            # 배포 ID를 찾을 수 없음을 알림
+            curl -X POST -H "Content-type: application/json" \
+            --data '{"text":"❌ 배포 ID를 가져올 수 없습니다. Render API 응답을 확인하세요."}' \
+            "${{ secrets.SWIT_WEBHOOK_URL }}"
+            exit 1
+          fi
+
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
 
           # 배포 시작 알림
