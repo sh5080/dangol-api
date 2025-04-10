@@ -1,3 +1,4 @@
+import { RequestStatus } from "@prisma/client";
 import { tags } from "typia";
 
 export interface RequestRestaurantDto {
@@ -10,4 +11,9 @@ export interface RequestRestaurantDto {
     tags.MinLength<10> &
     tags.MaxLength<13> &
     tags.Example<"010-1234-5678">;
+}
+
+export interface ProcessRestaurantRequestDto {
+  status: RequestStatus;
+  rejectReason?: string;
 }

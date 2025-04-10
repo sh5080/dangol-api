@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@core/prisma/prisma.service";
-import { Prisma } from "@prisma/client";
+import { Prisma, RequestStatus } from "@prisma/client";
 import { GetRestaurantListDto } from "./dtos/get-restaurant.dto";
 import { RequestRestaurantDto } from "./dtos/create-restaurant.dto";
 import { v4 as uuidv4 } from "uuid";
@@ -37,6 +37,23 @@ export class RestaurantRepository {
         owner: { connect: { userId: userId } },
         restaurantRequest: { create: { userId: userId } },
       },
+    });
+  }
+
+  async getRestaurantRequests(userId: string) {
+    return await this.prisma.restaurantRequest.findMany({
+      where: { userId },
+    });
+  }
+
+  async processRestaurantRequest(
+    id: number,
+    status: RequestStatus,
+    rejectReason?: string
+  ) {
+    return await this.prisma.restaurantRequest.update({
+      where: { id },
+      data: { status, rejectReason },
     });
   }
 }

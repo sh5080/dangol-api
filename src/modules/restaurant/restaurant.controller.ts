@@ -4,8 +4,13 @@ import { TypedBody, TypedParam, TypedQuery, TypedRoute } from "@nestia/core";
 import { GetRestaurantListDto } from "./dtos/get-restaurant.dto";
 import { AuthGuard } from "../auth/guards/auth.guard";
 import { IRestaurantService } from "@shared/interfaces/restaurant.interface";
-import { RequestRestaurantDto } from "./dtos/create-restaurant.dto";
+import {
+  ProcessRestaurantRequestDto,
+  RequestRestaurantDto,
+} from "./dtos/create-restaurant.dto";
 import { AuthRequest } from "@/shared/types/request.type";
+import { Roles } from "@/shared/decorators/access-control.decorator";
+import { Role } from "@prisma/client";
 
 @ApiTags("식당")
 @Controller("restaurant")
@@ -14,39 +19,70 @@ export class RestaurantController {
     @Inject("IRestaurantService")
     private readonly restaurantService: IRestaurantService
   ) {}
+  // *************************** 공용 API ***************************
   /**
-   * @summary 식당 단건 조회
+   * @summary 식당 단건 조회 (공용)
    * @param id 식당 id
    * @returns 식당
    */
   @TypedRoute.Get(":id")
   async getRestaurant(@TypedParam("id") id: string) {
-    return this.restaurantService.getRestaurant(id);
+    return await this.restaurantService.getRestaurant(id);
   }
   /**
-   * @summary 식당 목록 조회
-   * @security bearer
+   * @summary 식당 목록 조회 (공용)
    * @param dto 식당 목록 조회 dto
    * @returns 식당 목록
    */
   @TypedRoute.Get()
-  @UseGuards(AuthGuard)
   async getRestaurants(@TypedQuery() dto: GetRestaurantListDto) {
-    return this.restaurantService.getRestaurants(dto);
+    return await this.restaurantService.getRestaurants(dto);
   }
 
+  // *************************** 점주 관련 API ***************************
   /**
-   * @summary 식당 생성 요청
+   * @summary 식당 생성 요청 (점주 / 관리자)
    * @param dto 식당 생성 요청 dto
    * @returns 식당 생성 요청
    */
-  @TypedRoute.Post()
+  @TypedRoute.Post("request")
   @UseGuards(AuthGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
   async requestRestaurant(
     @Req() req: AuthRequest,
     @TypedBody() dto: RequestRestaurantDto
   ) {
     const { userId } = req.user;
-    return this.restaurantService.requestRestaurant(userId, dto);
+    return await this.restaurantService.requestRestaurant(userId, dto);
+  }
+  /**
+   * @summary 식당 생성 요청 조회 (점주 / 관리자)
+   * @returns 식당 생성 요청 목록
+   */
+  @TypedRoute.Get("request")
+  @UseGuards(AuthGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  async getRestaurantRequests(@Req() req: AuthRequest) {
+    const { userId } = req.user;
+    return await this.restaurantService.getRestaurantRequests(userId);
+  }
+  // *************************** 관리자 관련 API ***************************
+  /**
+   * @summary 식당 생성 요청 승인 / 거절 처리 (관리자)
+   * @param id 식당 생성 요청 id
+   * @param dto 식당 생성 요청 승인 / 거절 처리 dto
+   * @returns 식당 생성 요청 결과
+   */
+  @TypedRoute.Post("request/:id/process")
+  @UseGuards(AuthGuard)
+  @Roles(Role.ADMIN)
+  async processRestaurantRequest(
+    @TypedParam("id") id: number,
+    @TypedBody() dto: ProcessRestaurantRequestDto
+  ) {
+    return await this.restaurantService.processRestaurantRequest(
+      Number(id),
+      dto
+    );
   }
 }
