@@ -1,15 +1,85 @@
-name: Deployment Notification
+name: Deployment-Notification
 
 on:
   push:
     branches: [master]
+  workflow_dispatch:
 
 jobs:
-  notify:
+  monitor-deployment:
     runs-on: ubuntu-latest
     steps:
-      - name: Send webhook to Swit
+      - name: Get latest deploy ID
+        id: get_deploy_id
         run: |
+          # 최신 배포 ID 가져오기
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys)
+
+          DEPLOY_ID=$(echo $RESPONSE | jq -r '.[0].deploy.id')
+
+          # DEPLOY_ID가 null이거나 비어있는지 확인
+          if [ "$DEPLOY_ID" = "null" ] || [ -z "$DEPLOY_ID" ]; then
+            # 배포 ID를 찾을 수 없음을 알림
+            curl -X POST -H "Content-type: application/json" \
+            --data '{"text":"❌ 배포 ID를 가져올 수 없습니다. Render API 응답을 확인하세요."}' \
+            "${{ secrets.SWIT_WEBHOOK_URL }}"
+            exit 1
+          fi
+
+          echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+
+          # 배포 시작 알림
           curl -X POST -H "Content-type: application/json" \
-          --data '{"text":"Master 브랜치에 변경사항이 감지되었습니다. 배포를 시작합니다."}' \
+          --data "{\"text\":\"🔄 배포가 시작되었습니다. 배포 ID: $DEPLOY_ID\"}" \
           "${{ secrets.SWIT_WEBHOOK_URL }}"
+
+      - name: Wait and check deployment status
+        run: |
+          # 배포 상태 확인 함수
+          check_status() {
+            curl -s -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys/${{ env.DEPLOY_ID }}
+          }
+
+          # 최대 20분 동안 배포 상태 확인 (30초 간격)
+          MAX_ATTEMPTS=40
+          ATTEMPT=1
+
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Checking deployment status (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+            DEPLOY_INFO=$(check_status)
+            STATUS=$(echo $DEPLOY_INFO | jq -r '.status')
+            
+            if [ "$STATUS" = "live" ]; then
+              # 배포 성공
+              FINISH_TIME=$(echo $DEPLOY_INFO | jq -r '.finishedAt')
+              COMMIT_MSG=$(echo $DEPLOY_INFO | jq -r '.commit.message')
+              
+              curl -X POST -H "Content-type: application/json" \
+              --data "{\"text\":\"✅ 배포가 성공적으로 완료되었습니다.\n- 완료 시간: $FINISH_TIME\n- 커밋 메시지: $COMMIT_MSG\"}" \
+              "${{ secrets.SWIT_WEBHOOK_URL }}"
+              exit 0
+              
+            elif [ "$STATUS" = "build_failed" ] || [ "$STATUS" = "deactivated" ] || [ "$STATUS" = "canceled" ]; then
+              # 배포 실패
+              ERROR=$(echo $DEPLOY_INFO | jq -r '.errorMessage // "상세 오류 메시지가 없습니다."')
+              
+              curl -X POST -H "Content-type: application/json" \
+              --data "{\"text\":\"❌ 배포가 실패했습니다.\n- 상태: $STATUS\n- 오류 메시지: $ERROR\"}" \
+              "${{ secrets.SWIT_WEBHOOK_URL }}"
+              exit 1
+              
+            else
+              # 아직 진행 중인 상태 (creating, build_in_progress 등)
+              echo "Deployment still in progress. Status: $STATUS"
+              sleep 30
+              ATTEMPT=$((ATTEMPT + 1))
+            fi
+          done
+
+          # 시간 초과
+          curl -X POST -H "Content-type: application/json" \
+          --data "{\"text\":\"⚠️ 배포 상태 확인 시간이 초과되었습니다. Render 대시보드에서 상태를 확인하세요.\"}" \
+          "${{ secrets.SWIT_WEBHOOK_URL }}"
+          exit 1
