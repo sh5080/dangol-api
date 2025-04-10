@@ -180,7 +180,7 @@ describe("RestaurantService", () => {
       expect(result).toEqual(mockRequests);
     });
 
-    it("식당 생성 요청 목록이 비어있으면 ExceptionUtil.emptyArray를 호출해야 함", async () => {
+    it("식당 생성 요청 목록이 비어있으면 NotFoundException을 호출해야 함", async () => {
       const userId = "user-id";
       mockRestaurantRepository.getRestaurantRequests.mockResolvedValue([]);
 
@@ -195,6 +195,29 @@ describe("RestaurantService", () => {
         mockRestaurantRepository.getRestaurantRequests
       ).toHaveBeenCalledWith(userId);
       expect(ExceptionUtil.emptyArray).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe("getMyRestaurants", () => {
+    it("내 식당 목록이 존재하면 내 식당 목록을 반환해야 함", async () => {
+      const userId = "user-id";
+      const mockRestaurants = [
+        { id: "test-id-1", name: "테스트 식당 1" },
+        { id: "test-id-2", name: "테스트 식당 2" },
+      ];
+
+      mockRestaurantRepository.getMyRestaurants.mockResolvedValue(
+        mockRestaurants
+      );
+      jest.spyOn(ExceptionUtil, "emptyArray").mockImplementation(() => {});
+
+      const result = await service.getMyRestaurants(userId);
+
+      expect(mockRestaurantRepository.getMyRestaurants).toHaveBeenCalledWith(
+        userId
+      );
+      expect(ExceptionUtil.emptyArray).toHaveBeenCalledWith(mockRestaurants);
+      expect(result).toEqual(mockRestaurants);
     });
   });
 

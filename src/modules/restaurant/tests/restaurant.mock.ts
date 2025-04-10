@@ -10,6 +10,7 @@ export const mockRestaurantService = {
   getRestaurants: jest.fn(),
   requestRestaurant: jest.fn(),
   getRestaurantRequests: jest.fn(),
+  getMyRestaurants: jest.fn(),
   processRestaurantRequest: jest.fn(),
 };
 
@@ -18,6 +19,7 @@ export const mockRestaurantRepository = {
   getRestaurants: jest.fn(),
   requestRestaurant: jest.fn(),
   getRestaurantRequests: jest.fn(),
+  getMyRestaurants: jest.fn(),
   processRestaurantRequest: jest.fn(),
 };
 

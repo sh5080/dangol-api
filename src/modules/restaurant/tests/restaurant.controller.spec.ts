@@ -114,6 +114,25 @@ describe("RestaurantController", () => {
     });
   });
 
+  describe("getMyRestaurants", () => {
+    it("내 식당 조회 시 내 식당 목록을 반환해야 함", async () => {
+      const req = { user: { userId: "user-id" } } as AuthRequest;
+      const mockRestaurants = [
+        { id: "test-id-1", name: "테스트 식당 1" },
+        { id: "test-id-2", name: "테스트 식당 2" },
+      ];
+
+      mockRestaurantService.getMyRestaurants.mockResolvedValue(mockRestaurants);
+
+      const result = await controller.getMyRestaurants(req);
+
+      expect(restaurantService.getMyRestaurants).toHaveBeenCalledWith(
+        "user-id"
+      );
+      expect(result).toEqual(mockRestaurants);
+    });
+  });
+
   describe("processRestaurantRequest", () => {
     it("식당 생성 요청 처리 시 처리 결과를 반환해야 함", async () => {
       const requestId = 1;
