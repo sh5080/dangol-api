@@ -7,6 +7,7 @@ import {
   RequestRestaurantDto,
 } from "./dtos/create-restaurant.dto";
 import { v4 as uuidv4 } from "uuid";
+import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
 @Injectable()
 export class RestaurantRepository {
   private readonly prisma: Prisma.TransactionClient;
@@ -56,6 +57,12 @@ export class RestaurantRepository {
     });
   }
 
+  async updateMyRestaurant(id: string, dto: UpdateRestaurantDto) {
+    return await this.prisma.restaurant.update({
+      where: { id },
+      data: dto,
+    });
+  }
   async processRestaurantRequest(id: number, dto: ProcessRestaurantRequestDto) {
     return await this.prisma.restaurantRequest.update({
       where: { id },

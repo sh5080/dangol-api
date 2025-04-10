@@ -11,6 +11,7 @@ import {
 import { AuthRequest } from "@/shared/types/request.type";
 import { Roles } from "@/shared/decorators/access-control.decorator";
 import { Role } from "@prisma/client";
+import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
 
 @ApiTags("식당")
 @Controller("restaurant")
@@ -76,6 +77,21 @@ export class RestaurantController {
   async getMyRestaurants(@Req() req: AuthRequest) {
     const { userId } = req.user;
     return await this.restaurantService.getMyRestaurants(userId);
+  }
+  /**
+   * @summary 내 식당 수정 (점주)
+   * @param id 식당 id
+   * @param dto 식당 수정 dto
+   * @returns 식당 수정 결과
+   */
+  @TypedRoute.Put("my/:id")
+  @UseGuards(AuthGuard)
+  @Roles(Role.OWNER)
+  async updateMyRestaurant(
+    @TypedParam("id") id: string,
+    @TypedBody() dto: UpdateRestaurantDto
+  ) {
+    return await this.restaurantService.updateMyRestaurant(id, dto);
   }
 
   // *************************** 관리자 관련 API ***************************

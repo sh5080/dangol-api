@@ -44,12 +44,11 @@ export class UserController {
    * @security bearer
    * @returns 유저 프로필
    * @throws 403 조회된 유저가 없습니다. (정상 작동이면 가능하지 않음)
-   * @throws 404 유저 프로필 없음 (회원가입시 프로필 동시에 생성해서 사실상 이 오류가 나올 일은 없습니다.)
    */
   @TypedRoute.Get("profile")
   @UseGuards(AuthGuard)
   async getUserProfile(@Req() req: AuthRequest) {
-    const userId = req.user.userId;
+    const { userId } = req.user;
     return this.userService.getUserProfileById(userId);
   }
 
@@ -67,7 +66,7 @@ export class UserController {
     @TypedBody() dto: UpdateUserProfileDto,
     @Req() req: AuthRequest
   ) {
-    const userId = req.user.userId;
+    const { userId } = req.user;
     return this.userService.updateUserProfile(userId, dto);
   }
 

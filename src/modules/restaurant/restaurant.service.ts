@@ -7,6 +7,7 @@ import {
   RequestRestaurantDto,
 } from "./dtos/create-restaurant.dto";
 import { ExceptionUtil } from "@shared/utils/exception.util";
+import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
 
 @Injectable()
 export class RestaurantService implements IRestaurantService {
@@ -45,6 +46,15 @@ export class RestaurantService implements IRestaurantService {
       await this.restaurantRepository.getMyRestaurants(userId);
     ExceptionUtil.emptyArray(restaurants);
     return restaurants;
+  }
+
+  async updateMyRestaurant(id: string, dto: UpdateRestaurantDto) {
+    const restaurant = await this.restaurantRepository.updateMyRestaurant(
+      id,
+      dto
+    );
+    ExceptionUtil.default(restaurant);
+    return restaurant;
   }
 
   async processRestaurantRequest(id: number, dto: ProcessRestaurantRequestDto) {
