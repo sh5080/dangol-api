@@ -67,7 +67,7 @@ describe("AuthService", () => {
       const user = {
         id: "1",
         authProviderId: AUTH_PROVIDER_ID_MAP.kakao,
-        role: Role.USER,
+        role: Role.CUSTOMER,
       };
       mockUserService.getUserByEmail.mockResolvedValue(user);
 
