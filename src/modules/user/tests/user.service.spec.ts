@@ -1,4 +1,4 @@
-import { Test, TestingModule } from "@nestjs/testing";
+import { TestingModule } from "@nestjs/testing";
 import { UserService } from "../user.service";
 import { UserRepository } from "../user.repository";
 import {
@@ -8,6 +8,9 @@ import {
 } from "@nestjs/common";
 import { CheckUserValue, AUTH_PROVIDER_ID_MAP } from "@shared/types/enum.type";
 import { mockUserServiceModule, mockUserRepository } from "./user.mock";
+import { ExceptionUtil } from "@/shared/utils/exception.util";
+import { UserErrorMessage } from "@/shared/types/message.type";
+
 describe("UserService", () => {
   let service: UserService;
   let userRepository: UserRepository;
@@ -17,6 +20,9 @@ describe("UserService", () => {
 
     service = module.get<UserService>(UserService);
     userRepository = module.get<UserRepository>(UserRepository);
+
+    // 테스트마다 모킹 초기화
+    jest.clearAllMocks();
   });
 
   it("should be defined", () => {
@@ -27,7 +33,7 @@ describe("UserService", () => {
     it("유저가 존재하면 유저 정보를 반환해야 함", async () => {
       const mockUser = { id: "1", email: "test@example.com" };
       mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
       const result = await service.checkUser(CheckUserValue.ID, "1");
 
       expect(userRepository.checkUserByValue).toHaveBeenCalledWith(
@@ -35,13 +41,22 @@ describe("UserService", () => {
         "1"
       );
       expect(result).toEqual(mockUser);
+      expect(ExceptionUtil.default).toHaveBeenCalled();
     });
 
     it("유저가 존재하지 않으면 ForbiddenException을 던져야 함", async () => {
       mockUserRepository.checkUserByValue.mockResolvedValue(null);
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new ForbiddenException();
+      });
 
       await expect(service.checkUser(CheckUserValue.ID, "1")).rejects.toThrow(
         ForbiddenException
+      );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        null,
+        UserErrorMessage.USER_NOT_FOUND,
+        403
       );
     });
   });
@@ -49,19 +64,27 @@ describe("UserService", () => {
   describe("checkNickname", () => {
     it("닉네임이 중복되지 않으면 false를 반환해야 함", async () => {
       mockUserRepository.checkUserNickname.mockResolvedValue(false);
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
       const result = await service.checkNickname({ nickname: "testuser" });
 
       expect(userRepository.checkUserNickname).toHaveBeenCalledWith("testuser");
       expect(result).toEqual(false);
+      expect(ExceptionUtil.default).toHaveBeenCalled();
     });
 
     it("닉네임이 중복되면 ConflictException을 던져야 함", async () => {
       mockUserRepository.checkUserNickname.mockResolvedValue(true);
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new ConflictException();
+      });
       await expect(
         service.checkNickname({ nickname: "testuser" })
       ).rejects.toThrow(ConflictException);
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        false,
+        UserErrorMessage.NICKNAME_CONFLICTED,
+        409
+      );
     });
   });
 
@@ -81,6 +104,8 @@ describe("UserService", () => {
       mockUserRepository.getUserByEmail.mockResolvedValue(null);
       mockUserRepository.checkUserNickname.mockResolvedValue(false);
       mockUserRepository.createUser.mockResolvedValue(mockUser);
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
 
       const result = await service.createUser(createUserDto as any);
 
@@ -94,7 +119,10 @@ describe("UserService", () => {
         createUserDto,
         AUTH_PROVIDER_ID_MAP.kakao
       );
+
       expect(result).toEqual(mockUser);
+      expect(ExceptionUtil.default).toHaveBeenCalled();
+      expect(ExceptionUtil.default).toHaveBeenCalled();
     });
 
     it("이메일이 중복되면 ConflictException을 던져야 함", async () => {
@@ -107,9 +135,16 @@ describe("UserService", () => {
         id: "1",
         email: createUserDto.email,
       });
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new ConflictException();
+      });
       await expect(service.createUser(createUserDto as any)).rejects.toThrow(
         ConflictException
+      );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        false,
+        UserErrorMessage.EMAIL_CONFLICTED,
+        409
       );
     });
   });
@@ -118,20 +153,27 @@ describe("UserService", () => {
     it("이메일로 유저 정보를 반환해야 함", async () => {
       const mockUser = { id: "1", email: "test@example.com" };
       mockUserRepository.getUserByEmail.mockResolvedValue(mockUser);
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
       const result = await service.getUserByEmail("test@example.com");
 
       expect(userRepository.getUserByEmail).toHaveBeenCalledWith(
         "test@example.com"
       );
       expect(result).toEqual(mockUser);
+      expect(ExceptionUtil.default).toHaveBeenCalled();
     });
 
     it("유저가 존재하지 않으면 NotFoundException을 던져야 함", async () => {
       mockUserRepository.getUserByEmail.mockResolvedValue(null);
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new NotFoundException();
+      });
       await expect(service.getUserByEmail("test@example.com")).rejects.toThrow(
         NotFoundException
+      );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        null,
+        UserErrorMessage.USER_NOT_FOUND
       );
     });
   });
@@ -153,7 +195,7 @@ describe("UserService", () => {
 
       mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
       mockUserRepository.getUserProfileById.mockResolvedValue(mockProfile);
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
       const result = await service.getUserProfileById(userId);
 
       expect(userRepository.checkUserByValue).toHaveBeenCalledWith(
@@ -162,8 +204,28 @@ describe("UserService", () => {
       );
       expect(userRepository.getUserProfileById).toHaveBeenCalledWith(userId);
       expect(result).toEqual(mockProfile);
+      expect(ExceptionUtil.default).toHaveBeenCalled();
     });
 
+    it("유저가 존재하지 않으면 ForbiddenException을 던져야 함", async () => {
+      const userId = "1";
+      const mockUser = { id: userId };
+
+      mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new ForbiddenException();
+      });
+      mockUserRepository.getUserProfileById.mockResolvedValue(null);
+
+      await expect(service.getUserProfileById(userId)).rejects.toThrow(
+        ForbiddenException
+      );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        mockUser,
+        UserErrorMessage.USER_NOT_FOUND,
+        403
+      );
+    });
     it("프로필이 존재하지 않으면 NotFoundException을 던져야 함", async () => {
       const userId = "1";
       const mockUser = { id: userId };
@@ -171,9 +233,26 @@ describe("UserService", () => {
       mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
       mockUserRepository.getUserProfileById.mockResolvedValue(null);
 
+      // 모킹 함수가 호출 순서에 따라 다르게 동작하도록 설정
+      jest
+        .spyOn(ExceptionUtil, "default")
+        .mockImplementationOnce(() => {}) // 첫 번째 호출: 사용자 존재 검증 (오류 없음)
+        .mockImplementationOnce(() => {
+          // 두 번째 호출: 프로필 존재 검증 (404 오류)
+          throw new NotFoundException();
+        });
+
       await expect(service.getUserProfileById(userId)).rejects.toThrow(
         NotFoundException
       );
+      expect(ExceptionUtil.default).toHaveBeenCalledTimes(2);
+      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(
+        1,
+        mockUser,
+        UserErrorMessage.USER_NOT_FOUND,
+        403
+      );
+      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(2, null);
     });
   });
 
@@ -197,7 +276,7 @@ describe("UserService", () => {
       mockUserRepository.updateUserProfile.mockResolvedValue(
         mockUpdatedProfile
       );
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
       const result = await service.updateUserProfile(userId, updateDto as any);
 
       expect(userRepository.checkUserByValue).toHaveBeenCalledWith(
@@ -209,6 +288,7 @@ describe("UserService", () => {
         updateDto
       );
       expect(result).toEqual(mockUpdatedProfile);
+      expect(ExceptionUtil.default).toHaveBeenCalled();
     });
 
     it("프로필이 존재하지 않으면 NotFoundException을 던져야 함", async () => {
@@ -218,10 +298,17 @@ describe("UserService", () => {
 
       mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
       mockUserRepository.updateUserProfile.mockResolvedValue(null);
-
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new NotFoundException();
+      });
       await expect(
         service.updateUserProfile(userId, updateDto as any)
       ).rejects.toThrow(NotFoundException);
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        mockUser,
+        UserErrorMessage.USER_NOT_FOUND,
+        403
+      );
     });
   });
 
