@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@core/prisma/prisma.service";
-import { Prisma, RequestStatus } from "@prisma/client";
+import { Prisma, RestaurantStatus } from "@prisma/client";
 import { GetRestaurantListDto } from "./dtos/get-restaurant.dto";
 import {
   ProcessRestaurantRequestDto,
@@ -17,12 +17,13 @@ export class RestaurantRepository {
 
   async getRestaurant(id: string) {
     return await this.prisma.restaurant.findUnique({
-      where: { id },
+      where: { id, status: { not: RestaurantStatus.HIDDEN } },
     });
   }
 
   async getRestaurants(dto: GetRestaurantListDto) {
     return await this.prisma.restaurant.findMany({
+      where: { status: { not: RestaurantStatus.HIDDEN } },
       skip: (dto.page - 1) * dto.pageSize,
       take: dto.pageSize,
     });
@@ -46,6 +47,12 @@ export class RestaurantRepository {
   async getRestaurantRequests(userId: string) {
     return await this.prisma.restaurantRequest.findMany({
       where: { userId },
+    });
+  }
+
+  async getMyRestaurants(userId: string) {
+    return await this.prisma.restaurant.findMany({
+      where: { owner: { userId }, status: { not: RestaurantStatus.HIDDEN } },
     });
   }
 
