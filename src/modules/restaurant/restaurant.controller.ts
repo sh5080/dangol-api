@@ -1,9 +1,11 @@
-import { Controller, Inject, UseGuards } from "@nestjs/common";
+import { Controller, Inject, Req, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { TypedParam, TypedQuery, TypedRoute } from "@nestia/core";
+import { TypedBody, TypedParam, TypedQuery, TypedRoute } from "@nestia/core";
 import { GetRestaurantListDto } from "./dtos/get-restaurant.dto";
 import { AuthGuard } from "../auth/guards/auth.guard";
 import { IRestaurantService } from "@shared/interfaces/restaurant.interface";
+import { RequestRestaurantDto } from "./dtos/create-restaurant.dto";
+import { AuthRequest } from "@/shared/types/request.type";
 
 @ApiTags("식당")
 @Controller("restaurant")
@@ -31,5 +33,20 @@ export class RestaurantController {
   @UseGuards(AuthGuard)
   async getRestaurants(@TypedQuery() dto: GetRestaurantListDto) {
     return this.restaurantService.getRestaurants(dto);
+  }
+
+  /**
+   * @summary 식당 생성 요청
+   * @param dto 식당 생성 요청 dto
+   * @returns 식당 생성 요청
+   */
+  @TypedRoute.Post()
+  @UseGuards(AuthGuard)
+  async requestRestaurant(
+    @Req() req: AuthRequest,
+    @TypedBody() dto: RequestRestaurantDto
+  ) {
+    const { userId } = req.user;
+    return this.restaurantService.requestRestaurant(userId, dto);
   }
 }

@@ -3,6 +3,7 @@ import { IRestaurantService } from "@shared/interfaces/restaurant.interface";
 import { RestaurantRepository } from "@/modules/restaurant/restaurant.repository";
 import { GetRestaurantListDto } from "./dtos/get-restaurant.dto";
 import { DefaultErrorMessage } from "@/shared/types/message.type";
+import { RequestRestaurantDto } from "./dtos/create-restaurant.dto";
 
 @Injectable()
 export class RestaurantService implements IRestaurantService {
@@ -22,5 +23,16 @@ export class RestaurantService implements IRestaurantService {
       throw new NotFoundException(DefaultErrorMessage.NOT_FOUND);
     }
     return restaurants;
+  }
+
+  async requestRestaurant(userId: string, dto: RequestRestaurantDto) {
+    const restaurant = await this.restaurantRepository.requestRestaurant(
+      userId,
+      dto
+    );
+    if (!restaurant) {
+      throw new NotFoundException(DefaultErrorMessage.NOT_FOUND);
+    }
+    return restaurant;
   }
 }

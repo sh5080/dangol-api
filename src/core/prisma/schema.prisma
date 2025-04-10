@@ -31,6 +31,7 @@ model User {
   profile             UserProfile?
   restaurantOwner     RestaurantOwner?
   restaurantFavorites UserRestaurantFavorite[]
+  RestaurantRequest   RestaurantRequest[]
 }
 
 enum Role {
@@ -131,8 +132,8 @@ model Restaurant {
   address           String
   phoneNumber       String
   ownerId           Int
-  isClosed          Boolean                  @default(false)
   deliveryAvailable Boolean                  @default(false)
+  status            RestaurantStatus         @default(HIDDEN)
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
   deletedAt         DateTime?
@@ -140,6 +141,7 @@ model Restaurant {
   businessHours     BusinessHour[]
   tags              RestaurantTag[]
   userFavorite      UserRestaurantFavorite[]
+  restaurantRequest RestaurantRequest[]
 }
 
 model BusinessHour {
@@ -171,4 +173,30 @@ model UserRestaurantFavorite {
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 
   @@unique([userId, restaurantId])
+}
+
+model RestaurantRequest {
+  id           Int       @id @default(autoincrement())
+  restaurantId String
+  userId       String
+  rejectReason String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  user       User          @relation(fields: [userId], references: [id])
+  restaurant Restaurant    @relation(fields: [restaurantId], references: [id])
+  status     RequestStatus @default(PENDING)
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RestaurantStatus {
+  HIDDEN
+  OPEN
+  CLOSED
 }
