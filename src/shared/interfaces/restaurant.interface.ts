@@ -13,6 +13,7 @@ export interface IRestaurantService {
     dto: RequestRestaurantDto
   ): Promise<Restaurant>;
   getRestaurantRequests(userId: string): Promise<RestaurantRequest[]>;
+  getMyRestaurants(userId: string): Promise<Restaurant[]>;
   processRestaurantRequest(
     id: number,
     dto: ProcessRestaurantRequestDto

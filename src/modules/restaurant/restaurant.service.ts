@@ -40,6 +40,13 @@ export class RestaurantService implements IRestaurantService {
     return restaurantRequests;
   }
 
+  async getMyRestaurants(userId: string) {
+    const restaurants =
+      await this.restaurantRepository.getMyRestaurants(userId);
+    ExceptionUtil.emptyArray(restaurants);
+    return restaurants;
+  }
+
   async processRestaurantRequest(id: number, dto: ProcessRestaurantRequestDto) {
     const restaurantRequest =
       await this.restaurantRepository.processRestaurantRequest(id, dto);

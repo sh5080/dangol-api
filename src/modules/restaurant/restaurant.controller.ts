@@ -66,6 +66,18 @@ export class RestaurantController {
     const { userId } = req.user;
     return await this.restaurantService.getRestaurantRequests(userId);
   }
+  /**
+   * @summary 내 식당 조회 (점주)
+   * @returns 내 식당
+   */
+  @TypedRoute.Get("my")
+  @UseGuards(AuthGuard)
+  @Roles(Role.OWNER)
+  async getMyRestaurants(@Req() req: AuthRequest) {
+    const { userId } = req.user;
+    return await this.restaurantService.getMyRestaurants(userId);
+  }
+
   // *************************** 관리자 관련 API ***************************
   /**
    * @summary 식당 생성 요청 승인 / 거절 처리 (관리자)
