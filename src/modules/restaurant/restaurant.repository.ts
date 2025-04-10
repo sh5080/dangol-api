@@ -2,7 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@core/prisma/prisma.service";
 import { Prisma, RequestStatus } from "@prisma/client";
 import { GetRestaurantListDto } from "./dtos/get-restaurant.dto";
-import { RequestRestaurantDto } from "./dtos/create-restaurant.dto";
+import {
+  ProcessRestaurantRequestDto,
+  RequestRestaurantDto,
+} from "./dtos/create-restaurant.dto";
 import { v4 as uuidv4 } from "uuid";
 @Injectable()
 export class RestaurantRepository {
@@ -46,14 +49,10 @@ export class RestaurantRepository {
     });
   }
 
-  async processRestaurantRequest(
-    id: number,
-    status: RequestStatus,
-    rejectReason?: string
-  ) {
+  async processRestaurantRequest(id: number, dto: ProcessRestaurantRequestDto) {
     return await this.prisma.restaurantRequest.update({
       where: { id },
-      data: { status, rejectReason },
+      data: { status: dto.status, rejectReason: dto.rejectReason },
     });
   }
 }

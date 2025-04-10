@@ -42,11 +42,7 @@ export class RestaurantService implements IRestaurantService {
 
   async processRestaurantRequest(id: number, dto: ProcessRestaurantRequestDto) {
     const restaurantRequest =
-      await this.restaurantRepository.processRestaurantRequest(
-        id,
-        dto.status,
-        dto.rejectReason
-      );
+      await this.restaurantRepository.processRestaurantRequest(id, dto);
     ExceptionUtil.default(restaurantRequest);
     return restaurantRequest;
   }
