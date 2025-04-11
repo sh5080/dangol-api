@@ -18,13 +18,22 @@ export class RestaurantRepository {
 
   async getRestaurant(id: string) {
     return await this.prisma.restaurant.findUnique({
-      where: { id, status: { not: RestaurantStatus.HIDDEN } },
+      where: {
+        id,
+        status: {
+          notIn: [RestaurantStatus.HIDDEN, RestaurantStatus.REQUESTED],
+        },
+      },
     });
   }
 
   async getRestaurants(dto: GetRestaurantListDto) {
     return await this.prisma.restaurant.findMany({
-      where: { status: { not: RestaurantStatus.HIDDEN } },
+      where: {
+        status: {
+          notIn: [RestaurantStatus.HIDDEN, RestaurantStatus.REQUESTED],
+        },
+      },
       skip: (dto.page - 1) * dto.pageSize,
       take: dto.pageSize,
     });
@@ -40,21 +49,32 @@ export class RestaurantRepository {
         businessLicenseNumber: dto.businessLicenseNumber,
         address: dto.address,
         phoneNumber: dto.phoneNumber,
-        owner: { connect: { userId: userId } },
+        owner: { connect: { id: userId } },
         restaurantRequest: { create: { userId: userId } },
       },
     });
   }
 
-  async getRestaurantRequests(userId: string) {
+  async getUserRestaurantRequests(userId: string) {
     return await this.prisma.restaurantRequest.findMany({
       where: { userId },
     });
   }
 
+  async getAllRestaurantRequests(dto: GetRestaurantListDto) {
+    return await this.prisma.restaurantRequest.findMany({
+      include: {
+        user: true,
+        restaurant: true,
+      },
+      skip: (dto.page - 1) * dto.pageSize,
+      take: dto.pageSize,
+    });
+  }
+
   async getMyRestaurants(userId: string) {
     return await this.prisma.restaurant.findMany({
-      where: { owner: { userId }, status: { not: RestaurantStatus.HIDDEN } },
+      where: { ownerId: userId, status: { not: RestaurantStatus.REQUESTED } },
     });
   }
 

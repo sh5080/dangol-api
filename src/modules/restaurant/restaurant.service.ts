@@ -12,7 +12,7 @@ import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
 @Injectable()
 export class RestaurantService implements IRestaurantService {
   constructor(private readonly restaurantRepository: RestaurantRepository) {}
-
+  // *************************** 공용 API ***************************
   async getRestaurant(id: string) {
     const restaurant = await this.restaurantRepository.getRestaurant(id);
     ExceptionUtil.default(restaurant);
@@ -36,7 +36,7 @@ export class RestaurantService implements IRestaurantService {
 
   async getRestaurantRequests(userId: string) {
     const restaurantRequests =
-      await this.restaurantRepository.getRestaurantRequests(userId);
+      await this.restaurantRepository.getUserRestaurantRequests(userId);
     ExceptionUtil.emptyArray(restaurantRequests);
     return restaurantRequests;
   }
@@ -55,6 +55,14 @@ export class RestaurantService implements IRestaurantService {
     );
     ExceptionUtil.default(restaurant);
     return restaurant;
+  }
+
+  // *************************** 관리자 관련 API ***************************
+  async getAllRestaurantRequests(dto: GetRestaurantListDto) {
+    const restaurantRequests =
+      await this.restaurantRepository.getAllRestaurantRequests(dto);
+    ExceptionUtil.emptyArray(restaurantRequests);
+    return restaurantRequests;
   }
 
   async processRestaurantRequest(id: number, dto: ProcessRestaurantRequestDto) {
