@@ -19,6 +19,7 @@ export class UserController {
    * @summary 회원가입
    * @param dto 유저 생성 dto
    * @returns 생성된 유저
+   * @throws 400 개인정보 수집에 동의해주세요.
    * @throws 409 이메일 중복
    */
   @TypedRoute.Post("signup")

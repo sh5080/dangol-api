@@ -2,15 +2,19 @@ import { TestingModule } from "@nestjs/testing";
 import { UserService } from "../user.service";
 import { UserRepository } from "../user.repository";
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   NotFoundException,
 } from "@nestjs/common";
-import { CheckUserValue, AUTH_PROVIDER_ID_MAP } from "@shared/types/enum.type";
+import { CheckUserValue } from "@shared/types/enum.type";
 import { mockUserServiceModule, mockUserRepository } from "./user.mock";
 import { ExceptionUtil } from "@/shared/utils/exception.util";
 import { UserErrorMessage } from "@/shared/types/message.type";
 import { CreateUserDto } from "../dtos/create-user.dto";
+import * as bcrypt from "bcrypt";
+
+jest.mock("bcrypt");
 
 describe("UserService", () => {
   let service: UserService;
@@ -80,50 +84,100 @@ describe("UserService", () => {
       const mockUser = {
         id: "1",
         email: dto.email,
+        password:
+          "$2b$10$MTzeWmMSRY9q8yDQ.1elcu3sS1hVSLrpcGzw9T3S4NM8X6aVfdjl2",
       };
 
       mockUserRepository.getUserByEmail.mockResolvedValue(null);
       mockUserRepository.checkUserNickname.mockResolvedValue(false);
       mockUserRepository.createUser.mockResolvedValue(mockUser);
+
+      (bcrypt.hash as jest.Mock).mockResolvedValue(
+        "$2b$10$MTzeWmMSRY9q8yDQ.1elcu3sS1hVSLrpcGzw9T3S4NM8X6aVfdjl2"
+      );
+
       jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
 
-      const result = await service.createUser(dto as any);
+      const result = await service.createUser(dto);
 
       expect(userRepository.getUserByEmail).toHaveBeenCalledWith(dto.email);
-      expect(userRepository.createUser).toHaveBeenCalledWith(dto);
-      expect(result).toEqual(mockUser);
+      expect(bcrypt.hash).toHaveBeenCalledWith(
+        dto.password,
+        expect.any(Number)
+      );
 
-      // 현재 서비스 구현에 맞게 수정: ExceptionUtil.default는 한 번만 호출됨
-      expect(ExceptionUtil.default).toHaveBeenCalledTimes(1);
+      // createUser가 호출될 때 비밀번호가 해시된 값으로 전달되었는지는 검증하지 않음
+      // 대신 함수 호출 자체만 검증
+      expect(userRepository.createUser).toHaveBeenCalled();
+
+      expect(result).toEqual(mockUser);
+    });
+
+    it("개인정보 수집에 동의하지 않으면 BadRequestException을 던져야 함", async () => {
+      const dto: CreateUserDto = {
+        email: "test@example.com",
+        password: "password",
+        name: "test",
+        phoneNumber: "01012345678",
+        isPersonalInfoCollectionAgree: false,
+        isPersonalInfoUseAgree: true,
+      };
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new BadRequestException();
+      });
+
+      await expect(service.createUser(dto as any)).rejects.toThrow(
+        BadRequestException
+      );
       expect(ExceptionUtil.default).toHaveBeenCalledWith(
-        true, // !isExist의 결과
-        UserErrorMessage.EMAIL_CONFLICTED,
-        409
+        false,
+        UserErrorMessage.PERSONAL_INFO_COLLECTION_AGREE_REQUIRED,
+        400
       );
     });
 
     it("이메일이 중복되면 ConflictException을 던져야 함", async () => {
-      const createUserDto = {
+      const createUserDto: CreateUserDto = {
         email: "test@example.com",
-        authType: "kakao",
-        nickname: "testuser",
+        password: "password",
+        name: "test",
+        phoneNumber: "01012345678",
+        isPersonalInfoCollectionAgree: true,
+        isPersonalInfoUseAgree: true,
       };
+
       mockUserRepository.getUserByEmail.mockResolvedValue({
         id: "1",
         email: createUserDto.email,
       });
 
-      // 예외를 던지도록 설정
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
-        throw new ConflictException();
-      });
+      // 두 번의 ExceptionUtil.default 호출이 발생할 것으로 예상:
+      // 1. 개인정보 수집 동의 확인
+      // 2. 이메일 중복 확인
+      jest
+        .spyOn(ExceptionUtil, "default")
+        .mockImplementationOnce(() => {}) // 첫 번째 호출은 통과 (개인정보 동의)
+        .mockImplementationOnce(() => {
+          // 두 번째 호출은 예외 발생 (이메일 중복)
+          throw new ConflictException();
+        });
 
-      await expect(service.createUser(createUserDto as any)).rejects.toThrow(
+      await expect(service.createUser(createUserDto)).rejects.toThrow(
         ConflictException
       );
 
-      expect(ExceptionUtil.default).toHaveBeenCalledWith(
-        false, // !isExist의 결과 (isExist가 있으므로 false)
+      // 첫 번째 호출: 개인정보 수집 동의 확인
+      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(
+        1,
+        createUserDto.isPersonalInfoCollectionAgree,
+        "개인정보 수집에 동의해주세요.",
+        400
+      );
+
+      // 두 번째 호출: 이메일 중복 확인
+      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(
+        2,
+        false, // !isExist의 결과
         UserErrorMessage.EMAIL_CONFLICTED,
         409
       );

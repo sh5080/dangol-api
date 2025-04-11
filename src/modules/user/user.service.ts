@@ -18,8 +18,12 @@ export class UserService implements IUserService {
   }
 
   async createUser(dto: CreateUserDto) {
-    const { email, password } = dto;
-
+    const { email, password, isPersonalInfoCollectionAgree } = dto;
+    ExceptionUtil.default(
+      isPersonalInfoCollectionAgree,
+      UserErrorMessage.PERSONAL_INFO_COLLECTION_AGREE_REQUIRED,
+      400
+    );
     const isExist = await this.userRepository.getUserByEmail(email);
     ExceptionUtil.default(!isExist, UserErrorMessage.EMAIL_CONFLICTED, 409);
     const hashedPassword = await bcrypt.hash(password, 10);

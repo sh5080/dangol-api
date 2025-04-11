@@ -7,6 +7,7 @@ export const AuthErrorMessage = {
   ACCOUNT_BLOCKED: "제한된 계정입니다.",
   FORBIDDEN: "접근이 금지되었습니다.",
   SESSION_NOT_FOUND: "세션이 확인되지 않습니다.",
+  RESTAURANT_NOT_FOUND: "등록된 매장이 없습니다.",
 } as const;
 export const TokenErrorMessage = {
   TOKEN_EXPIRED: "만료된 토큰입니다.",
@@ -19,6 +20,7 @@ export const UserErrorMessage = {
   NICKNAME_CONFLICTED: "닉네임이 이미 사용 중입니다.",
   INVALID_CODE: "유효하지 않은 코드입니다.",
   PERMISSION_NOT_FOUND: "권한이 없습니다.",
+  PERSONAL_INFO_COLLECTION_AGREE_REQUIRED: "개인정보 수집에 동의해주세요.",
 } as const;
 
 export const DefaultErrorMessage = {
