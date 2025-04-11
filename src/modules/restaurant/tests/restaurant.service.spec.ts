@@ -21,11 +21,11 @@ describe("RestaurantService", () => {
   });
 
   describe("getRestaurant", () => {
-    it("식당이 존재하면 식당 정보를 반환해야 함", async () => {
+    it("매장이 존재하면 매장 정보를 반환해야 함", async () => {
       const restaurantId = "test-id";
       const mockRestaurant = {
         id: restaurantId,
-        name: "테스트 식당",
+        name: "테스트 매장",
         address: "테스트 주소",
         phoneNumber: "010-1234-5678",
       };
@@ -43,7 +43,7 @@ describe("RestaurantService", () => {
       expect(ExceptionUtil.default).toHaveBeenCalledWith(mockRestaurant);
     });
 
-    it("식당이 존재하지 않으면 NotFoundException을 호출해야 함", async () => {
+    it("매장이 존재하지 않으면 NotFoundException을 호출해야 함", async () => {
       const restaurantId = "nonexistent-id";
       mockRestaurantRepository.getRestaurant.mockResolvedValue(null);
 
@@ -62,11 +62,11 @@ describe("RestaurantService", () => {
   });
 
   describe("getRestaurants", () => {
-    it("식당 목록이 존재하면 식당 목록을 반환해야 함", async () => {
+    it("매장 목록이 존재하면 매장 목록을 반환해야 함", async () => {
       const dto = { page: 1, pageSize: 10 };
       const mockRestaurants = [
-        { id: "test-id-1", name: "테스트 식당 1" },
-        { id: "test-id-2", name: "테스트 식당 2" },
+        { id: "test-id-1", name: "테스트 매장 1" },
+        { id: "test-id-2", name: "테스트 매장 2" },
       ];
 
       mockRestaurantRepository.getRestaurants.mockResolvedValue(
@@ -81,7 +81,7 @@ describe("RestaurantService", () => {
       expect(result).toEqual(mockRestaurants);
     });
 
-    it("식당 목록이 비어있으면 NotFoundException을 호출해야 함", async () => {
+    it("매장 목록이 비어있으면 NotFoundException을 호출해야 함", async () => {
       const dto = { page: 1, pageSize: 10 };
       mockRestaurantRepository.getRestaurants.mockResolvedValue([]);
 
@@ -98,10 +98,10 @@ describe("RestaurantService", () => {
   });
 
   describe("requestRestaurant", () => {
-    it("식당 생성 요청 성공 시 생성된 식당 정보를 반환해야 함", async () => {
+    it("매장 생성 요청 성공 시 생성된 매장 정보를 반환해야 함", async () => {
       const userId = "user-id";
       const dto = {
-        name: "테스트 식당",
+        name: "테스트 매장",
         description: "테스트 설명",
         address: "테스트 주소",
         phoneNumber: "010-1234-5678",
@@ -133,10 +133,10 @@ describe("RestaurantService", () => {
       expect(result).toEqual(mockRestaurant);
     });
 
-    it("식당 생성 요청 실패 시 NotFoundException을 호출해야 함", async () => {
+    it("매장 생성 요청 실패 시 NotFoundException을 호출해야 함", async () => {
       const userId = "user-id";
       const dto = {
-        name: "테스트 식당",
+        name: "테스트 매장",
         description: "테스트 설명",
         address: "테스트 주소",
         phoneNumber: "010-1234-5678",
@@ -162,7 +162,7 @@ describe("RestaurantService", () => {
   });
 
   describe("getRestaurantRequests", () => {
-    it("식당 생성 요청 목록이 존재하면 요청 목록을 반환해야 함", async () => {
+    it("매장 생성 요청 목록이 존재하면 요청 목록을 반환해야 함", async () => {
       const userId = "user-id";
       const mockRequests = [
         { id: 1, status: RequestStatus.PENDING },
@@ -183,7 +183,7 @@ describe("RestaurantService", () => {
       expect(result).toEqual(mockRequests);
     });
 
-    it("식당 생성 요청 목록이 비어있으면 NotFoundException을 호출해야 함", async () => {
+    it("매장 생성 요청 목록이 비어있으면 NotFoundException을 호출해야 함", async () => {
       const userId = "user-id";
       mockRestaurantRepository.getRestaurantRequests.mockResolvedValue([]);
 
@@ -202,11 +202,11 @@ describe("RestaurantService", () => {
   });
 
   describe("getMyRestaurants", () => {
-    it("내 식당 목록이 존재하면 내 식당 목록을 반환해야 함", async () => {
+    it("내 매장 목록이 존재하면 내 매장 목록을 반환해야 함", async () => {
       const userId = "user-id";
       const mockRestaurants = [
-        { id: "test-id-1", name: "테스트 식당 1" },
-        { id: "test-id-2", name: "테스트 식당 2" },
+        { id: "test-id-1", name: "테스트 매장 1" },
+        { id: "test-id-2", name: "테스트 매장 2" },
       ];
 
       mockRestaurantRepository.getMyRestaurants.mockResolvedValue(
@@ -225,7 +225,7 @@ describe("RestaurantService", () => {
   });
 
   describe("processRestaurantRequest", () => {
-    it("식당 생성 요청 처리 성공 시 처리 결과를 반환해야 함", async () => {
+    it("매장 생성 요청 처리 성공 시 처리 결과를 반환해야 함", async () => {
       const requestId = 1;
       const dto = {
         status: RequestStatus.APPROVED,
@@ -251,7 +251,7 @@ describe("RestaurantService", () => {
       expect(result).toEqual(mockResult);
     });
 
-    it("식당 생성 요청 처리 실패 시 NotFoundException을 호출해야 함", async () => {
+    it("매장 생성 요청 처리 실패 시 NotFoundException을 호출해야 함", async () => {
       const requestId = 1;
       const dto = {
         status: RequestStatus.APPROVED,

@@ -25,11 +25,11 @@ describe("RestaurantController", () => {
   });
 
   describe("getRestaurant", () => {
-    it("식당 ID로 단일 식당 조회 시 식당 정보를 반환해야 함", async () => {
+    it("매장 ID로 단일 매장 조회 시 매장 정보를 반환해야 함", async () => {
       const restaurantId = "test-id";
       const mockRestaurant = {
         id: restaurantId,
-        name: "테스트 식당",
+        name: "테스트 매장",
         address: "테스트 주소",
         phoneNumber: "010-1234-5678",
       };
@@ -46,11 +46,11 @@ describe("RestaurantController", () => {
   });
 
   describe("getRestaurants", () => {
-    it("식당 목록 조회 시 식당 목록을 반환해야 함", async () => {
+    it("매장 목록 조회 시 매장 목록을 반환해야 함", async () => {
       const dto: GetRestaurantListDto = { page: 1, pageSize: 10 };
       const mockRestaurants = [
-        { id: "test-id-1", name: "테스트 식당 1" },
-        { id: "test-id-2", name: "테스트 식당 2" },
+        { id: "test-id-1", name: "테스트 매장 1" },
+        { id: "test-id-2", name: "테스트 매장 2" },
       ];
 
       mockRestaurantService.getRestaurants.mockResolvedValue(mockRestaurants);
@@ -63,10 +63,10 @@ describe("RestaurantController", () => {
   });
 
   describe("requestRestaurant", () => {
-    it("식당 생성 요청 시 생성된 식당 정보를 반환해야 함", async () => {
+    it("매장 생성 요청 시 생성된 매장 정보를 반환해야 함", async () => {
       const req = { user: { userId: "user-id" } } as AuthRequest;
       const dto: RequestRestaurantDto = {
-        name: "테스트 식당",
+        name: "테스트 매장",
         description: "테스트 설명",
         address: "테스트 주소",
         phoneNumber: "010-1234-5678",
@@ -96,7 +96,7 @@ describe("RestaurantController", () => {
   });
 
   describe("getRestaurantRequests", () => {
-    it("식당 생성 요청 목록 조회 시 요청 목록을 반환해야 함", async () => {
+    it("매장 생성 요청 목록 조회 시 요청 목록을 반환해야 함", async () => {
       const req = { user: { userId: "user-id" } } as AuthRequest;
       const mockRequests = [
         { id: 1, status: RequestStatus.PENDING },
@@ -117,11 +117,11 @@ describe("RestaurantController", () => {
   });
 
   describe("getMyRestaurants", () => {
-    it("내 식당 조회 시 내 식당 목록을 반환해야 함", async () => {
+    it("내 매장 조회 시 내 매장 목록을 반환해야 함", async () => {
       const req = { user: { userId: "user-id" } } as AuthRequest;
       const mockRestaurants = [
-        { id: "test-id-1", name: "테스트 식당 1" },
-        { id: "test-id-2", name: "테스트 식당 2" },
+        { id: "test-id-1", name: "테스트 매장 1" },
+        { id: "test-id-2", name: "테스트 매장 2" },
       ];
 
       mockRestaurantService.getMyRestaurants.mockResolvedValue(mockRestaurants);
@@ -136,7 +136,7 @@ describe("RestaurantController", () => {
   });
 
   describe("processRestaurantRequest", () => {
-    it("식당 생성 요청 처리 시 처리 결과를 반환해야 함", async () => {
+    it("매장 생성 요청 처리 시 처리 결과를 반환해야 함", async () => {
       const requestId = 1;
       const dto: ProcessRestaurantRequestDto = {
         status: RequestStatus.APPROVED,

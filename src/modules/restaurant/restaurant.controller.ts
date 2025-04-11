@@ -13,7 +13,7 @@ import { Roles } from "@/shared/decorators/access-control.decorator";
 import { Role } from "@prisma/client";
 import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
 
-@ApiTags("식당")
+@ApiTags("매장")
 @Controller("restaurant")
 export class RestaurantController {
   constructor(
@@ -22,18 +22,18 @@ export class RestaurantController {
   ) {}
   // *************************** 공용 API ***************************
   /**
-   * @summary 식당 단건 조회 (공용)
-   * @param id 식당 id
-   * @returns 식당
+   * @summary 매장 단건 조회 (공용)
+   * @param id 매장 id
+   * @returns 매장
    */
   @TypedRoute.Get(":id")
   async getRestaurant(@TypedParam("id") id: string) {
     return await this.restaurantService.getRestaurant(id);
   }
   /**
-   * @summary 식당 목록 조회 (공용)
-   * @param dto 식당 목록 조회 dto
-   * @returns 식당 목록
+   * @summary 매장 목록 조회 (공용)
+   * @param dto 매장 목록 조회 dto
+   * @returns 매장 목록
    */
   @TypedRoute.Get()
   async getRestaurants(@TypedQuery() dto: GetRestaurantListDto) {
@@ -42,9 +42,9 @@ export class RestaurantController {
 
   // *************************** 점주 관련 API ***************************
   /**
-   * @summary 식당 생성 요청 (점주 / 관리자)
-   * @param dto 식당 생성 요청 dto
-   * @returns 식당 생성 요청
+   * @summary 매장 생성 요청 (점주 / 관리자)
+   * @param dto 매장 생성 요청 dto
+   * @returns 매장 생성 요청
    */
   @TypedRoute.Post("request")
   @UseGuards(AuthGuard)
@@ -57,8 +57,8 @@ export class RestaurantController {
     return await this.restaurantService.requestRestaurant(userId, dto);
   }
   /**
-   * @summary 식당 생성 요청 조회 (점주 / 관리자)
-   * @returns 식당 생성 요청 목록
+   * @summary 매장 생성 요청 조회 (점주)
+   * @returns 매장 생성 요청 목록
    */
   @TypedRoute.Get("request")
   @UseGuards(AuthGuard)
@@ -68,8 +68,8 @@ export class RestaurantController {
     return await this.restaurantService.getRestaurantRequests(userId);
   }
   /**
-   * @summary 내 식당 조회 (점주)
-   * @returns 내 식당
+   * @summary 내 매장 조회 (점주)
+   * @returns 내 매장
    */
   @TypedRoute.Get("my")
   @UseGuards(AuthGuard)
@@ -79,10 +79,10 @@ export class RestaurantController {
     return await this.restaurantService.getMyRestaurants(userId);
   }
   /**
-   * @summary 내 식당 수정 (점주)
-   * @param id 식당 id
-   * @param dto 식당 수정 dto
-   * @returns 식당 수정 결과
+   * @summary 내 매장 수정 (점주)
+   * @param id 매장 id
+   * @param dto 매장 수정 dto
+   * @returns 매장 수정 결과
    */
   @TypedRoute.Put("my/:id")
   @UseGuards(AuthGuard)
@@ -95,13 +95,25 @@ export class RestaurantController {
   }
 
   // *************************** 관리자 관련 API ***************************
+
   /**
-   * @summary 식당 생성 요청 승인 / 거절 처리 (관리자)
-   * @param id 식당 생성 요청 id
-   * @param dto 식당 생성 요청 승인 / 거절 처리 dto
-   * @returns 식당 생성 요청 결과
+   * @summary 매장 생성 요청 목록 조회 (관리자) -- 추후 별도서버 분리할 경우 엔드포인트 admin.-.com/api/restaurant/request 로 변경예정
+   * @param dto 매장 생성 요청 목록 조회 dto
+   * @returns 매장 생성 요청 목록
    */
-  @TypedRoute.Post("request/:id/process")
+  @TypedRoute.Get("admin/request")
+  @UseGuards(AuthGuard)
+  @Roles(Role.ADMIN)
+  async getAllRestaurantRequests(@TypedQuery() dto: GetRestaurantListDto) {
+    return await this.restaurantService.getAllRestaurantRequests(dto);
+  }
+  /**
+   * @summary 매장 생성 요청 승인 / 거절 처리 (관리자) -- 엔드포인트 admin.-.com/api/restaurant/request/:id/process 로 변경예정
+   * @param id 매장 생성 요청 id
+   * @param dto 매장 생성 요청 승인 / 거절 처리 dto
+   * @returns 매장 생성 요청 결과
+   */
+  @TypedRoute.Post("admin/request/:id/process")
   @UseGuards(AuthGuard)
   @Roles(Role.ADMIN)
   async processRestaurantRequest(
