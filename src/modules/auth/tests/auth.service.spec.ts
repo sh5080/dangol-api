@@ -37,7 +37,8 @@ describe("AuthService", () => {
     it("유저가 존재하지 않으면 NotFoundException을 던져야 함", async () => {
       const loginDto: LoginDto = {
         email: "test@example.com",
-        authType: AuthProvider.KAKAO,
+        password: "password",
+        // authType: AuthProvider.KAKAO,
       };
       mockUserService.getUserByEmail.mockResolvedValue(null);
 
@@ -49,7 +50,8 @@ describe("AuthService", () => {
     it("인증방법이 호환되지 않으면 ForbiddenException을 던져야 함", async () => {
       const loginDto: LoginDto = {
         email: "test@example.com",
-        authType: AuthProvider.KAKAO,
+        password: "password",
+        // authType: AuthProvider.KAKAO,
       };
       const user = { id: "1", authProviderId: AUTH_PROVIDER_ID_MAP.google };
       mockUserService.getUserByEmail.mockResolvedValue(user);
@@ -62,7 +64,8 @@ describe("AuthService", () => {
     it("인증 성공 시 토큰과 유저 정보를 반환해야 함", async () => {
       const loginDto: LoginDto = {
         email: "test@example.com",
-        authType: AuthProvider.KAKAO,
+        password: "password",
+        // authType: AuthProvider.KAKAO,
       };
       const user = {
         id: "1",

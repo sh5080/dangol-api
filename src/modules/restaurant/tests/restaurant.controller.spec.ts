@@ -70,7 +70,8 @@ describe("RestaurantController", () => {
         description: "테스트 설명",
         address: "테스트 주소",
         phoneNumber: "010-1234-5678",
-        imageUrl: "test-image-url",
+        businessLicenseImageUrl: "test-image-url",
+        businessLicenseNumber: "test-business-license-number",
       };
       const mockRestaurant = {
         id: "new-id",
@@ -78,7 +79,8 @@ describe("RestaurantController", () => {
         description: dto.description,
         address: dto.address,
         phoneNumber: dto.phoneNumber,
-        imageUrl: dto.imageUrl,
+        businessLicenseImageUrl: dto.businessLicenseImageUrl,
+        businessLicenseNumber: dto.businessLicenseNumber,
       };
 
       mockRestaurantService.requestRestaurant.mockResolvedValue(mockRestaurant);

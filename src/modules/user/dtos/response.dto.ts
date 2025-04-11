@@ -1,15 +1,9 @@
-import { User, UserProfile, UserPermission, UserEvent } from "@prisma/client";
+import { User } from "@prisma/client";
 
 export interface UserWithProfile extends User {
-  profile: UserProfile;
-  events: UserEvent[];
-  permissions: UserPermission[];
+  // profile: UserProfile;
 }
 
 export interface ChatUser {
-  profile: {
-    nickname: string;
-    imageUrl: string | null;
-    userId: string;
-  } | null;
+  restaurantName: string;
 }

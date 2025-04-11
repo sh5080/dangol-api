@@ -27,59 +27,17 @@ export class UserController {
   async signup(@TypedBody() dto: CreateUserDto) {
     return this.userService.createUser(dto);
   }
-
-  /**
-   * @summary 닉네임 중복 확인 (1차 완료)
-   * @param dto 닉네임 중복 확인 dto
-   * @returns 닉네임 중복 확인 결과
-   * @throws 409 닉네임 중복
-   */
-  @TypedRoute.Post("nickname/check")
-  async checkNickname(@TypedBody() dto: CheckNicknameDto) {
-    return this.userService.checkNickname(dto);
-  }
-
-  /**
-   * @summary 유저 프로필 조회 (완료)
-   * @security bearer
-   * @returns 유저 프로필
-   * @throws 403 조회된 유저가 없습니다. (정상 작동이면 가능하지 않음)
-   */
-  @TypedRoute.Get("profile")
-  @UseGuards(AuthGuard)
-  async getUserProfile(@Req() req: AuthRequest) {
-    const { userId } = req.user;
-    return this.userService.getUserProfileById(userId);
-  }
-
-  /**
-   * @summary 유저 프로필 업데이트
-   * @security bearer
-   * @param dto 유저 프로필 업데이트 dto
-   * @param req 인증 요청
-   * @returns 업데이트된 유저 프로필
-   * @throws 403 조회된 유저가 없습니다. (정상 작동이면 가능하지 않음)
-   */
-  @TypedRoute.Patch("profile")
-  @UseGuards(AuthGuard)
-  async updateUserProfile(
-    @TypedBody() dto: UpdateUserProfileDto,
-    @Req() req: AuthRequest
-  ) {
-    const { userId } = req.user;
-    return this.userService.updateUserProfile(userId, dto);
-  }
-
-  /**
-   * @summary 채팅 참여자 조회
-   * @security bearer
-   * @param dto 채팅 참여자 조회 dto
-   * @returns 채팅 참여자 정보
-   * @throws 404 채팅 참여자 없음
-   */
-  @TypedRoute.Post("chat/participants")
-  @UseGuards(AuthGuard)
-  async getChatParticipants(@TypedBody() dto: GetChatParticipantsDto) {
-    return this.userService.getChatParticipants(dto);
-  }
+  // 기존에는 userIds를 받아서 조회했는데, 유저에 해당하는 식당이 많을 수 있음. 설계가 잘못됨.
+  // /**
+  //  * @summary 채팅 참여자 조회
+  //  * @security bearer
+  //  * @param dto 채팅 참여자 조회 dto
+  //  * @returns 채팅 참여자 정보
+  //  * @throws 404 채팅 참여자 없음
+  //  */
+  // @TypedRoute.Post("chat/participants")
+  // @UseGuards(AuthGuard)
+  // async getChatParticipants(@TypedBody() dto: GetChatParticipantsDto) {
+  //   return this.userService.getChatParticipants(dto);
+  // }
 }

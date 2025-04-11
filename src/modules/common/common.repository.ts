@@ -9,7 +9,4 @@ export class CommonRepository {
   constructor(private readonly prismaService: PrismaService) {
     this.prisma = this.prismaService.prisma;
   }
-  async getPermissionList() {
-    return await this.prisma.permission.findMany();
-  }
 }

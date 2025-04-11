@@ -7,12 +7,4 @@ import { CommonService } from "./common.service";
 @Controller("common")
 export class CommonController {
   constructor(private readonly commonService: CommonService) {}
-  /**
-   * @summary 공통 설정 조회
-   * @returns 공통 설정
-   */
-  @TypedRoute.Get("settings")
-  async getCommonSettings() {
-    return this.commonService.getCommonSettings();
-  }
 }

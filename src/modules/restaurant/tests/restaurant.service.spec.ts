@@ -105,7 +105,8 @@ describe("RestaurantService", () => {
         description: "테스트 설명",
         address: "테스트 주소",
         phoneNumber: "010-1234-5678",
-        imageUrl: "test-image-url",
+        businessLicenseImageUrl: "test-image-url",
+        businessLicenseNumber: "test-business-license-number",
       };
       const mockRestaurant = {
         id: "new-id",
@@ -113,7 +114,8 @@ describe("RestaurantService", () => {
         description: dto.description,
         address: dto.address,
         phoneNumber: dto.phoneNumber,
-        imageUrl: dto.imageUrl,
+        businessLicenseImageUrl: dto.businessLicenseImageUrl,
+        businessLicenseNumber: dto.businessLicenseNumber,
       };
 
       mockRestaurantRepository.requestRestaurant.mockResolvedValue(
@@ -138,7 +140,8 @@ describe("RestaurantService", () => {
         description: "테스트 설명",
         address: "테스트 주소",
         phoneNumber: "010-1234-5678",
-        imageUrl: "test-image-url",
+        businessLicenseImageUrl: "test-image-url",
+        businessLicenseNumber: "test-business-license-number",
       };
 
       mockRestaurantRepository.requestRestaurant.mockResolvedValue(null);

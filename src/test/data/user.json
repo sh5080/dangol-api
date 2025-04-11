@@ -4,15 +4,13 @@
     "email": "58eb6ffb5a6811c55e5edf74fd3a02ab:354264c618f954f8e093b73a0a051eee829b372d45894eb41361f70eac74ecf6",
     "name": "test",
     "phoneNumber": "c68d2718cd3e38a4acaa668699419f0d:13ffe9117f44bfa5074ecb2a811f8dc1",
-    "isEventAgree": true,
-    "authType": "test"
+    "isPersonalInfoCollectionAgree": true
   },
   {
     "id": "b7625d42-04c5-4a6d-b68e-c839e7e509fd",
     "email": "89c73d9a3edaf832b2aed0f486d174c8:0bbfc75262c71761bac798a2414a9216e2b7eec691f0ad49eaa1d94d6cbc72b1",
     "name": "김승환",
     "phoneNumber": "3e9d7ed775f3f4b55d8e79235b65a531:f83a53a066a45cb8b5a71c6cf34efa3e",
-    "isEventAgree": true,
-    "authType": "test"
+    "isPersonalInfoCollectionAgree": true
   }
 ]

@@ -174,17 +174,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   }
   /** 초기 데이터 시딩 */
   private async seedInitialData() {
-    await this.repository.ensureEvent(
-      "이벤트 수신동의",
-      "마케팅 및 이벤트 정보 수신에 동의합니다."
-    );
-
-    await this.repository.ensureAuthProvider("KAKAO");
-    await this.repository.ensureAuthProvider("GOOGLE");
+    // await this.repository.ensureAuthProvider("KAKAO");
+    // await this.repository.ensureAuthProvider("GOOGLE");
 
     await this.repository.ensureBlockReason("user reported");
     await this.repository.ensureBlockReason("other inquiries");
-    await this.seedUsers();
+    // await this.seedUsers();
   }
 
   async seedUsers() {

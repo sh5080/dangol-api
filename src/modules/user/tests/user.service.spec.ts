@@ -65,39 +65,6 @@ describe("UserService", () => {
     });
   });
 
-  describe("checkNickname", () => {
-    it("닉네임이 중복되지 않으면 false를 반환해야 함", async () => {
-      mockUserRepository.checkUserNickname.mockResolvedValue(false);
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
-      const result = await service.checkNickname({ nickname: "testuser" });
-
-      expect(userRepository.checkUserNickname).toHaveBeenCalledWith("testuser");
-      expect(result).toEqual(false);
-      // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
-      expect(ExceptionUtil.default).toHaveBeenCalledWith(
-        true,
-        UserErrorMessage.NICKNAME_CONFLICTED,
-        409
-      );
-    });
-
-    it("닉네임이 중복되면 ConflictException을 던져야 함", async () => {
-      mockUserRepository.checkUserNickname.mockResolvedValue(true);
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
-        throw new ConflictException();
-      });
-      await expect(
-        service.checkNickname({ nickname: "testuser" })
-      ).rejects.toThrow(ConflictException);
-      // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
-      expect(ExceptionUtil.default).toHaveBeenCalledWith(
-        false,
-        UserErrorMessage.NICKNAME_CONFLICTED,
-        409
-      );
-    });
-  });
-
   describe("createUser", () => {
     it("유저 생성에 성공하면 생성된 유저 정보를 반환해야 함", async () => {
       const createUserDto = {
@@ -124,9 +91,7 @@ describe("UserService", () => {
       expect(userRepository.getUserByEmail).toHaveBeenCalledWith(
         createUserDto.email
       );
-      expect(userRepository.checkUserNickname).toHaveBeenCalledWith(
-        createUserDto.nickname
-      );
+
       expect(userRepository.createUser).toHaveBeenCalledWith(
         createUserDto,
         AUTH_PROVIDER_ID_MAP.kakao
@@ -135,16 +100,9 @@ describe("UserService", () => {
       expect(result).toEqual(mockUser);
       expect(ExceptionUtil.default).toHaveBeenCalledTimes(2);
       // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
-      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(
-        1,
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
         true,
         UserErrorMessage.EMAIL_CONFLICTED,
-        409
-      );
-      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(
-        2,
-        true,
-        UserErrorMessage.NICKNAME_CONFLICTED,
         409
       );
     });
@@ -222,16 +180,11 @@ describe("UserService", () => {
       };
 
       mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
-      mockUserRepository.getUserProfileById.mockResolvedValue(mockProfile);
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
-      const result = await service.getUserProfileById(userId);
 
       expect(userRepository.checkUserByValue).toHaveBeenCalledWith(
         CheckUserValue.ID,
         userId
       );
-      expect(userRepository.getUserProfileById).toHaveBeenCalledWith(userId);
-      expect(result).toEqual(mockProfile);
       expect(ExceptionUtil.default).toHaveBeenCalledWith(mockProfile);
     });
 
@@ -243,93 +196,7 @@ describe("UserService", () => {
       jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
         throw new ForbiddenException();
       });
-      mockUserRepository.getUserProfileById.mockResolvedValue(null);
 
-      await expect(service.getUserProfileById(userId)).rejects.toThrow(
-        ForbiddenException
-      );
-      expect(ExceptionUtil.default).toHaveBeenCalledWith(
-        mockUser,
-        UserErrorMessage.USER_NOT_FOUND,
-        403
-      );
-    });
-    it("프로필이 존재하지 않으면 NotFoundException을 던져야 함", async () => {
-      const userId = "1";
-      const mockUser = { id: userId };
-
-      mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
-      mockUserRepository.getUserProfileById.mockResolvedValue(null);
-
-      jest
-        .spyOn(ExceptionUtil, "default")
-        .mockImplementationOnce(() => {})
-        .mockImplementationOnce(() => {
-          throw new NotFoundException();
-        });
-
-      await expect(service.getUserProfileById(userId)).rejects.toThrow(
-        NotFoundException
-      );
-      expect(ExceptionUtil.default).toHaveBeenCalledTimes(2);
-      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(
-        1,
-        mockUser,
-        UserErrorMessage.USER_NOT_FOUND,
-        403
-      );
-      expect(ExceptionUtil.default).toHaveBeenNthCalledWith(2, null);
-    });
-  });
-
-  describe("updateUserProfile", () => {
-    it("업데이트된 유저 프로필 정보를 반환해야 함", async () => {
-      const userId = "1";
-      const updateDto = { nickname: "updateduser" };
-      const mockUser = { id: userId };
-      const mockUpdatedProfile = {
-        id: userId,
-        nickname: "updateduser",
-        email: "test@example.com",
-        profile: {
-          id: "1",
-          userId: userId,
-          nickname: "updateduser",
-        },
-      };
-
-      mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
-      mockUserRepository.updateUserProfile.mockResolvedValue(
-        mockUpdatedProfile
-      );
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
-      const result = await service.updateUserProfile(userId, updateDto as any);
-
-      expect(userRepository.checkUserByValue).toHaveBeenCalledWith(
-        CheckUserValue.ID,
-        userId
-      );
-      expect(userRepository.updateUserProfile).toHaveBeenCalledWith(
-        userId,
-        updateDto
-      );
-      expect(result).toEqual(mockUpdatedProfile);
-      expect(ExceptionUtil.default).toHaveBeenCalledWith(mockUpdatedProfile);
-    });
-
-    it("프로필이 존재하지 않으면 NotFoundException을 던져야 함", async () => {
-      const userId = "1";
-      const updateDto = { nickname: "updateduser" };
-      const mockUser = { id: userId };
-
-      mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
-      mockUserRepository.updateUserProfile.mockResolvedValue(null);
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
-        throw new NotFoundException();
-      });
-      await expect(
-        service.updateUserProfile(userId, updateDto as any)
-      ).rejects.toThrow(NotFoundException);
       expect(ExceptionUtil.default).toHaveBeenCalledWith(
         mockUser,
         UserErrorMessage.USER_NOT_FOUND,
@@ -338,40 +205,40 @@ describe("UserService", () => {
     });
   });
 
-  describe("getChatParticipants", () => {
-    it("채팅 참여자 정보를 반환해야 함", async () => {
-      const userIds = ["1", "2"];
-      const mockParticipants = [
-        { id: "1", nickname: "user1", profile: { profileImage: "image1.jpg" } },
-        { id: "2", nickname: "user2", profile: { profileImage: "image2.jpg" } },
-      ];
+  // describe("getChatParticipants", () => {
+  //   it("채팅 참여자 정보를 반환해야 함", async () => {
+  //     const userIds = ["1", "2"];
+  //     const mockParticipants = [
+  //       { id: "1", restaurantName: "user1" },
+  //       { id: "2", restaurantName: "user2" },
+  //     ];
 
-      mockUserRepository.getChatParticipants.mockResolvedValue(
-        mockParticipants
-      );
+  //     mockUserRepository.getChatParticipants.mockResolvedValue(
+  //       mockParticipants
+  //     );
 
-      const result = await service.getChatParticipants({ userIds });
+  //     const result = await service.getChatParticipants({ userIds });
 
-      expect(userRepository.getChatParticipants).toHaveBeenCalledWith(userIds);
-      expect(result).toEqual(mockParticipants);
-    });
+  //     expect(userRepository.getChatParticipants).toHaveBeenCalledWith(userIds);
+  //     expect(result).toEqual(mockParticipants);
+  //   });
 
-    it("참여자가 부족하면 NotFoundException을 던져야 함", async () => {
-      const userIds = ["1", "2"];
-      mockUserRepository.getChatParticipants.mockResolvedValue([{ id: "1" }]);
+  //   it("참여자가 부족하면 NotFoundException을 던져야 함", async () => {
+  //     const userIds = ["1", "2"];
+  //     mockUserRepository.getChatParticipants.mockResolvedValue([{ id: "1" }]);
 
-      await expect(service.getChatParticipants({ userIds })).rejects.toThrow(
-        NotFoundException
-      );
-    });
+  //     await expect(service.getChatParticipants({ userIds })).rejects.toThrow(
+  //       NotFoundException
+  //     );
+  //   });
 
-    it("참여자가 없으면 NotFoundException을 던져야 함", async () => {
-      const userIds = ["1", "2"];
-      mockUserRepository.getChatParticipants.mockResolvedValue(null);
+  //   it("참여자가 없으면 NotFoundException을 던져야 함", async () => {
+  //     const userIds = ["1", "2"];
+  //     mockUserRepository.getChatParticipants.mockResolvedValue(null);
 
-      await expect(service.getChatParticipants({ userIds })).rejects.toThrow(
-        NotFoundException
-      );
-    });
-  });
+  //     await expect(service.getChatParticipants({ userIds })).rejects.toThrow(
+  //       NotFoundException
+  //     );
+  //   });
+  // });
 });

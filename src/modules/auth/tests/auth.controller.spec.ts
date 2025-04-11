@@ -25,7 +25,8 @@ describe("AuthController", () => {
     it("로그인 성공 시 인증 결과를 반환해야 함", async () => {
       const dto: LoginDto = {
         email: "test@example.com",
-        authType: AuthProvider.KAKAO,
+        password: "test123123!",
+        // authType: AuthProvider.KAKAO,
       };
       const req = {
         ip: "127.0.0.1",

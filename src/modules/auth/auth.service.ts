@@ -46,16 +46,21 @@ export class AuthService {
     userAgent: string,
     isTest?: boolean
   ) {
-    const { email, authType } = dto;
+    const {
+      email,
+      password,
+      // authType
+    } = dto;
 
     const user = await this.userService.getUserByEmail(email);
     ExceptionUtil.default(user, UserErrorMessage.USER_NOT_FOUND);
+
     // 가입되어 있는 authType이 호환되지 않는 경우
-    if (AUTH_PROVIDER_ID_MAP[authType] !== user.authProviderId) {
-      throw new ForbiddenException(
-        `로그인 가능한 인증방법: ${AUTH_PROVIDER_ID_MAP_REVERSE[user.authProviderId]}`
-      );
-    }
+    // if (AUTH_PROVIDER_ID_MAP[authType] !== user.authProviderId) {
+    //   throw new ForbiddenException(
+    //     `로그인 가능한 인증방법: ${AUTH_PROVIDER_ID_MAP_REVERSE[user.authProviderId]}`
+    //   );
+    // }
 
     const tokens = await this.createTokens(
       user.id,
