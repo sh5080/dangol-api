@@ -1,8 +1,6 @@
 import { User } from "@prisma/client";
 
-export interface UserWithProfile extends User {
-  // profile: UserProfile;
-}
+export interface UserWithoutPassword extends Omit<User, "password"> {}
 
 export interface ChatUser {
   restaurantName: string;

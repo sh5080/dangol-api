@@ -6,6 +6,7 @@ import { CheckUserValueType } from "@shared/types/enum.type";
 import { IUserService } from "@shared/interfaces/user.interface";
 import { ExceptionUtil } from "@/shared/utils/exception.util";
 import * as bcrypt from "bcrypt";
+import { UserWithoutPassword } from "./dtos/response.dto";
 
 @Injectable()
 export class UserService implements IUserService {
@@ -18,13 +19,15 @@ export class UserService implements IUserService {
 
   async createUser(dto: CreateUserDto) {
     const { email, password } = dto;
+
     const isExist = await this.userRepository.getUserByEmail(email);
     ExceptionUtil.default(!isExist, UserErrorMessage.EMAIL_CONFLICTED, 409);
     const hashedPassword = await bcrypt.hash(password, 10);
-    return await this.userRepository.createUser({
+    const user = await this.userRepository.createUser({
       ...dto,
       password: hashedPassword,
     });
+    return user as UserWithoutPassword;
   }
 
   async getUserByEmail(email: string) {

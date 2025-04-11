@@ -1,8 +1,9 @@
 import { CreateUserDto } from "@modules/user/dtos/create-user.dto";
 import { CheckUserValueType } from "@shared/types/enum.type";
 import { User } from "@prisma/client";
+import { UserWithoutPassword } from "@/modules/user/dtos/response.dto";
 export interface IUserService {
-  createUser(dto: CreateUserDto): Promise<User>;
+  createUser(dto: CreateUserDto): Promise<UserWithoutPassword>;
   checkUser(key: CheckUserValueType, value: string): Promise<boolean>;
 
   getUserByEmail(email: string): Promise<User>;
