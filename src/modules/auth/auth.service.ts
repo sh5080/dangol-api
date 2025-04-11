@@ -9,13 +9,11 @@ import { LoginDto } from "./dtos/create-auth.dto";
 import {
   AuthErrorMessage,
   TokenErrorMessage,
-  UserErrorMessage,
 } from "@shared/types/message.type";
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import { IUserService } from "@shared/interfaces/user.interface";
 import { Logger } from "nestjs-pino";
 import {
-  AUTH_PROVIDER_ID_MAP_REVERSE,
   BlockStatus,
   RedisKey,
   TokenEnum,
@@ -23,13 +21,13 @@ import {
   BlackListEnum,
   BlackListStatus,
   Blacklist,
-  AUTH_PROVIDER_ID_MAP,
 } from "@shared/types/enum.type";
 import { Token, UserPayload } from "@shared/types/data.type";
 import Redis from "ioredis";
 import { env } from "@shared/configs/env.config";
 import { RedisService } from "@core/redis/redis.service";
 import { ExceptionUtil } from "@/shared/utils/exception.util";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class AuthService {
@@ -46,21 +44,17 @@ export class AuthService {
     userAgent: string,
     isTest?: boolean
   ) {
-    const {
-      email,
-      password,
-      // authType
-    } = dto;
+    const { email, password } = dto;
 
     const user = await this.userService.getUserByEmail(email);
-    ExceptionUtil.default(user, UserErrorMessage.USER_NOT_FOUND);
+    // 제한된 계정 로그인 불가
+    ExceptionUtil.default(user.isActive, AuthErrorMessage.ACCOUNT_BLOCKED, 403);
 
-    // 가입되어 있는 authType이 호환되지 않는 경우
-    // if (AUTH_PROVIDER_ID_MAP[authType] !== user.authProviderId) {
-    //   throw new ForbiddenException(
-    //     `로그인 가능한 인증방법: ${AUTH_PROVIDER_ID_MAP_REVERSE[user.authProviderId]}`
-    //   );
-    // }
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    // 비밀번호 불일치 시 로그인 시도 횟수 증가
+    if (!isPasswordMatch) {
+      await this.incrementFailedLoginAttempts(user.id);
+    }
 
     const tokens = await this.createTokens(
       user.id,
@@ -69,6 +63,7 @@ export class AuthService {
       user.role,
       isTest
     );
+    // 정상 로그인시 로그인 시도 횟수 초기화
     await this.resetFailedLoginAttempts(user.id);
 
     return { user, ...tokens };
