@@ -18,7 +18,7 @@ export const mockRestaurantRepository = {
   getRestaurant: jest.fn(),
   getRestaurants: jest.fn(),
   requestRestaurant: jest.fn(),
-  getRestaurantRequests: jest.fn(),
+  getUserRestaurantRequests: jest.fn(),
   getMyRestaurants: jest.fn(),
   processRestaurantRequest: jest.fn(),
 };

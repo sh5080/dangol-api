@@ -169,7 +169,7 @@ describe("RestaurantService", () => {
         { id: 2, status: RequestStatus.APPROVED },
       ];
 
-      mockRestaurantRepository.getRestaurantRequests.mockResolvedValue(
+      mockRestaurantRepository.getUserRestaurantRequests.mockResolvedValue(
         mockRequests
       );
       jest.spyOn(ExceptionUtil, "emptyArray").mockImplementation(() => {});
@@ -177,7 +177,7 @@ describe("RestaurantService", () => {
       const result = await service.getRestaurantRequests(userId);
 
       expect(
-        mockRestaurantRepository.getRestaurantRequests
+        mockRestaurantRepository.getUserRestaurantRequests
       ).toHaveBeenCalledWith(userId);
       expect(ExceptionUtil.emptyArray).toHaveBeenCalledWith(mockRequests);
       expect(result).toEqual(mockRequests);
@@ -185,7 +185,7 @@ describe("RestaurantService", () => {
 
     it("매장 생성 요청 목록이 비어있으면 NotFoundException을 호출해야 함", async () => {
       const userId = "user-id";
-      mockRestaurantRepository.getRestaurantRequests.mockResolvedValue([]);
+      mockRestaurantRepository.getUserRestaurantRequests.mockResolvedValue([]);
 
       jest.spyOn(ExceptionUtil, "emptyArray").mockImplementation(() => {
         throw new NotFoundException();
@@ -195,7 +195,7 @@ describe("RestaurantService", () => {
         NotFoundException
       );
       expect(
-        mockRestaurantRepository.getRestaurantRequests
+        mockRestaurantRepository.getUserRestaurantRequests
       ).toHaveBeenCalledWith(userId);
       expect(ExceptionUtil.emptyArray).toHaveBeenCalledWith([]);
     });

@@ -10,6 +10,7 @@ import { CheckUserValue, AUTH_PROVIDER_ID_MAP } from "@shared/types/enum.type";
 import { mockUserServiceModule, mockUserRepository } from "./user.mock";
 import { ExceptionUtil } from "@/shared/utils/exception.util";
 import { UserErrorMessage } from "@/shared/types/message.type";
+import { CreateUserDto } from "../dtos/create-user.dto";
 
 describe("UserService", () => {
   let service: UserService;
@@ -67,41 +68,35 @@ describe("UserService", () => {
 
   describe("createUser", () => {
     it("유저 생성에 성공하면 생성된 유저 정보를 반환해야 함", async () => {
-      const createUserDto = {
+      const dto: CreateUserDto = {
         email: "test@example.com",
-        authType: "kakao",
-        nickname: "testuser",
+        password: "password",
+        name: "test",
+        phoneNumber: "01012345678",
+        isPersonalInfoCollectionAgree: true,
+        isPersonalInfoUseAgree: true,
       };
+
       const mockUser = {
         id: "1",
-        email: createUserDto.email,
-        nickname: createUserDto.nickname,
+        email: dto.email,
       };
 
       mockUserRepository.getUserByEmail.mockResolvedValue(null);
       mockUserRepository.checkUserNickname.mockResolvedValue(false);
       mockUserRepository.createUser.mockResolvedValue(mockUser);
-      jest
-        .spyOn(ExceptionUtil, "default")
-        .mockImplementationOnce(() => {})
-        .mockImplementationOnce(() => {});
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
 
-      const result = await service.createUser(createUserDto as any);
+      const result = await service.createUser(dto as any);
 
-      expect(userRepository.getUserByEmail).toHaveBeenCalledWith(
-        createUserDto.email
-      );
-
-      expect(userRepository.createUser).toHaveBeenCalledWith(
-        createUserDto,
-        AUTH_PROVIDER_ID_MAP.kakao
-      );
-
+      expect(userRepository.getUserByEmail).toHaveBeenCalledWith(dto.email);
+      expect(userRepository.createUser).toHaveBeenCalledWith(dto);
       expect(result).toEqual(mockUser);
-      expect(ExceptionUtil.default).toHaveBeenCalledTimes(2);
-      // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
+
+      // 현재 서비스 구현에 맞게 수정: ExceptionUtil.default는 한 번만 호출됨
+      expect(ExceptionUtil.default).toHaveBeenCalledTimes(1);
       expect(ExceptionUtil.default).toHaveBeenCalledWith(
-        true,
+        true, // !isExist의 결과
         UserErrorMessage.EMAIL_CONFLICTED,
         409
       );
@@ -117,15 +112,18 @@ describe("UserService", () => {
         id: "1",
         email: createUserDto.email,
       });
+
+      // 예외를 던지도록 설정
       jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
         throw new ConflictException();
       });
+
       await expect(service.createUser(createUserDto as any)).rejects.toThrow(
         ConflictException
       );
-      // 예외처리시 중복되지 않으면 검증시 입력값의 반대를 넣어야함. (409에 대해서는 입력값이 존재해야 에러라서)
+
       expect(ExceptionUtil.default).toHaveBeenCalledWith(
-        false,
+        false, // !isExist의 결과 (isExist가 있으므로 false)
         UserErrorMessage.EMAIL_CONFLICTED,
         409
       );
@@ -160,47 +158,6 @@ describe("UserService", () => {
       expect(ExceptionUtil.default).toHaveBeenCalledWith(
         null,
         UserErrorMessage.USER_NOT_FOUND
-      );
-    });
-  });
-
-  describe("getUserProfileById", () => {
-    it("유저 프로필 정보를 반환해야 함", async () => {
-      const userId = "1";
-      const mockUser = { id: userId };
-      const mockProfile = {
-        id: userId,
-        nickname: "testuser",
-        email: "test@example.com",
-        profile: {
-          id: "1",
-          userId: userId,
-          nickname: "testuser",
-        },
-      };
-
-      mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
-
-      expect(userRepository.checkUserByValue).toHaveBeenCalledWith(
-        CheckUserValue.ID,
-        userId
-      );
-      expect(ExceptionUtil.default).toHaveBeenCalledWith(mockProfile);
-    });
-
-    it("유저가 존재하지 않으면 ForbiddenException을 던져야 함", async () => {
-      const userId = "1";
-      const mockUser = { id: userId };
-
-      mockUserRepository.checkUserByValue.mockResolvedValue(mockUser);
-      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
-        throw new ForbiddenException();
-      });
-
-      expect(ExceptionUtil.default).toHaveBeenCalledWith(
-        mockUser,
-        UserErrorMessage.USER_NOT_FOUND,
-        403
       );
     });
   });

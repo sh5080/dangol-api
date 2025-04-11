@@ -1,22 +1,20 @@
 import { TestingModule } from "@nestjs/testing";
 import { AuthService } from "../auth.service";
-import {
-  ForbiddenException,
-  NotFoundException,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { LoginDto } from "../dtos/create-auth.dto";
+import { BlackListEnum, TokenEnum } from "@shared/types/enum.type";
 import {
-  AUTH_PROVIDER_ID_MAP,
-  AuthProvider,
-  BlackListEnum,
-  TokenEnum,
-} from "@shared/types/enum.type";
-import { TokenErrorMessage } from "@/shared/types/message.type";
+  AuthErrorMessage,
+  TokenErrorMessage,
+} from "@/shared/types/message.type";
 import { Role } from "@prisma/client";
 import { mockAuthServiceModule } from "./auth.mock";
 import { mockUserService } from "@/modules/user/tests/user.mock";
 import { mockRedis } from "@/core/redis/tests/redis.mock";
+import { ExceptionUtil } from "@/shared/utils/exception.util";
+import * as bcrypt from "bcrypt";
+
+jest.mock("bcrypt");
 
 describe("AuthService", () => {
   let service: AuthService;
@@ -34,45 +32,80 @@ describe("AuthService", () => {
   });
 
   describe("authenticate", () => {
-    it("유저가 존재하지 않으면 NotFoundException을 던져야 함", async () => {
+    it("비활성화된 계정으로 로그인 시도하면 ForbiddenException을 던져야 함", async () => {
       const loginDto: LoginDto = {
         email: "test@example.com",
         password: "password",
-        // authType: AuthProvider.KAKAO,
       };
-      mockUserService.getUserByEmail.mockResolvedValue(null);
-
-      await expect(
-        service.authenticate(loginDto, "127.0.0.1", "test-agent")
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it("인증방법이 호환되지 않으면 ForbiddenException을 던져야 함", async () => {
-      const loginDto: LoginDto = {
+      const user = {
+        id: "1",
         email: "test@example.com",
-        password: "password",
-        // authType: AuthProvider.KAKAO,
+        isActive: false,
       };
-      const user = { id: "1", authProviderId: AUTH_PROVIDER_ID_MAP.google };
+
       mockUserService.getUserByEmail.mockResolvedValue(user);
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new ForbiddenException(AuthErrorMessage.ACCOUNT_BLOCKED);
+      });
 
       await expect(
         service.authenticate(loginDto, "127.0.0.1", "test-agent")
       ).rejects.toThrow(ForbiddenException);
+
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        false,
+        AuthErrorMessage.ACCOUNT_BLOCKED,
+        403
+      );
+    });
+
+    it("비밀번호가 일치하지 않으면 로그인 시도 횟수가 증가해야 함", async () => {
+      const loginDto: LoginDto = {
+        email: "test@example.com",
+        password: "wrong-password",
+      };
+      const user = {
+        id: "1",
+        email: "test@example.com",
+        password: "hashed-password",
+        isActive: true,
+      };
+
+      mockUserService.getUserByEmail.mockResolvedValue(user);
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
+
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      jest
+        .spyOn(service, "incrementFailedLoginAttempts")
+        .mockImplementation(() => {
+          throw new UnauthorizedException(AuthErrorMessage.PASSWORD_MISMATCH);
+        });
+
+      await expect(
+        service.authenticate(loginDto, "127.0.0.1", "test-agent")
+      ).rejects.toThrow(UnauthorizedException);
+
+      expect(service.incrementFailedLoginAttempts).toHaveBeenCalledWith("1");
     });
 
     it("인증 성공 시 토큰과 유저 정보를 반환해야 함", async () => {
       const loginDto: LoginDto = {
         email: "test@example.com",
-        password: "password",
-        // authType: AuthProvider.KAKAO,
+        password: "correct-password",
       };
       const user = {
         id: "1",
-        authProviderId: AUTH_PROVIDER_ID_MAP.kakao,
+        email: "test@example.com",
+        password: "hashed-password",
+        isActive: true,
         role: Role.CUSTOMER,
       };
+
       mockUserService.getUserByEmail.mockResolvedValue(user);
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
+
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       jest
         .spyOn(service, "createTokens")
@@ -93,6 +126,31 @@ describe("AuthService", () => {
         refreshToken: "refresh",
       });
       expect(service.resetFailedLoginAttempts).toHaveBeenCalledWith("1");
+    });
+  });
+
+  describe("incrementFailedLoginAttempts", () => {
+    it("로그인 시도 횟수가 최대 시도 횟수 미만이면 횟수를 증가시켜야 함", async () => {
+      mockRedis.get.mockResolvedValue("2"); // 기존 시도 횟수
+      mockRedis.incr.mockResolvedValue(3); // 증가 후 시도 횟수
+
+      await expect(service.incrementFailedLoginAttempts("1")).rejects.toThrow(
+        UnauthorizedException
+      );
+
+      expect(mockRedis.incr).toHaveBeenCalled();
+    });
+
+    it("로그인 시도 횟수가 최대에 도달하면 계정을 차단해야 함", async () => {
+      mockRedis.get.mockResolvedValue("5"); // 최대 시도 횟수에 도달
+
+      jest.spyOn(mockUserService, "blockUser").mockResolvedValue(undefined);
+
+      await expect(service.incrementFailedLoginAttempts("1")).rejects.toThrow(
+        UnauthorizedException
+      );
+
+      expect(mockUserService.blockUser).toHaveBeenCalled();
     });
   });
 
@@ -129,6 +187,16 @@ describe("AuthService", () => {
       expect(result).toEqual({ userId: "1", role: "user", exp: payload.exp });
     });
 
+    it("REFRESH 토큰 검증 시 세션이 존재하지 않으면 UnauthorizedException을 던져야 함", async () => {
+      mockRedis.hgetall.mockResolvedValue({});
+
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
+
+      await expect(
+        service.verify("token", "secret", TokenEnum.REFRESH, "1")
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
     it("토큰이 만료되면 UnauthorizedException을 던져야 함", async () => {
       jest
         .spyOn(service, "verify")
@@ -157,6 +225,22 @@ describe("AuthService", () => {
       const result = await service.getBlacklist("1", "token");
 
       expect(result).toEqual({ message: BlackListEnum.NON_BLACKLISTED });
+    });
+  });
+
+  describe("logout", () => {
+    it("로그아웃 성공 시 세션을 삭제하고 토큰을 블랙리스트에 추가해야 함", async () => {
+      mockRedis.del.mockResolvedValue(1);
+
+      jest.spyOn(service, "setBlacklist").mockResolvedValue({
+        message: BlackListEnum.BLACKLISTED,
+      });
+
+      const result = await service.logout("1", "token");
+
+      expect(mockRedis.del).toHaveBeenCalled();
+      expect(service.setBlacklist).toHaveBeenCalledWith("1", "token");
+      expect(result).toBe(true);
     });
   });
 });
