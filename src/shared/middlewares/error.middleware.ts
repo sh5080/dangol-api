@@ -33,11 +33,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const isTypiaError =
       exception.response &&
       exception.response.message &&
-      exception.response.message.startsWith("Request body data");
+      exception.response.message.includes("body data is not following");
 
     if (isTypiaError) {
-      const firstError = exception.response.errors[0];
-      if (firstError && firstError.path) {
+      if (exception.response && exception.response.errors) {
+        const firstError = exception.response.errors[0];
         const fieldMatch = firstError.path.match(/\$input\.(\w+)/);
         const expected = firstError.expected;
         if (fieldMatch && fieldMatch[1]) {
@@ -46,6 +46,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           status = HttpStatus.BAD_REQUEST;
           return response.status(status).json(jsonRes);
         }
+      } else if (exception.response.reason) {
+        jsonRes.message = exception.response.reason;
+        status = HttpStatus.BAD_REQUEST;
+        return response.status(status).json(jsonRes);
+      } else {
+        jsonRes.message = DefaultErrorMessage.BAD_REQUEST;
+        status = HttpStatus.BAD_REQUEST;
+        return response.status(status).json(jsonRes);
       }
     }
 
