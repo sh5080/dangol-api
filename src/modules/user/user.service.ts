@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dtos/create-user.dto";
 import { UserRepository } from "./user.repository";
 import { UserErrorMessage } from "@shared/types/message.type";
 import { CheckUserValueType } from "@shared/types/enum.type";
 import { IUserService } from "@shared/interfaces/user.interface";
-import { GetChatParticipantsDto } from "./dtos/get-user.dto";
 import { ExceptionUtil } from "@/shared/utils/exception.util";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class UserService implements IUserService {
@@ -17,11 +17,14 @@ export class UserService implements IUserService {
   }
 
   async createUser(dto: CreateUserDto) {
-    const { email } = dto;
+    const { email, password } = dto;
     const isExist = await this.userRepository.getUserByEmail(email);
     ExceptionUtil.default(!isExist, UserErrorMessage.EMAIL_CONFLICTED, 409);
-
-    return await this.userRepository.createUser(dto);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    return await this.userRepository.createUser({
+      ...dto,
+      password: hashedPassword,
+    });
   }
 
   async getUserByEmail(email: string) {
