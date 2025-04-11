@@ -20,14 +20,12 @@ export class UserController {
    * @param dto 유저 생성 dto
    * @returns 생성된 유저
    * @throws 409 이메일 중복
-   * @throws 404 이메일에 해당하는 인증번호가 없음(인증번호 선행하지 않거나 이메일 발송 전후 관련 오류)
-   * @throws 400 이메일 인증 코드 불일치
    */
   @TypedRoute.Post("signup")
   async signup(@TypedBody() dto: CreateUserDto) {
     return this.userService.createUser(dto);
   }
-  // 기존에는 userIds를 받아서 조회했는데, 유저에 해당하는 식당이 많을 수 있음. 설계가 잘못됨.
+  // 기존에는 userIds를 받아서 조회했는데, 유저에 해당하는 매장이 많을 수 있음. 설계가 잘못됨.
   // /**
   //  * @summary 채팅 참여자 조회
   //  * @security bearer
