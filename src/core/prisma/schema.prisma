@@ -7,29 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model AuthProvider {
-//   id       Int     @id @default(autoincrement())
-//   name     String  @unique
-//   isActive Boolean @default(true)
-//   users    User[]
-// }
-
 model User {
-  id                String              @id
-  email             String              @unique
-  name              String
-  password          String
-  isActive          Boolean             @default(false)
-  phoneNumber       String
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  deletedAt         DateTime?
-  role              Role                @default(CUSTOMER)
-  // authProviderId      Int
-  // authProvider        AuthProvider             @relation(fields: [authProviderId], references: [id])
-  blocks            UserBlock[]
-  // profile             UserProfile?
-  restaurantOwner   RestaurantOwner?
+  id          String      @id
+  email       String      @unique
+  name        String
+  password    String
+  isActive    Boolean     @default(true)
+  phoneNumber String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+  role        Role        @default(CUSTOMER)
+  blocks      UserBlock[]
+
+  restaurants       Restaurant[]
   restaurantRequest RestaurantRequest[]
   agreements        UserAgreement[]
 }
@@ -55,13 +46,6 @@ enum Role {
   OWNER
   ADMIN
 }
-
-// model UserProfile {
-//   userId   String  @unique
-//   nickname String
-//   imageUrl String? @db.Text
-//   user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-// }
 
 model UserBlock {
   id       Int         @id @default(autoincrement())
@@ -92,35 +76,24 @@ model RestaurantTag {
   tag          Tag        @relation(fields: [tagId], references: [id])
 }
 
-model RestaurantOwner {
-  id          Int          @id @default(autoincrement())
-  userId      String       @unique
-  user        User         @relation(fields: [userId], references: [id])
-  restaurants Restaurant[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
-}
-
 model Restaurant {
-  id                      String           @id
+  id                      String              @id
   name                    String
   description             String?
   businessLicenseImageUrl String
   businessLicenseNumber   String
   address                 String
   phoneNumber             String
-  ownerId                 Int
-  deliveryAvailable       Boolean          @default(false)
-  status                  RestaurantStatus @default(HIDDEN)
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
+  ownerId                 String
+  deliveryAvailable       Boolean             @default(false)
+  status                  RestaurantStatus    @default(HIDDEN)
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
   deletedAt               DateTime?
-  owner                   RestaurantOwner  @relation(fields: [ownerId], references: [id])
   businessHours           BusinessHour[]
   tags                    RestaurantTag[]
-
-  restaurantRequest RestaurantRequest[]
+  restaurantRequest       RestaurantRequest[]
+  owner                   User?               @relation(fields: [ownerId], references: [id])
 }
 
 model BusinessHour {
@@ -165,6 +138,7 @@ enum RequestStatus {
 }
 
 enum RestaurantStatus {
+  REQUESTED
   HIDDEN
   OPEN
   CLOSED
