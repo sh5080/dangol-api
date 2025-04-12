@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import * as nodemailer from "nodemailer";
 import { env } from "@shared/configs/env.config";
-import { Certification, CertificationType } from "@shared/types/enum.type";
+import { MailType, SendMailType } from "@shared/types/enum.type";
 
 @Injectable()
 export class MailService {
@@ -17,7 +17,7 @@ export class MailService {
       requireTLS: true,
       auth: { user: env.mail.MAIL_USER, pass: env.mail.MAIL_PASSWORD },
     });
-    this.mailOptions = { from: "info@test.co.kr" };
+    this.mailOptions = { from: env.mail.MAIL_USER };
   }
 
   /**
@@ -38,30 +38,46 @@ export class MailService {
       </div>
     `;
   }
+  private getApprovedTemplate(purpose: string): string {
+    return `
+      <div style="width: 600px; height: 600px; text-align: center;">
+          <h2 style="color: #006452;">test</h2>
+          <p style="color: #151515;">테스트 ${purpose} 안내 메일</p>
+          <br/>
+          <p style="color: #151515;">승인이 완료되었습니다.</p>
+          <br/>
+          <br/>
+          <p style="color: #151515;">감사합니다.</p>
+      </div>
+    `;
+  }
 
   /**
    * 인증 메일 전송
    */
-  async sendCertificationMail(
+  async sendMail(
     email: string,
-    authNum: number,
-    type: CertificationType
+    type: SendMailType,
+    authNum?: number
   ): Promise<void> {
     let title = "";
+    let template = "";
     switch (type) {
-      case Certification.SIGNUP:
-        title = "회원가입";
+      case MailType.RESTAURANT_APPROVED:
+        title = "매장 승인 완료";
+        template = this.getApprovedTemplate(title);
         break;
-      case Certification.PASSWORD_RESET:
-        title = "비밀번호 변경";
+      case MailType.PASSWORD_RESET:
+        title = "비밀번호 재설정";
+        template = this.getCertificationTemplate(authNum!, title);
         break;
     }
 
     const options = {
       ...this.mailOptions,
       to: email,
-      subject: `테스트 ${title} 인증 메일입니다.`,
-      html: this.getCertificationTemplate(authNum, title),
+      subject: `테스트 ${title} 메일입니다.`,
+      html: template,
     };
 
     await this.transporter.sendMail(options);
