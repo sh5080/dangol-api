@@ -1,5 +1,5 @@
 import { tags } from "typia";
-import { CertificationType } from "@shared/types/enum.type";
+import { SendMailType } from "@shared/types/enum.type";
 
 export interface CreateUserDto {
   email: string & tags.Format<"email">;
@@ -15,6 +15,6 @@ export interface CreateUserDto {
 }
 
 export interface CertificationDto {
-  type: CertificationType;
+  type: SendMailType;
   email: string & tags.Format<"email">;
 }

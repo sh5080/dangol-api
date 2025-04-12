@@ -53,13 +53,13 @@ export const BlockStatus = {
 
 export type BlockStatusType = (typeof BlockStatus)[keyof typeof BlockStatus];
 
-export const Certification = {
+export const MailType = {
   SIGNUP: "signup",
   PASSWORD_RESET: "passwordReset",
+  RESTAURANT_APPROVED: "restaurantApproved",
 } as const;
 
-export type CertificationType =
-  (typeof Certification)[keyof typeof Certification];
+export type SendMailType = (typeof MailType)[keyof typeof MailType];
 
 export const AuthProvider = {
   KAKAO: "kakao",

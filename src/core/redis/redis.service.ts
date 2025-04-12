@@ -1,15 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { Format } from "typia/lib/tags";
-import { CertificationType, RedisKeyType } from "@shared/types/enum.type";
+import { SendMailType, RedisKeyType } from "@shared/types/enum.type";
 
 @Injectable()
 export class RedisService {
   /** 인증 Redis key
-   * @params type: CertificationType
+   * @params type: SendMailType
    * @params email: string & Format<"email">
    */
   certificationKey(
-    type: CertificationType,
+    type: SendMailType,
     email: string & Format<"email">
   ): string {
     return `certification:${type}:${email}`;
