@@ -43,6 +43,7 @@ export class RestaurantController {
   // *************************** 점주 관련 API ***************************
   /**
    * @summary 매장 생성 요청 (점주 / 관리자)
+   * @security bearer
    * @param dto 매장 생성 요청 dto
    * @returns 매장 생성 요청
    */
@@ -58,6 +59,7 @@ export class RestaurantController {
   }
   /**
    * @summary 매장 생성 요청 조회 (점주)
+   * @security bearer
    * @returns 매장 생성 요청 목록
    */
   @TypedRoute.Get("owner/request")
@@ -69,6 +71,7 @@ export class RestaurantController {
   }
   /**
    * @summary 내 매장 조회 (점주)
+   * @security bearer
    * @returns 내 매장
    */
   @TypedRoute.Get("owner/my")
@@ -80,6 +83,7 @@ export class RestaurantController {
   }
   /**
    * @summary 내 매장 수정 (점주)
+   * @security bearer
    * @param id 매장 id
    * @param dto 매장 수정 dto
    * @returns 매장 수정 결과
@@ -98,6 +102,7 @@ export class RestaurantController {
 
   /**
    * @summary 매장 생성 요청 목록 조회 (관리자) -- 추후 별도서버 분리할 경우 엔드포인트 admin.-.com/api/restaurant/request 로 변경예정
+   * @security bearer
    * @param dto 매장 생성 요청 목록 조회 dto
    * @returns 매장 생성 요청 목록
    */
@@ -109,6 +114,7 @@ export class RestaurantController {
   }
   /**
    * @summary 매장 생성 요청 승인 / 거절 처리 (관리자) -- 엔드포인트 admin.-.com/api/restaurant/request/:id/process 로 변경예정
+   * @security bearer
    * @param id 매장 생성 요청 id
    * @param dto 매장 생성 요청 승인 / 거절 처리 dto
    * @returns 매장 생성 요청 결과
