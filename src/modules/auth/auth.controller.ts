@@ -70,6 +70,6 @@ export class AuthController {
   async testLogin(@TypedBody() dto: LoginDto, @Req() req: Request) {
     const ip = req.ip as string;
     const userAgent = req.headers["user-agent"] as string;
-    return this.authService.authenticate(dto, ip, userAgent);
+    return this.authService.authenticate(dto, ip, userAgent, true);
   }
 }

@@ -151,20 +151,18 @@ export class AuthService {
 
     const accessToken = jwt.sign(
       accessTokenPayload,
-      !isTest ? env.auth.ACCESS_JWT_SECRET : "99999999999999999999999999999999",
+      env.auth.ACCESS_JWT_SECRET,
       {
-        expiresIn: env.auth.ACCESS_JWT_EXPIRATION,
+        expiresIn: isTest ? "100y" : env.auth.ACCESS_JWT_EXPIRATION,
         audience: "dangol-api",
         issuer: "jjindangol@gmail.com",
       }
     );
     const refreshToken = jwt.sign(
       refreshTokenPayload,
-      !isTest
-        ? env.auth.REFRESH_JWT_SECRET
-        : "99999999999999999999999999999999",
+      env.auth.REFRESH_JWT_SECRET,
       {
-        expiresIn: env.auth.REFRESH_JWT_EXPIRATION,
+        expiresIn: isTest ? "100y" : env.auth.REFRESH_JWT_EXPIRATION,
         audience: "dangol-api",
         issuer: "jjindangol@gmail.com",
       }
