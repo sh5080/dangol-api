@@ -46,7 +46,7 @@ export class RestaurantController {
    * @param dto 매장 생성 요청 dto
    * @returns 매장 생성 요청
    */
-  @TypedRoute.Post("request")
+  @TypedRoute.Post("owner/request")
   @UseGuards(AuthGuard)
   @Roles(Role.OWNER, Role.ADMIN)
   async requestRestaurant(
@@ -60,7 +60,7 @@ export class RestaurantController {
    * @summary 매장 생성 요청 조회 (점주)
    * @returns 매장 생성 요청 목록
    */
-  @TypedRoute.Get("request")
+  @TypedRoute.Get("owner/request")
   @UseGuards(AuthGuard)
   @Roles(Role.OWNER, Role.ADMIN)
   async getRestaurantRequests(@Req() req: AuthRequest) {
@@ -71,7 +71,7 @@ export class RestaurantController {
    * @summary 내 매장 조회 (점주)
    * @returns 내 매장
    */
-  @TypedRoute.Get("my")
+  @TypedRoute.Get("owner/my")
   @UseGuards(AuthGuard)
   @Roles(Role.OWNER)
   async getMyRestaurants(@Req() req: AuthRequest) {
@@ -84,7 +84,7 @@ export class RestaurantController {
    * @param dto 매장 수정 dto
    * @returns 매장 수정 결과
    */
-  @TypedRoute.Put("my/:id")
+  @TypedRoute.Put("owner/my/:id")
   @UseGuards(AuthGuard)
   @Roles(Role.OWNER)
   async updateMyRestaurant(
