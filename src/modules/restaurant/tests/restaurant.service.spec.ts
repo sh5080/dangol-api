@@ -6,6 +6,9 @@ import {
   mockRestaurantServiceModule,
   mockRestaurantRepository,
 } from "./restaurant.mock";
+import { mockMailService } from "@/modules/mail/tests/mail.mock";
+import { MailType } from "@/shared/types/enum.type";
+import { UpdateRestaurantDto } from "../dtos/update-restaurant.dto";
 
 describe("RestaurantService", () => {
   let service: RestaurantService;
@@ -14,6 +17,7 @@ describe("RestaurantService", () => {
     const module = await mockRestaurantServiceModule();
 
     service = module.get<RestaurantService>(RestaurantService);
+    jest.clearAllMocks();
   });
 
   it("should be defined", () => {
@@ -222,10 +226,128 @@ describe("RestaurantService", () => {
       expect(ExceptionUtil.emptyArray).toHaveBeenCalledWith(mockRestaurants);
       expect(result).toEqual(mockRestaurants);
     });
+
+    it("내 매장 목록이 비어있으면 NotFoundException을 호출해야 함", async () => {
+      const userId = "user-id";
+      mockRestaurantRepository.getMyRestaurants.mockResolvedValue([]);
+
+      jest.spyOn(ExceptionUtil, "emptyArray").mockImplementation(() => {
+        throw new NotFoundException();
+      });
+
+      await expect(service.getMyRestaurants(userId)).rejects.toThrow(
+        NotFoundException
+      );
+      expect(mockRestaurantRepository.getMyRestaurants).toHaveBeenCalledWith(
+        userId
+      );
+      expect(ExceptionUtil.emptyArray).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe("updateMyRestaurant", () => {
+    it("매장 정보 업데이트에 성공하면 업데이트된 매장 정보를 반환해야 함", async () => {
+      const restaurantId = "test-id";
+      const dto = {
+        name: "수정된 매장명",
+        description: "수정된 설명",
+      };
+      const mockRestaurant = {
+        id: restaurantId,
+        name: "기존 매장명",
+        description: "기존 설명",
+      };
+      const mockUpdatedRestaurant = {
+        id: restaurantId,
+        name: dto.name,
+        description: dto.description,
+      };
+
+      mockRestaurantRepository.getMyRestaurant.mockResolvedValue(
+        mockRestaurant
+      );
+      mockRestaurantRepository.updateMyRestaurant.mockResolvedValue(
+        mockUpdatedRestaurant
+      );
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
+
+      const result = await service.updateMyRestaurant(restaurantId, dto);
+
+      expect(mockRestaurantRepository.getMyRestaurant).toHaveBeenCalledWith(
+        restaurantId
+      );
+      expect(mockRestaurantRepository.updateMyRestaurant).toHaveBeenCalledWith(
+        restaurantId,
+        dto
+      );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(mockRestaurant);
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(mockUpdatedRestaurant);
+      expect(result).toEqual(mockUpdatedRestaurant);
+    });
+
+    it("매장이 존재하지 않으면 NotFoundException을 호출해야 함", async () => {
+      const restaurantId = "nonexistent-id";
+      const dto = {
+        name: "수정된 매장명",
+      };
+
+      mockRestaurantRepository.getMyRestaurant.mockResolvedValue(null);
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new NotFoundException();
+      });
+
+      await expect(
+        service.updateMyRestaurant(restaurantId, dto as UpdateRestaurantDto)
+      ).rejects.toThrow(NotFoundException);
+      expect(mockRestaurantRepository.getMyRestaurant).toHaveBeenCalledWith(
+        restaurantId
+      );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(null);
+    });
+  });
+
+  describe("getAllRestaurantRequests", () => {
+    it("모든 매장 요청 목록이 존재하면 요청 목록을 반환해야 함", async () => {
+      const dto = { page: 1, pageSize: 10 };
+      const mockRequests = [
+        { id: 1, name: "테스트 매장 1", status: RequestStatus.PENDING },
+        { id: 2, name: "테스트 매장 2", status: RequestStatus.APPROVED },
+      ];
+
+      mockRestaurantRepository.getAllRestaurantRequests.mockResolvedValue(
+        mockRequests
+      );
+      jest.spyOn(ExceptionUtil, "emptyArray").mockImplementation(() => {});
+
+      const result = await service.getAllRestaurantRequests(dto);
+
+      expect(
+        mockRestaurantRepository.getAllRestaurantRequests
+      ).toHaveBeenCalledWith(dto);
+      expect(ExceptionUtil.emptyArray).toHaveBeenCalledWith(mockRequests);
+      expect(result).toEqual(mockRequests);
+    });
+
+    it("매장 요청 목록이 비어있으면 NotFoundException을 호출해야 함", async () => {
+      const dto = { page: 1, pageSize: 10 };
+      mockRestaurantRepository.getAllRestaurantRequests.mockResolvedValue([]);
+
+      jest.spyOn(ExceptionUtil, "emptyArray").mockImplementation(() => {
+        throw new NotFoundException();
+      });
+
+      await expect(service.getAllRestaurantRequests(dto)).rejects.toThrow(
+        NotFoundException
+      );
+      expect(
+        mockRestaurantRepository.getAllRestaurantRequests
+      ).toHaveBeenCalledWith(dto);
+      expect(ExceptionUtil.emptyArray).toHaveBeenCalledWith([]);
+    });
   });
 
   describe("processRestaurantRequest", () => {
-    it("매장 생성 요청 처리 성공 시 처리 결과를 반환해야 함", async () => {
+    it("매장 생성 요청 처리 성공 시 처리 결과를 반환하고 승인 메일을 전송해야 함", async () => {
       const requestId = 1;
       const dto = {
         status: RequestStatus.APPROVED,
@@ -235,6 +357,9 @@ describe("RestaurantService", () => {
         id: requestId,
         status: RequestStatus.APPROVED,
         rejectReason: undefined,
+        user: {
+          email: "test@example.com",
+        },
       };
 
       mockRestaurantRepository.processRestaurantRequest.mockResolvedValue(
@@ -248,8 +373,44 @@ describe("RestaurantService", () => {
         mockRestaurantRepository.processRestaurantRequest
       ).toHaveBeenCalledWith(requestId, dto);
       expect(ExceptionUtil.default).toHaveBeenCalledWith(mockResult);
+
+      expect(mockMailService.sendMail).toHaveBeenCalledWith(
+        mockResult.user.email,
+        MailType.RESTAURANT_APPROVED
+      );
+
       expect(result).toEqual(mockResult);
     });
+
+    // it("매장 생성 요청이 거절된 경우 거절 메일을 전송해야 함", async () => {
+    //   const requestId = 1;
+    //   const dto = {
+    //     status: RequestStatus.REJECTED,
+    //     rejectReason: "서류 미비",
+    //   };
+    //   const mockResult = {
+    //     id: requestId,
+    //     status: RequestStatus.REJECTED,
+    //     rejectReason: dto.rejectReason,
+    //     user: {
+    //       email: "test@example.com",
+    //     },
+    //   };
+
+    //   mockRestaurantRepository.processRestaurantRequest.mockResolvedValue(
+    //     mockResult
+    //   );
+    //   jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
+
+    //   const result = await service.processRestaurantRequest(requestId, dto);
+
+    // expect(mockMailService.sendMail).toHaveBeenCalledWith(
+    //   mockResult.user.email,
+    //   MailType.RESTAURANT_REJECTED
+    // );
+
+    //   expect(result).toEqual(mockResult);
+    // });
 
     it("매장 생성 요청 처리 실패 시 NotFoundException을 호출해야 함", async () => {
       const requestId = 1;
