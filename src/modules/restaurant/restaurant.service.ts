@@ -8,10 +8,16 @@ import {
 } from "./dtos/create-restaurant.dto";
 import { ExceptionUtil } from "@shared/utils/exception.util";
 import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
+import { RequestStatus } from "@prisma/client";
+import { MailService } from "../mail/mail.service";
+import { MailType } from "@/shared/types/enum.type";
 
 @Injectable()
 export class RestaurantService implements IRestaurantService {
-  constructor(private readonly restaurantRepository: RestaurantRepository) {}
+  constructor(
+    private readonly restaurantRepository: RestaurantRepository,
+    private readonly mailService: MailService
+  ) {}
   // *************************** 공용 API ***************************
   async getRestaurant(id: string) {
     const restaurant = await this.restaurantRepository.getRestaurant(id);
@@ -69,6 +75,12 @@ export class RestaurantService implements IRestaurantService {
     const restaurantRequest =
       await this.restaurantRepository.processRestaurantRequest(id, dto);
     ExceptionUtil.default(restaurantRequest);
+    if (restaurantRequest.status === RequestStatus.APPROVED) {
+      await this.mailService.sendMail(
+        restaurantRequest.user.email,
+        MailType.RESTAURANT_APPROVED
+      );
+    }
     return restaurantRequest;
   }
 }

@@ -88,6 +88,7 @@ export class RestaurantRepository {
     return await this.prisma.restaurantRequest.update({
       where: { id },
       data: { status: dto.status, rejectReason: dto.rejectReason },
+      include: { user: true },
     });
   }
 }
