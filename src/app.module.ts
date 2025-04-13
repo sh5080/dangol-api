@@ -15,7 +15,7 @@ import { CommonModule } from "@modules/common/common.module";
 import { MetricsModule } from "@modules/metrics/metrics.module";
 import { MetricsInterceptor } from "@shared/interceptors/metrics.interceptor";
 import { RestaurantModule } from "./modules/restaurant/restaurant.module";
-
+import { OrderModule } from "./modules/order/order.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,6 +30,7 @@ import { RestaurantModule } from "./modules/restaurant/restaurant.module";
     LoggerModule.forRoot({ pinoHttp: pinoHttpOptions }),
     MetricsModule,
     RestaurantModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [

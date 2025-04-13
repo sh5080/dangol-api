@@ -23,6 +23,7 @@ model User {
   restaurants       Restaurant[]
   restaurantRequest RestaurantRequest[]
   agreements        UserAgreement[]
+  orders            Order[]
 }
 
 model UserAgreement {
@@ -94,6 +95,19 @@ model Restaurant {
   tags                    RestaurantTag[]
   restaurantRequest       RestaurantRequest[]
   owner                   User?               @relation(fields: [ownerId], references: [id])
+  order                   Order[]
+  menu                    RestaurantMenu[]
+}
+
+model RestaurantMenu {
+  id           String      @id
+  restaurantId String
+  name         String
+  price        Int
+  description  String?
+  imageUrl     String?
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  orderMenus   OrderMenu[]
 }
 
 model BusinessHour {
@@ -142,4 +156,58 @@ enum RestaurantStatus {
   HIDDEN
   OPEN
   CLOSED
+}
+
+model Order {
+  id           String         @id
+  restaurantId String
+  customerId   String
+  status       OrderStatus    @default(NEW)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id])
+  menus        OrderMenu[]
+  customer     User           @relation(fields: [customerId], references: [id])
+  delivery     OrderDelivery?
+}
+
+model OrderDelivery {
+  id            String         @id
+  orderId       String         @unique
+  status        DeliveryStatus @default(NOT_CALLED)
+  type          DeliveryType?
+  deliveryInfo  Json? // 배달대행 정보 저장
+  estimatedTime Int? // 예상 소요 시간 (분)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+enum OrderStatus {
+  NEW // 신규
+  PROCESSING // 처리 중
+  COMPLETED // 완료
+  REJECTED // 거절
+  CANCELLED // 취소
+}
+
+enum DeliveryStatus {
+  NOT_CALLED // 배달 준비 중
+  DELIVERING // 배달 중
+  COMPLETED // 배달 완료
+}
+
+enum DeliveryType {
+  SELF // 자체배달
+  DELIVERY // 배달대행
+  PICKUP // 픽업
+}
+
+model OrderMenu {
+  id      String         @id
+  orderId String
+  menuId  String
+  order   Order          @relation(fields: [orderId], references: [id])
+  menu    RestaurantMenu @relation(fields: [menuId], references: [id])
 }
