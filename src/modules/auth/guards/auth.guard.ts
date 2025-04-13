@@ -75,7 +75,11 @@ export class AuthGuard implements CanActivate {
         throw new ForbiddenException(DefaultErrorMessage.FORBIDDEN);
       }
 
-      req.user = { userId, role, tokens: { accessToken, refreshToken: "" } };
+      req.user = {
+        userId,
+        role: role!,
+        tokens: { accessToken, refreshToken: "" },
+      };
       next();
     } catch (err) {
       /** 리프레시 토큰 재발급
@@ -94,7 +98,7 @@ export class AuthGuard implements CanActivate {
         const decodedToken = decode(accessToken);
         ExceptionUtil.default(decodedToken, AuthErrorMessage.FORBIDDEN, 403);
 
-        const userId = (decodedToken as UserPayload).userId;
+        const { userId, role } = decodedToken as UserPayload;
         const refreshSecret = env.auth.REFRESH_JWT_SECRET;
         await this.authService.verify(
           refreshToken,
@@ -117,6 +121,7 @@ export class AuthGuard implements CanActivate {
             accessToken: newAccessToken,
             refreshToken: newRefreshToken,
           },
+          role,
         };
         // 토큰 재발급 (RTR)
         res.setHeader("Authorization", `Bearer ${newAccessToken}`);

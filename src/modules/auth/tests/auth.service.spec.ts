@@ -178,13 +178,17 @@ describe("AuthService", () => {
     it("ACCESS 토큰 검증 성공 시 페이로드를 반환해야 함", async () => {
       const payload = {
         userId: "1",
-        role: "user",
+        role: Role.CUSTOMER,
         exp: Math.floor(Date.now() / 1000) + 3600,
       };
       jest.spyOn(service, "verify").mockResolvedValue(payload);
       const result = await service.verify("token", "secret", TokenEnum.ACCESS);
 
-      expect(result).toEqual({ userId: "1", role: "user", exp: payload.exp });
+      expect(result).toEqual({
+        userId: "1",
+        role: Role.CUSTOMER,
+        exp: payload.exp,
+      });
     });
 
     it("REFRESH 토큰 검증 시 세션이 존재하지 않으면 UnauthorizedException을 던져야 함", async () => {

@@ -1,3 +1,5 @@
+import { Role } from "@prisma/client";
+
 export interface Session {
   ip: string;
   userId: number;
@@ -17,6 +19,7 @@ export interface SearchResult<T> {
 }
 export interface UserPayload {
   userId: string;
+  role: Role;
 }
 
 export interface MetricConfig {
