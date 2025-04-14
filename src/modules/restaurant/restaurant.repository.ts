@@ -71,6 +71,11 @@ export class RestaurantRepository {
       take: dto.pageSize,
     });
   }
+  async getMyRestaurant(id: string) {
+    return await this.prisma.restaurant.findUnique({
+      where: { id, status: { not: RestaurantStatus.REQUESTED } },
+    });
+  }
 
   async getMyRestaurants(userId: string) {
     return await this.prisma.restaurant.findMany({

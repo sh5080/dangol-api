@@ -55,12 +55,13 @@ export class RestaurantService implements IRestaurantService {
   }
 
   async updateMyRestaurant(id: string, dto: UpdateRestaurantDto) {
-    const restaurant = await this.restaurantRepository.updateMyRestaurant(
-      id,
-      dto
-    );
-    ExceptionUtil.default(restaurant);
-    return restaurant;
+    const myRestaurant = await this.restaurantRepository.getMyRestaurant(id);
+    ExceptionUtil.default(myRestaurant);
+
+    const updatedRestaurant =
+      await this.restaurantRepository.updateMyRestaurant(id, dto);
+    ExceptionUtil.default(updatedRestaurant);
+    return updatedRestaurant;
   }
 
   // *************************** 관리자 관련 API ***************************
