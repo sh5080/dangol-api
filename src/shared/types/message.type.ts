@@ -23,6 +23,12 @@ export const UserErrorMessage = {
   PERSONAL_INFO_COLLECTION_AGREE_REQUIRED: "개인정보 수집에 동의해주세요.",
 } as const;
 
+export const OrderErrorMessage = {
+  ORDER_NOT_FOUND: "조회된 주문이 없습니다.",
+  ORDER_NOT_ACCESSIBLE: "주문 접근 권한이 없습니다.",
+  ORDER_NOT_PROCESSABLE: "주문 처리 권한이 없습니다.",
+} as const;
+
 export const DefaultErrorMessage = {
   SYNTAX: "유효하지 않은 입력값입니다.",
   UNCORRECTED_FORM: "유효하지 않은 형식입니다.",
