@@ -4,6 +4,8 @@ import { RestaurantService } from "../restaurant.service";
 import { RestaurantRepository } from "../restaurant.repository";
 import { mockAuthGuard, mockAuthService } from "@/modules/auth/tests/auth.mock";
 import { AuthGuard } from "@/modules/auth/guards/auth.guard";
+import { mockMailService } from "@/modules/mail/tests/mail.mock";
+import { MailService } from "@/modules/mail/mail.service";
 
 export const mockRestaurantService = {
   getRestaurant: jest.fn(),
@@ -21,6 +23,9 @@ export const mockRestaurantRepository = {
   getUserRestaurantRequests: jest.fn(),
   getMyRestaurants: jest.fn(),
   processRestaurantRequest: jest.fn(),
+  getMyRestaurant: jest.fn(),
+  updateMyRestaurant: jest.fn(),
+  getAllRestaurantRequests: jest.fn(),
 };
 
 export const mockRestaurantModule = async () => {
@@ -34,6 +39,10 @@ export const mockRestaurantModule = async () => {
       {
         provide: "AuthService",
         useValue: mockAuthService,
+      },
+      {
+        provide: MailService,
+        useValue: mockMailService,
       },
     ],
   })
@@ -51,6 +60,10 @@ export const mockRestaurantServiceModule = async () => {
       {
         provide: RestaurantRepository,
         useValue: mockRestaurantRepository,
+      },
+      {
+        provide: MailService,
+        useValue: mockMailService,
       },
     ],
   }).compile();
