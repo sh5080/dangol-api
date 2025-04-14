@@ -86,7 +86,7 @@ model Restaurant {
   phoneNumber             String
   ownerId                 String
   deliveryAvailable       Boolean             @default(false)
-  status                  RestaurantStatus    @default(HIDDEN)
+  status                  RestaurantStatus    @default(REQUESTED)
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
   deletedAt               DateTime?
