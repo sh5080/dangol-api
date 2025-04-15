@@ -50,7 +50,7 @@ export class RestaurantRepository {
         address: dto.address,
         phoneNumber: dto.phoneNumber,
         owner: { connect: { id: userId } },
-        restaurantRequest: { create: { userId: userId } },
+        request: { create: { userId: userId } },
       },
     });
   }
