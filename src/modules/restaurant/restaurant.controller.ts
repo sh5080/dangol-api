@@ -101,7 +101,7 @@ export class RestaurantController {
   // *************************** 관리자 관련 API ***************************
 
   /**
-   * @summary 매장 생성 요청 목록 조회 (관리자) -- 추후 별도서버 분리할 경우 엔드포인트 admin.-.com/api/restaurant/request 로 변경예정
+   * @summary 매장 생성 요청 목록 조회 (관리자) -- 추후 분리 예정이라 https://dlrlmtcscb.execute-api.ap-northeast-2.amazonaws.com/Prod/admin/restaurant/request 로 요청보내주세요. 도메인 변동되면 다시 말씀드리겠습니다.
    * @security bearer
    * @param dto 매장 생성 요청 목록 조회 dto
    * @returns 매장 생성 요청 목록
@@ -113,7 +113,7 @@ export class RestaurantController {
     return await this.restaurantService.getAllRestaurantRequests(dto);
   }
   /**
-   * @summary 매장 생성 요청 승인 / 거절 처리 (관리자) -- 엔드포인트 admin.-.com/api/restaurant/request/:id/process 로 변경예정
+   * @summary 매장 생성 요청 승인 / 거절 처리 (관리자) --추후 분리 예정이라 https://dlrlmtcscb.execute-api.ap-northeast-2.amazonaws.com/Prod/admin/restaurant/request/:id/process 로 요청보내주세요. 도메인 변동되면 다시 말씀드리겠습니다.
    * @security bearer
    * @param id 매장 생성 요청 id
    * @param dto 매장 생성 요청 승인 / 거절 처리 dto
