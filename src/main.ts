@@ -15,7 +15,7 @@ async function bootstrap() {
     stage: env.serverUrl.STG,
     test: env.serverUrl.STG,
     development: env.serverUrl.DEV,
-    local: `http://localhost:12000`,
+    local: `http://localhost:3000`,
     chat: env.serverUrl.CHAT,
   };
 
