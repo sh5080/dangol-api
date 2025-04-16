@@ -24,6 +24,7 @@ model User {
   restaurantRequest RestaurantRequest[]
   agreements        UserAgreement[]
   orders            Order[]
+  adminSession      AdminSession?
 }
 
 model UserAgreement {
@@ -46,6 +47,13 @@ enum Role {
   CUSTOMER
   OWNER
   ADMIN
+}
+
+model AdminSession {
+  userId String @unique
+  token  String @unique
+  ip     String
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model UserBlock {

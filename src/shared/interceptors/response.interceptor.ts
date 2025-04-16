@@ -34,11 +34,17 @@ export class ResponseInterceptor implements NestInterceptor {
         } else if (response.getHeader("content-type") === "text/event-stream") {
           return res;
         } else if (res) {
-          const { accessToken, refreshToken, statusCode, ...data } =
+          const { accessToken, refreshToken, adminToken, statusCode, ...data } =
             JSON.parse(res);
           if (accessToken && refreshToken) {
             response.setHeader("Authorization", `Bearer ${accessToken}`);
             response.cookie("Refresh", refreshToken, {
+              httpOnly: true,
+              secure: env.NODE_ENV !== "development",
+            });
+          }
+          if (adminToken) {
+            response.cookie("Admin-Session", adminToken, {
               httpOnly: true,
               secure: env.NODE_ENV !== "development",
             });

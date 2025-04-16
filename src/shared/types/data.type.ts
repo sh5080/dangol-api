@@ -11,6 +11,7 @@ export interface Session {
 export interface Token {
   accessToken: string;
   refreshToken: string;
+  adminToken?: string;
 }
 
 export interface SearchResult<T> {

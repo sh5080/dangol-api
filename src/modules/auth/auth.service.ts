@@ -28,15 +28,20 @@ import { env } from "@shared/configs/env.config";
 import { RedisService } from "@core/redis/redis.service";
 import { ExceptionUtil } from "@/shared/utils/exception.util";
 import * as bcrypt from "bcrypt";
-
+import { Prisma, Role } from "@prisma/client";
+import { PrismaService } from "@/core/prisma/prisma.service";
 @Injectable()
 export class AuthService {
+  private readonly prisma: Prisma.TransactionClient;
   constructor(
     @Inject("IUserService") private readonly userService: IUserService,
     @InjectRedis() private readonly redis: Redis,
     private readonly redisService: RedisService,
-    private readonly logger: Logger
-  ) {}
+    private readonly logger: Logger,
+    private readonly prismaService: PrismaService
+  ) {
+    this.prisma = this.prismaService.prisma;
+  }
 
   async authenticate(
     dto: LoginDto,
@@ -181,6 +186,15 @@ export class AuthService {
     );
 
     await this.redis.expire(sessionKey, env.auth.REFRESH_JWT_EXPIRATION);
+    if (role === Role.ADMIN) {
+      const adminToken = crypto.randomUUID();
+      await this.prisma.adminSession.upsert({
+        where: { userId },
+        update: { token: adminToken, ip },
+        create: { userId, token: adminToken, ip },
+      });
+      return { accessToken, refreshToken, adminToken };
+    }
     return { accessToken, refreshToken };
   }
 
