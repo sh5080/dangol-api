@@ -8,6 +8,7 @@ import { mockLogger } from "@/shared/tests/util.mock";
 import { getRedisConnectionToken } from "@nestjs-modules/ioredis";
 import { RedisService } from "@core/redis/redis.service";
 import { Logger } from "nestjs-pino";
+import { PrismaService } from "@/core/prisma/prisma.service";
 
 export async function mockAuthModule() {
   return await Test.createTestingModule({
@@ -40,6 +41,10 @@ export async function mockAuthServiceModule() {
       {
         provide: Logger,
         useValue: mockLogger,
+      },
+      {
+        provide: PrismaService,
+        useValue: PrismaService,
       },
     ],
   }).compile();
