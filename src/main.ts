@@ -10,6 +10,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
 
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set("trust proxy", true);
+
   const SERVER_URLS = {
     production: env.serverUrl.PRD,
     stage: env.serverUrl.STG,
@@ -26,6 +29,7 @@ async function bootstrap() {
     exposedHeaders: ["Authorization"],
     credentials: true,
   });
+
   app.setGlobalPrefix("api");
   const document = await NestiaSwaggerComposer.document(
     app,
