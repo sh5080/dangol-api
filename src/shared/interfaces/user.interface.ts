@@ -5,7 +5,7 @@ import { UserWithoutPassword } from "@/modules/user/dtos/response.dto";
 export interface IUserService {
   createUser(dto: CreateUserDto): Promise<UserWithoutPassword>;
   checkUser(key: CheckUserValueType, value: string): Promise<boolean>;
-
+  existEmail(email: string): Promise<boolean>;
   getUserByEmail(email: string): Promise<User>;
 
   blockUser(id: string, reasonId: number): Promise<void>;

@@ -1,5 +1,5 @@
-export interface CheckNicknameDto {
-  nickname: string;
+export interface CheckEmailDto {
+  email: string;
 }
 
 export interface GetChatParticipantsDto {

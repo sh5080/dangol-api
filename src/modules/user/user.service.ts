@@ -16,6 +16,11 @@ export class UserService implements IUserService {
     ExceptionUtil.default(user, UserErrorMessage.USER_NOT_FOUND, 403);
     return user;
   }
+  async existEmail(email: string) {
+    const user = await this.userRepository.getUserByEmail(email);
+    ExceptionUtil.default(!user, UserErrorMessage.EMAIL_CONFLICTED, 409);
+    return true;
+  }
 
   async createUser(dto: CreateUserDto) {
     const { email, password, isPersonalInfoCollectionAgree } = dto;
@@ -24,8 +29,7 @@ export class UserService implements IUserService {
       UserErrorMessage.PERSONAL_INFO_COLLECTION_AGREE_REQUIRED,
       400
     );
-    const isExist = await this.userRepository.getUserByEmail(email);
-    ExceptionUtil.default(!isExist, UserErrorMessage.EMAIL_CONFLICTED, 409);
+    await this.existEmail(email);
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await this.userRepository.createUser({
       ...dto,
