@@ -151,6 +151,9 @@ export class AuthService {
     role?: string | null,
     isTest?: boolean
   ): Promise<Token> {
+    if (ip === "::1") {
+      ip = "127.0.0.1";
+    }
     const accessTokenPayload = { userId, role };
     const refreshTokenPayload = { uuid: crypto.randomUUID() };
 
