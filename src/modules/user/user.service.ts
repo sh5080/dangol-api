@@ -7,6 +7,7 @@ import { IUserService } from "@shared/interfaces/user.interface";
 import { ExceptionUtil } from "@/shared/utils/exception.util";
 import * as bcrypt from "bcrypt";
 import { UserWithoutPassword } from "./dtos/response.dto";
+import { FindEmailDto } from "./dtos/get-user.dto";
 
 @Injectable()
 export class UserService implements IUserService {
@@ -44,6 +45,11 @@ export class UserService implements IUserService {
     return user;
   }
 
+  async findEmail(dto: FindEmailDto) {
+    const user = await this.userRepository.findEmail(dto);
+    ExceptionUtil.default(user, UserErrorMessage.USER_NOT_FOUND);
+    return { email: user.email };
+  }
   async blockUser(id: string, reasonId: number) {
     await this.userRepository.blockUser(id, reasonId);
   }

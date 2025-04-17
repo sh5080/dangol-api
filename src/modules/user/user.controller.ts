@@ -3,7 +3,7 @@ import { IUserService } from "@shared/interfaces/user.interface";
 import { CreateUserDto } from "./dtos/create-user.dto";
 import { ApiTags } from "@nestjs/swagger";
 import { TypedBody, TypedRoute } from "@nestia/core";
-import { CheckEmailDto } from "./dtos/get-user.dto";
+import { CheckEmailDto, FindEmailDto } from "./dtos/get-user.dto";
 
 @ApiTags("유저")
 @Controller("user")
@@ -32,6 +32,16 @@ export class UserController {
   @TypedRoute.Post("check/email")
   async checkEmail(@TypedBody() dto: CheckEmailDto) {
     return await this.userService.existEmail(dto.email);
+  }
+  /**
+   * @summary 이메일 찾기
+   * @param dto 이메일 찾기 dto
+   * @returns 이메일 찾기 결과
+   * @throws 404 조회된 유저 없음
+   */
+  @TypedRoute.Post("recovery/email")
+  async findEmail(@TypedBody() dto: FindEmailDto) {
+    return await this.userService.findEmail(dto);
   }
 
   // 기존에는 userIds를 받아서 조회했는데, 유저에 해당하는 매장이 많을 수 있음. 설계가 잘못됨.
