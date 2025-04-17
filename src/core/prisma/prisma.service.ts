@@ -73,6 +73,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
                 env.ENCRYPTION_KEY
               );
             }
+            if (params.where.phoneNumber) {
+              params.where.phoneNumber = await encryption.encrypt(
+                params.where.phoneNumber,
+                env.ENCRYPTION_KEY
+              );
+            }
             const result = await prismaInstance.user.findUnique(params);
             if (result && result.email) {
               result.email = await encryption.decrypt(
