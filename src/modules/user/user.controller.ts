@@ -1,9 +1,10 @@
 import { Inject, Controller } from "@nestjs/common";
 import { IUserService } from "@shared/interfaces/user.interface";
-import { CreateUserDto } from "./dtos/create-user.dto";
+import { CertificationDto, CreateUserDto } from "./dtos/create-user.dto";
 import { ApiTags } from "@nestjs/swagger";
 import { TypedBody, TypedRoute } from "@nestia/core";
 import { CheckEmailDto, FindEmailDto } from "./dtos/get-user.dto";
+import { UpdatePasswordDto } from "./dtos/update-user.dto";
 
 @ApiTags("유저")
 @Controller("user")
@@ -42,6 +43,24 @@ export class UserController {
   @TypedRoute.Post("recovery/email")
   async findEmail(@TypedBody() dto: FindEmailDto) {
     return await this.userService.findEmail(dto);
+  }
+  /**
+   * @summary 패스워드 재설정 이메일 인증요청
+   * @param dto 패스워드 재설정 dto
+   * @returns 패스워드 재설정 결과
+   */
+  @TypedRoute.Post("certification/password")
+  async updatePasswordCertification(@TypedBody() dto: CertificationDto) {
+    return await this.userService.updatePasswordCertification(dto);
+  }
+  /**
+   * @summary 패스워드 재설정
+   * @param dto 패스워드 재설정 dto
+   * @returns 패스워드 재설정 결과
+   */
+  @TypedRoute.Post("recovery/password")
+  async updatePassword(@TypedBody() dto: UpdatePasswordDto) {
+    return await this.userService.updatePassword(dto);
   }
 
   // 기존에는 userIds를 받아서 조회했는데, 유저에 해당하는 매장이 많을 수 있음. 설계가 잘못됨.

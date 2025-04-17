@@ -21,6 +21,7 @@ export const UserErrorMessage = {
   INVALID_CODE: "유효하지 않은 코드입니다.",
   PERMISSION_NOT_FOUND: "권한이 없습니다.",
   PERSONAL_INFO_COLLECTION_AGREE_REQUIRED: "개인정보 수집에 동의해주세요.",
+  EXIST_PASSWORD: "기존 패스워드는 사용할 수 없습니다.",
 } as const;
 
 export const OrderErrorMessage = {

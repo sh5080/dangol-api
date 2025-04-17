@@ -5,6 +5,7 @@ import { CreateUserDto } from "./dtos/create-user.dto";
 import { CheckUserValueType } from "@shared/types/enum.type";
 import { v4 as uuidv4 } from "uuid";
 import { FindEmailDto } from "./dtos/get-user.dto";
+import { UpdatePasswordDto } from "./dtos/update-user.dto";
 @Injectable()
 export class UserRepository {
   private readonly prisma: Prisma.TransactionClient;
@@ -81,6 +82,13 @@ export class UserRepository {
     const { name, phoneNumber } = dto;
     return await this.prisma.user.findUnique({
       where: { name, phoneNumber, deletedAt: null },
+    });
+  }
+
+  async updatePassword(email: string, hashedPassword: string) {
+    return await this.prisma.user.update({
+      where: { email, deletedAt: null },
+      data: { password: hashedPassword },
     });
   }
 }
