@@ -55,7 +55,7 @@ export type BlockStatusType = (typeof BlockStatus)[keyof typeof BlockStatus];
 
 export const MailType = {
   SIGNUP: "signup",
-  PASSWORD_RESET: "passwordReset",
+  CHANGE_PASSWORD: "changePassword",
   RESTAURANT_APPROVED: "restaurantApproved",
 } as const;
 

@@ -67,7 +67,7 @@ export class MailService {
         title = "매장 승인 완료";
         template = this.getApprovedTemplate(title);
         break;
-      case MailType.PASSWORD_RESET:
+      case MailType.CHANGE_PASSWORD:
         title = "비밀번호 재설정";
         template = this.getCertificationTemplate(authNum!, title);
         break;
@@ -79,7 +79,6 @@ export class MailService {
       subject: `테스트 ${title} 메일입니다.`,
       html: template,
     };
-
     await this.transporter.sendMail(options);
   }
 }
