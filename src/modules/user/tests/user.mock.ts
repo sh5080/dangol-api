@@ -43,6 +43,7 @@ export const mockUserService = {
   getUserProfileById: jest.fn(),
   updateUserProfile: jest.fn(),
   getChatParticipants: jest.fn(),
+  existEmail: jest.fn(),
 };
 
 export const mockUserRepository = {

@@ -216,6 +216,47 @@ describe("UserService", () => {
     });
   });
 
+  describe("existEmail", () => {
+    it("이메일이 중복되지 않으면 true를 반환해야 함", async () => {
+      mockUserRepository.getUserByEmail.mockResolvedValue(null);
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {});
+
+      const result = await service.existEmail("new_email@example.com");
+
+      expect(userRepository.getUserByEmail).toHaveBeenCalledWith(
+        "new_email@example.com"
+      );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        true,
+        UserErrorMessage.EMAIL_CONFLICTED,
+        409
+      );
+      expect(result).toBe(true);
+    });
+
+    it("이메일이 중복되면 ConflictException을 던져야 함", async () => {
+      const existingUser = { id: "1", email: "existing@example.com" };
+      mockUserRepository.getUserByEmail.mockResolvedValue(existingUser);
+
+      jest.spyOn(ExceptionUtil, "default").mockImplementation(() => {
+        throw new ConflictException(UserErrorMessage.EMAIL_CONFLICTED);
+      });
+
+      await expect(service.existEmail("existing@example.com")).rejects.toThrow(
+        ConflictException
+      );
+
+      expect(userRepository.getUserByEmail).toHaveBeenCalledWith(
+        "existing@example.com"
+      );
+      expect(ExceptionUtil.default).toHaveBeenCalledWith(
+        false,
+        UserErrorMessage.EMAIL_CONFLICTED,
+        409
+      );
+    });
+  });
+
   // describe("getChatParticipants", () => {
   //   it("채팅 참여자 정보를 반환해야 함", async () => {
   //     const userIds = ["1", "2"];

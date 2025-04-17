@@ -41,6 +41,19 @@ describe("UserController", () => {
     });
   });
 
+  describe("checkEmail", () => {
+    it("이메일이 중복되지 않으면 true를 반환해야 함", async () => {
+      const dto = { email: "test@example.com" };
+
+      mockUserService.existEmail.mockResolvedValue(true);
+
+      const result = await controller.checkEmail(dto);
+
+      expect(userService.existEmail).toHaveBeenCalledWith(dto.email);
+      expect(result).toBe(true);
+    });
+  });
+
   // describe("getChatParticipants", () => {
   //   it("채팅 참여자 정보를 반환해야 함", async () => {
   //     const dto: GetChatParticipantsDto = { userIds: ["1", "2"] };
