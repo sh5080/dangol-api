@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import { CertificationDto, CreateUserDto } from "./dtos/create-user.dto";
 import { UserRepository } from "./user.repository";
 import { UserErrorMessage } from "@shared/types/message.type";
@@ -66,9 +66,11 @@ export class UserService implements IUserService {
   }
 
   async updatePasswordCertification(dto: CertificationDto) {
-    const { email } = dto;
+    const { email, name } = dto;
     // 유저 조회
     const user = await this.getUserByEmail(email);
+    // 이름 확인
+    ExceptionUtil.default(user.name === name, UserErrorMessage.USER_NOT_FOUND);
     // 랜덤 숫자 생성
     const randomNumber = Math.floor(Math.random() * 1000000);
     // 메일 전송
@@ -83,13 +85,19 @@ export class UserService implements IUserService {
   }
 
   async updatePassword(dto: UpdatePasswordDto) {
-    const { email, code, password } = dto;
+    const { email, code, password, name } = dto;
     // 유저 조회
     const user = await this.getUserByEmail(email);
+    // 이름 확인
+    ExceptionUtil.default(user.name === name, UserErrorMessage.USER_NOT_FOUND);
     // 랜덤 숫자 조회
     const key = this.redisService.userKey(RedisKey.RESET_PW, user.id);
     const redisCode = await this.redis.get(key);
-    ExceptionUtil.default(redisCode === code, UserErrorMessage.INVALID_CODE);
+    ExceptionUtil.default(
+      redisCode === code,
+      UserErrorMessage.INVALID_CODE,
+      HttpStatus.BAD_REQUEST
+    );
 
     // 기존 패스워드 여부 확인
     const isPasswordMatch = await bcrypt.compare(password, user.password);

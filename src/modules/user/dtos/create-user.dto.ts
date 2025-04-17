@@ -17,4 +17,5 @@ export interface CreateUserDto {
 export interface CertificationDto {
   type: SendMailType;
   email: string & tags.Format<"email">;
+  name: string;
 }
