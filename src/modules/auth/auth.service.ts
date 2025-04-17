@@ -30,6 +30,7 @@ import { ExceptionUtil } from "@/shared/utils/exception.util";
 import * as bcrypt from "bcrypt";
 import { Prisma, Role } from "@prisma/client";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { UserWithoutPassword } from "../user/dtos/response.dto";
 @Injectable()
 export class AuthService {
   private readonly prisma: Prisma.TransactionClient;
@@ -71,7 +72,8 @@ export class AuthService {
     // 정상 로그인시 로그인 시도 횟수 초기화
     await this.resetFailedLoginAttempts(user.id);
 
-    return { user, ...tokens };
+    delete (user as any).password;
+    return { user: user as UserWithoutPassword, ...tokens };
   }
 
   async incrementFailedLoginAttempts(userId: string) {
