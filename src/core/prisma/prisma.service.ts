@@ -150,8 +150,18 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
             return prismaInstance.user.count(params);
           },
           async update(params: Prisma.UserUpdateArgs) {
-            const { data } = params;
-
+            if (params?.where?.email) {
+              params.where.email = await encryption.encrypt(
+                params.where.email as string,
+                env.ENCRYPTION_KEY
+              );
+            }
+            if (params?.where?.phoneNumber) {
+              params.where.phoneNumber = await encryption.encrypt(
+                params.where.phoneNumber as string,
+                env.ENCRYPTION_KEY
+              );
+            }
             const result = await prismaInstance.user.update(params);
             if (result.email) {
               result.email = await encryption.decrypt(
