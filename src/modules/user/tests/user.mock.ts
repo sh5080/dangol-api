@@ -4,6 +4,11 @@ import { Test } from "@nestjs/testing";
 import { AuthGuard } from "@/modules/auth/guards/auth.guard";
 import { UserService } from "../user.service";
 import { UserRepository } from "../user.repository";
+import { getRedisConnectionToken } from "@nestjs-modules/ioredis";
+import { RedisService } from "@/core/redis/redis.service";
+import { mockRedis, mockRedisService } from "@/core/redis/tests/redis.mock";
+import { MailService } from "@/modules/mail/mail.service";
+import { mockMailService } from "@/modules/mail/tests/mail.mock";
 
 export async function mockUserModule() {
   return await Test.createTestingModule({
@@ -30,6 +35,18 @@ export async function mockUserServiceModule() {
       {
         provide: UserRepository,
         useValue: mockUserRepository,
+      },
+      {
+        provide: MailService,
+        useValue: mockMailService,
+      },
+      {
+        provide: getRedisConnectionToken("default"),
+        useValue: mockRedis,
+      },
+      {
+        provide: RedisService,
+        useValue: mockRedisService,
       },
     ],
   }).compile();
