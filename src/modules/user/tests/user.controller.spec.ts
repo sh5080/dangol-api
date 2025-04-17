@@ -3,6 +3,10 @@ import { IUserService } from "@shared/interfaces/user.interface";
 import { CreateUserDto } from "../dtos/create-user.dto";
 import { mockUserService } from "./user.mock";
 import { mockUserModule } from "./user.mock";
+import { FindEmailDto } from "../dtos/get-user.dto";
+import { CertificationDto } from "../dtos/create-user.dto";
+import { UpdatePasswordDto } from "../dtos/update-user.dto";
+import { MailType } from "@/shared/types/enum.type";
 
 describe("UserController", () => {
   let controller: UserController;
@@ -51,6 +55,57 @@ describe("UserController", () => {
 
       expect(userService.existEmail).toHaveBeenCalledWith(dto.email);
       expect(result).toBe(true);
+    });
+  });
+
+  describe("findEmail", () => {
+    it("이름과 전화번호로 이메일을 찾아서 반환해야 함", async () => {
+      const dto: FindEmailDto = {
+        name: "홍길동",
+        phoneNumber: "01012345678",
+      };
+
+      const mockEmail = { email: "test@example.com" };
+      mockUserService.findEmail.mockResolvedValue(mockEmail);
+
+      const result = await controller.findEmail(dto);
+
+      expect(userService.findEmail).toHaveBeenCalledWith(dto);
+      expect(result).toEqual(mockEmail);
+    });
+  });
+
+  describe("updatePasswordCertification", () => {
+    it("비밀번호 재설정 인증 메일을 성공적으로 보내야 함", async () => {
+      const dto: CertificationDto = {
+        type: MailType.CHANGE_PASSWORD,
+        email: "test@example.com",
+        name: "홍길동",
+      };
+
+      mockUserService.updatePasswordCertification.mockResolvedValue(undefined);
+
+      await controller.updatePasswordCertification(dto);
+
+      expect(userService.updatePasswordCertification).toHaveBeenCalledWith(dto);
+    });
+  });
+
+  describe("updatePassword", () => {
+    it("비밀번호를 성공적으로 업데이트해야 함", async () => {
+      const dto: UpdatePasswordDto = {
+        type: MailType.CHANGE_PASSWORD,
+        email: "test@example.com",
+        name: "홍길동",
+        code: "123456",
+        password: "newPassword123",
+      };
+
+      mockUserService.updatePassword.mockResolvedValue(undefined);
+
+      await controller.updatePassword(dto);
+
+      expect(userService.updatePassword).toHaveBeenCalledWith(dto);
     });
   });
 

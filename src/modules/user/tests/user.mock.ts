@@ -61,6 +61,10 @@ export const mockUserService = {
   updateUserProfile: jest.fn(),
   getChatParticipants: jest.fn(),
   existEmail: jest.fn(),
+  findEmail: jest.fn(),
+  updatePasswordCertification: jest.fn(),
+  updatePassword: jest.fn(),
+  checkUser: jest.fn(),
 };
 
 export const mockUserRepository = {
@@ -72,4 +76,6 @@ export const mockUserRepository = {
   updateUserProfile: jest.fn(),
   blockUser: jest.fn(),
   getChatParticipants: jest.fn(),
+  findEmail: jest.fn(),
+  updatePassword: jest.fn(),
 };
