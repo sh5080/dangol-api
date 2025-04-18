@@ -1,3 +1,5 @@
+import { RequestStatus, AuthRequest } from "@dangol/core";
+
 import { RestaurantController } from "../restaurant.controller";
 import { IRestaurantService } from "@shared/interfaces/restaurant.interface";
 import { GetRestaurantListDto } from "../dtos/get-restaurant.dto";
@@ -5,8 +7,6 @@ import {
   ProcessRestaurantRequestDto,
   RequestRestaurantDto,
 } from "../dtos/create-restaurant.dto";
-import { AuthRequest } from "@shared/types/request.type";
-import { RequestStatus } from "@prisma/client";
 import { mockRestaurantModule, mockRestaurantService } from "./restaurant.mock";
 
 describe("RestaurantController", () => {

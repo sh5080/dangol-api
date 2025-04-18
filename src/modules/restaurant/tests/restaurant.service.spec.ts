@@ -1,13 +1,12 @@
+import { RequestStatus, ExceptionUtil, MailType } from "@dangol/core";
+
 import { RestaurantService } from "../restaurant.service";
 import { NotFoundException } from "@nestjs/common";
-import { RequestStatus } from "@prisma/client";
-import { ExceptionUtil } from "@shared/utils/exception.util";
 import {
   mockRestaurantServiceModule,
   mockRestaurantRepository,
 } from "./restaurant.mock";
 import { mockMailService } from "@/modules/mail/tests/mail.mock";
-import { MailType } from "@/shared/types/enum.type";
 import { UpdateRestaurantDto } from "../dtos/update-restaurant.dto";
 
 describe("RestaurantService", () => {

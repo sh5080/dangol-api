@@ -1,18 +1,19 @@
+import {
+  ExceptionUtil,
+  OrderStatus,
+  DeliveryType,
+  DeliveryStatus,
+  OrderErrorMessage,
+} from "@dangol/core";
+
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { OrderRepository } from "./order.repository";
-// import { FetchDeliveryService } from "../delivery/fetch-delivery.service";
 import { ProcessOrderDto } from "./dtos/create-order.dto";
 import { GetOrderListDto } from "./dtos/get-order.dto";
-import { ExceptionUtil } from "@shared/utils/exception.util";
-import { OrderStatus, DeliveryType, DeliveryStatus } from "@prisma/client";
 import { UpdateOrderDeliveryDto } from "./dtos/update-order.dto";
-import { OrderErrorMessage } from "@/shared/types/message.type";
 @Injectable()
 export class OrderService {
-  constructor(
-    private readonly orderRepository: OrderRepository
-    // private readonly fetchDeliveryService: FetchDeliveryService
-  ) {}
+  constructor(private readonly orderRepository: OrderRepository) {}
   // *************************** 소비자 API ***************************
   async getOrdersByCustomer(customerId: string, dto: GetOrderListDto) {
     const orders = await this.orderRepository.getOrdersByCustomer(

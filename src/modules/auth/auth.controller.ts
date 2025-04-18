@@ -1,11 +1,11 @@
+import { AuthService, AuthGuard } from "@dangol/auth";
+import { AuthRequest } from "@dangol/core";
+
 import { Controller, Req, UseGuards } from "@nestjs/common";
-import { AuthService } from "./auth.service";
 import { LoginDto } from "./dtos/create-auth.dto";
 import { TypedBody, TypedRoute } from "@nestia/core";
 import { ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
-import { AuthGuard } from "./guards/auth.guard";
-import { AuthRequest } from "@shared/types/request.type";
 
 @ApiTags("인증")
 @Controller("auth")

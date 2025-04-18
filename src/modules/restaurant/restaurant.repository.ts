@@ -1,12 +1,11 @@
+import { Prisma, PrismaService, RestaurantStatus } from "@dangol/core";
+
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@core/prisma/prisma.service";
-import { Prisma, RestaurantStatus } from "@prisma/client";
 import { GetRestaurantListDto } from "./dtos/get-restaurant.dto";
 import {
   ProcessRestaurantRequestDto,
   RequestRestaurantDto,
 } from "./dtos/create-restaurant.dto";
-import { v4 as uuidv4 } from "uuid";
 import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
 @Injectable()
 export class RestaurantRepository {
@@ -42,7 +41,7 @@ export class RestaurantRepository {
   async requestRestaurant(userId: string, dto: RequestRestaurantDto) {
     return await this.prisma.restaurant.create({
       data: {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         name: dto.name,
         description: dto.description,
         businessLicenseImageUrl: dto.businessLicenseImageUrl,

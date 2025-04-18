@@ -1,4 +1,4 @@
-import { DeliveryStatus, DeliveryType } from "@prisma/client";
+import { DeliveryStatus, DeliveryType } from "@dangol/core";
 
 export interface UpdateOrderDeliveryDto {
   status: DeliveryStatus;

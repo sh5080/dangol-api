@@ -1,3 +1,5 @@
+import { RedisService as DangolRedisService } from "@dangol/auth";
+
 import { UserController } from "../user.controller";
 import { mockAuthService, mockAuthGuard } from "@/modules/auth/tests/auth.mock";
 import { Test } from "@nestjs/testing";
@@ -5,7 +7,6 @@ import { AuthGuard } from "@/modules/auth/guards/auth.guard";
 import { UserService } from "../user.service";
 import { UserRepository } from "../user.repository";
 import { getRedisConnectionToken } from "@nestjs-modules/ioredis";
-import { RedisService } from "@/core/redis/redis.service";
 import { mockRedis, mockRedisService } from "@/core/redis/tests/redis.mock";
 import { MailService } from "@/modules/mail/mail.service";
 import { mockMailService } from "@/modules/mail/tests/mail.mock";
@@ -45,7 +46,7 @@ export async function mockUserServiceModule() {
         useValue: mockRedis,
       },
       {
-        provide: RedisService,
+        provide: DangolRedisService,
         useValue: mockRedisService,
       },
     ],

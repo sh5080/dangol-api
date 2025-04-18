@@ -1,3 +1,5 @@
+import { MailType } from "@dangol/core";
+
 import { UserController } from "../user.controller";
 import { IUserService } from "@shared/interfaces/user.interface";
 import { CreateUserDto } from "../dtos/create-user.dto";
@@ -6,7 +8,6 @@ import { mockUserModule } from "./user.mock";
 import { FindEmailDto } from "../dtos/get-user.dto";
 import { CertificationDto } from "../dtos/create-user.dto";
 import { UpdatePasswordDto } from "../dtos/update-user.dto";
-import { MailType } from "@/shared/types/enum.type";
 
 describe("UserController", () => {
   let controller: UserController;

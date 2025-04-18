@@ -1,3 +1,14 @@
+import {
+  AuthRequest,
+  AuthErrorMessage,
+  DefaultErrorMessage,
+  BlackListEnum,
+  TokenEnum,
+  ExceptionUtil,
+} from "@dangol/core";
+import { UserPayload } from "@dangol/core/src/types/data.type";
+import { AuthService } from "@dangol/auth";
+
 import { NextFunction, Response } from "express";
 import {
   Injectable,
@@ -6,17 +17,8 @@ import {
   UnauthorizedException,
   ForbiddenException,
 } from "@nestjs/common";
-import { AuthRequest } from "@shared/types/request.type";
-import { AuthService } from "../auth.service";
-import {
-  AuthErrorMessage,
-  DefaultErrorMessage,
-} from "@shared/types/message.type";
 import { decode } from "jsonwebtoken";
 import { env } from "@shared/configs/env.config";
-import { BlackListEnum, TokenEnum } from "@shared/types/enum.type";
-import { UserPayload } from "@shared/types/data.type";
-import { ExceptionUtil } from "@/shared/utils/exception.util";
 
 @Injectable()
 export class AuthGuard implements CanActivate {

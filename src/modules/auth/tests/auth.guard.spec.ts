@@ -1,8 +1,8 @@
+import { BlackListEnum, TokenEnum } from "@dangol/core";
+import { AuthGuard, AuthService } from "@dangol/auth";
+
 import { Test, TestingModule } from "@nestjs/testing";
-import { AuthGuard } from "../guards/auth.guard";
-import { AuthService } from "../auth.service";
 import { ExecutionContext } from "@nestjs/common";
-import { BlackListEnum, TokenEnum } from "@shared/types/enum.type";
 import { createMock } from "@golevelup/ts-jest";
 import { mockAuthService } from "./auth.mock";
 describe("AuthGuard", () => {

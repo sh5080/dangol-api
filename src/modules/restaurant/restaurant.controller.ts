@@ -1,16 +1,15 @@
+import { AuthGuard, Roles } from "@dangol/auth";
+import { AuthRequest, Role } from "@dangol/core";
+
 import { Controller, Inject, Req, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { TypedBody, TypedParam, TypedQuery, TypedRoute } from "@nestia/core";
 import { GetRestaurantListDto } from "./dtos/get-restaurant.dto";
-import { AuthGuard } from "../auth/guards/auth.guard";
 import { IRestaurantService } from "@shared/interfaces/restaurant.interface";
 import {
   ProcessRestaurantRequestDto,
   RequestRestaurantDto,
 } from "./dtos/create-restaurant.dto";
-import { AuthRequest } from "@/shared/types/request.type";
-import { Roles } from "@/shared/decorators/access-control.decorator";
-import { Role } from "@prisma/client";
 import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
 
 @ApiTags("매장")

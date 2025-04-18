@@ -6,8 +6,7 @@ import {
   makeSummaryProvider,
   PrometheusModule,
 } from "@willsoto/nestjs-prometheus";
-import { MetricsService } from "./metrics.service";
-import { MetricsController } from "./metrics.controller";
+import { MetricsController, MetricsService } from "@dangol/core";
 
 @Module({
   imports: [

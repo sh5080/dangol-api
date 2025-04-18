@@ -1,3 +1,11 @@
+import {
+  ExceptionUtil,
+  UserErrorMessage,
+  CheckUserValue,
+  MailType,
+  RedisKey,
+} from "@dangol/core";
+
 import { TestingModule } from "@nestjs/testing";
 import { UserService } from "../user.service";
 import { UserRepository } from "../user.repository";
@@ -8,10 +16,7 @@ import {
   HttpStatus,
   NotFoundException,
 } from "@nestjs/common";
-import { CheckUserValue, MailType, RedisKey } from "@shared/types/enum.type";
 import { mockUserServiceModule, mockUserRepository } from "./user.mock";
-import { ExceptionUtil } from "@/shared/utils/exception.util";
-import { UserErrorMessage } from "@/shared/types/message.type";
 import { CreateUserDto, CertificationDto } from "../dtos/create-user.dto";
 import { FindEmailDto } from "../dtos/get-user.dto";
 import { UpdatePasswordDto } from "../dtos/update-user.dto";

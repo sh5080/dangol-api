@@ -1,3 +1,5 @@
+import { ExceptionUtil, RequestStatus, MailType } from "@dangol/core";
+
 import { Injectable } from "@nestjs/common";
 import { IRestaurantService } from "@shared/interfaces/restaurant.interface";
 import { RestaurantRepository } from "@/modules/restaurant/restaurant.repository";
@@ -6,11 +8,8 @@ import {
   ProcessRestaurantRequestDto,
   RequestRestaurantDto,
 } from "./dtos/create-restaurant.dto";
-import { ExceptionUtil } from "@shared/utils/exception.util";
 import { UpdateRestaurantDto } from "./dtos/update-restaurant.dto";
-import { RequestStatus } from "@prisma/client";
 import { MailService } from "../mail/mail.service";
-import { MailType } from "@/shared/types/enum.type";
 
 @Injectable()
 export class RestaurantService implements IRestaurantService {

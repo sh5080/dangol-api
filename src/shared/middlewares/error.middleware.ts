@@ -1,19 +1,20 @@
 import {
+  ResponseStatus,
+  ErrorResponse,
+  DefaultErrorMessage,
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from "@dangol/core";
+
+import {
   ExceptionFilter,
   Catch,
   ArgumentsHost,
   HttpException,
   HttpStatus,
 } from "@nestjs/common";
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-} from "@prisma/client/runtime/library";
 import { Response } from "express";
 import { Logger } from "nestjs-pino";
-import { ErrorResponse } from "../types/response.type";
-import { ResponseStatus } from "../types/enum.type";
-import { DefaultErrorMessage } from "../types/message.type";
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {

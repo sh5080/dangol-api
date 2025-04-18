@@ -1,5 +1,6 @@
+import { SendMailType } from "@dangol/core";
+
 import { tags } from "typia";
-import { SendMailType } from "@shared/types/enum.type";
 
 export interface CreateUserDto {
   email: string & tags.Format<"email">;

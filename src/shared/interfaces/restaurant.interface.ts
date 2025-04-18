@@ -1,4 +1,5 @@
-import { Restaurant, RestaurantRequest } from "@prisma/client";
+import { Restaurant, RestaurantRequest } from "@dangol/core";
+
 import { GetRestaurantListDto } from "@/modules/restaurant/dtos/get-restaurant.dto";
 import {
   ProcessRestaurantRequestDto,

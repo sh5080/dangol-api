@@ -1,4 +1,4 @@
-import { DeliveryType } from "@prisma/client";
+import { DeliveryType } from "@dangol/core";
 
 export interface ProcessOrderDto {
   deliveryType: DeliveryType; // SELF | DELIVERY | PICKUP

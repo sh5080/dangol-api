@@ -1,6 +1,7 @@
+import { Order } from "@dangol/core";
+
 import { ProcessOrderDto } from "@/modules/order/dtos/create-order.dto";
 import { GetOrderListDto } from "@/modules/order/dtos/get-order.dto";
-import { Order } from "@prisma/client";
 
 export interface IOrderService {
   // *************************** 소비자 API ***************************

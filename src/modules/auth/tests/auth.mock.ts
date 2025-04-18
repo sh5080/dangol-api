@@ -1,14 +1,14 @@
+import { PrismaService } from "@dangol/core";
+import { RedisService as DangolRedisService, AuthService } from "@dangol/auth";
+
 import { AuthController } from "../auth.controller";
-import { AuthService } from "../auth.service";
 import { Test } from "@nestjs/testing";
 import { mockUserService } from "@/modules/user/tests/user.mock";
 import { mockRedis } from "@/core/redis/tests/redis.mock";
 import { mockRedisService } from "@/core/redis/tests/redis.mock";
 import { mockLogger } from "@/shared/tests/util.mock";
 import { getRedisConnectionToken } from "@nestjs-modules/ioredis";
-import { RedisService } from "@core/redis/redis.service";
 import { Logger } from "nestjs-pino";
-import { PrismaService } from "@/core/prisma/prisma.service";
 
 export async function mockAuthModule() {
   return await Test.createTestingModule({
@@ -35,7 +35,7 @@ export async function mockAuthServiceModule() {
         useValue: mockRedis,
       },
       {
-        provide: RedisService,
+        provide: DangolRedisService,
         useValue: mockRedisService,
       },
       {

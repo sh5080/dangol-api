@@ -1,12 +1,13 @@
+import { CheckUserValueType, User } from "@dangol/core";
+
 import {
   CertificationDto,
   CreateUserDto,
 } from "@modules/user/dtos/create-user.dto";
-import { CheckUserValueType } from "@shared/types/enum.type";
-import { User } from "@prisma/client";
 import { UserWithoutPassword } from "@/modules/user/dtos/response.dto";
 import { FindEmailDto } from "@modules/user/dtos/get-user.dto";
 import { UpdatePasswordDto } from "@/modules/user/dtos/update-user.dto";
+
 export interface IUserService {
   createUser(dto: CreateUserDto): Promise<UserWithoutPassword>;
   checkUser(key: CheckUserValueType, value: string): Promise<boolean>;

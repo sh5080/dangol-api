@@ -1,3 +1,5 @@
+import { AuthRequest, DefaultErrorMessage } from "@dangol/core";
+
 import {
   Injectable,
   CanActivate,
@@ -5,8 +7,6 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { AuthRequest } from "@shared/types/request.type";
-import { DefaultErrorMessage } from "@shared/types/message.type";
 
 @Injectable()
 export class RoleGuard implements CanActivate {

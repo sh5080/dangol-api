@@ -1,12 +1,11 @@
+import { AuthRequest, Role } from "@dangol/core";
+import { AuthGuard, Roles } from "@dangol/auth";
+
 import { Controller, Req, UseGuards, Inject } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { TypedBody, TypedParam, TypedQuery, TypedRoute } from "@nestia/core";
 import { GetOrderListDto } from "./dtos/get-order.dto";
 import { ProcessOrderDto } from "./dtos/create-order.dto";
-import { AuthRequest } from "@/shared/types/request.type";
-import { AuthGuard } from "../auth/guards/auth.guard";
-import { Role } from "@prisma/client";
-import { Roles } from "@/shared/decorators/access-control.decorator";
 import { IOrderService } from "@shared/interfaces/order.interface";
 @ApiTags("주문")
 @Controller("order")

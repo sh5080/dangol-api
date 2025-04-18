@@ -1,17 +1,20 @@
-import { TestingModule } from "@nestjs/testing";
-import { AuthService } from "../auth.service";
-import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
-import { LoginDto } from "../dtos/create-auth.dto";
-import { BlackListEnum, TokenEnum } from "@shared/types/enum.type";
 import {
+  ExceptionUtil,
   AuthErrorMessage,
   TokenErrorMessage,
-} from "@/shared/types/message.type";
-import { Role } from "@prisma/client";
+  Role,
+  BlackListEnum,
+  TokenEnum,
+} from "@dangol/core";
+import { AuthService } from "@dangol/auth";
+
+import { TestingModule } from "@nestjs/testing";
+import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import { LoginDto } from "../dtos/create-auth.dto";
 import { mockAuthServiceModule } from "./auth.mock";
 import { mockUserService } from "@/modules/user/tests/user.mock";
 import { mockRedis } from "@/core/redis/tests/redis.mock";
-import { ExceptionUtil } from "@/shared/utils/exception.util";
+
 import * as bcrypt from "bcrypt";
 
 jest.mock("bcrypt");

@@ -1,4 +1,4 @@
-import { RequestStatus } from "@prisma/client";
+import { RequestStatus } from "@dangol/core";
 import { tags } from "typia";
 
 export interface RequestRestaurantDto {

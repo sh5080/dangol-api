@@ -1,20 +1,21 @@
-import { HttpStatus, Injectable } from "@nestjs/common";
-import { CertificationDto, CreateUserDto } from "./dtos/create-user.dto";
-import { UserRepository } from "./user.repository";
-import { UserErrorMessage } from "@shared/types/message.type";
 import {
   CheckUserValueType,
   MailType,
   RedisKey,
-} from "@shared/types/enum.type";
+  ExceptionUtil,
+  UserErrorMessage,
+} from "@dangol/core";
+import { RedisService } from "@dangol/auth";
+
+import { HttpStatus, Injectable } from "@nestjs/common";
+import { CertificationDto, CreateUserDto } from "./dtos/create-user.dto";
+import { UserRepository } from "./user.repository";
 import { IUserService } from "@shared/interfaces/user.interface";
-import { ExceptionUtil } from "@/shared/utils/exception.util";
 import * as bcrypt from "bcrypt";
 import { UserWithoutPassword } from "./dtos/response.dto";
 import { FindEmailDto } from "./dtos/get-user.dto";
 import { MailService } from "../mail/mail.service";
 import { UpdatePasswordDto } from "./dtos/update-user.dto";
-import { RedisService } from "@/core/redis/redis.service";
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import Redis from "ioredis";
 

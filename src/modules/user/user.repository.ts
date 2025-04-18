@@ -1,11 +1,14 @@
+import {
+  Prisma,
+  PrismaService,
+  UserAgreementCategory,
+  CheckUserValueType,
+} from "@dangol/core";
+
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@core/prisma/prisma.service";
-import { Prisma, UserAgreementCategory } from "@prisma/client";
 import { CreateUserDto } from "./dtos/create-user.dto";
-import { CheckUserValueType } from "@shared/types/enum.type";
-import { v4 as uuidv4 } from "uuid";
 import { FindEmailDto } from "./dtos/get-user.dto";
-import { UpdatePasswordDto } from "./dtos/update-user.dto";
+
 @Injectable()
 export class UserRepository {
   private readonly prisma: Prisma.TransactionClient;
@@ -20,7 +23,7 @@ export class UserRepository {
 
     return await this.prisma.user.create({
       data: {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         ...user,
         agreements: {
           create: [

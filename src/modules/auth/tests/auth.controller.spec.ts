@@ -1,9 +1,9 @@
+import { AuthRequest } from "@dangol/core";
+import { AuthService } from "@dangol/auth";
+
 import { AuthController } from "../auth.controller";
-import { AuthService } from "../auth.service";
 import { LoginDto } from "../dtos/create-auth.dto";
 import { Request } from "express";
-import { AuthRequest } from "@shared/types/request.type";
-import { AuthProvider } from "@/shared/types/enum.type";
 import { mockAuthModule, mockAuthService } from "./auth.mock";
 
 describe("AuthController", () => {

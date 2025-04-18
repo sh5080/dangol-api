@@ -1,7 +1,8 @@
+import { MailType, SendMailType } from "@dangol/core";
+
 import { Injectable } from "@nestjs/common";
 import * as nodemailer from "nodemailer";
 import { env } from "@shared/configs/env.config";
-import { MailType, SendMailType } from "@shared/types/enum.type";
 
 @Injectable()
 export class MailService {
