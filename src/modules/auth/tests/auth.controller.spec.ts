@@ -1,5 +1,5 @@
 import { AuthRequest } from "@dangol/core";
-import { AuthService } from "@dangol/auth";
+import { AuthService } from "@dangol/cache";
 
 import { AuthController } from "../auth.controller";
 import { LoginDto } from "../dtos/create-auth.dto";

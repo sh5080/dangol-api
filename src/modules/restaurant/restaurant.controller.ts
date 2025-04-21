@@ -1,4 +1,4 @@
-import { AuthGuard, Roles } from "@dangol/auth";
+import { AuthGuard, Roles } from "@dangol/cache";
 import { AuthRequest, Role } from "@dangol/core";
 
 import { Controller, Inject, Req, UseGuards } from "@nestjs/common";

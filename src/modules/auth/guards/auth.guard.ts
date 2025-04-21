@@ -7,7 +7,7 @@ import {
   ExceptionUtil,
 } from "@dangol/core";
 import { UserPayload } from "@dangol/core/src/types/data.type";
-import { AuthService } from "@dangol/auth";
+import { AuthService } from "@dangol/cache";
 
 import { NextFunction, Response } from "express";
 import {

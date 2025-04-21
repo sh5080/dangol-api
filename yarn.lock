@@ -1011,15 +1011,15 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@dangol/auth@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@dangol/auth/-/auth-0.1.7.tgz#c51b4b027bc094576167192db487590413f45048"
-  integrity sha512-pKwRB3f+giDVrWmQoMED2bVLbFmTkkQvItE2siCbcaInGpr8CKObfwAD0jrtpJzb/0odO+0NmRaJ6vPNYpQAPQ==
+"@dangol/cachee@^0.1.7":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@dangol/cachee/-/cache-0.2.0.tgz#ee621a5e0116515d61e1121fd5723c3bac073033"
+  integrity sha512-YoVvnFqZ8aQeGHjzrQz1q5TL6uDPB1bjutxaljNjqTX0q9PBTSnymiCIKxVrjybRUycrJTMzzTV3Fbn/POALYQ==
 
-"@dangol/core@^0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@dangol/core/-/core-0.1.8.tgz#5130d84635e16c72bbf8b8d5c58346cdfa4bb191"
-  integrity sha512-mgXRDw+fguwSxTd/ZLG2O73DmmtctwudKPcvdSw6imEQHL9BrlhJ9f7D+sXSfrORNddtPnghAlOZSBSY+mK6Ww==
+"@dangol/core@^0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@dangol/core/-/core-0.1.11.tgz#2835d993144478a83f92300530bbe3dbe8b5e2bf"
+  integrity sha512-VPN8SkCehDhwC9lJsP/KcW2dUltSmA1qBwngf6wXvL6b7qvaOgw39YD8ylTnGN7fQGuGhLPMajBEldj8qsrdSQ==
   dependencies:
     "@nestjs/common" "^11.0.13"
     "@nestjs/core" "^11.0.11"

@@ -5,7 +5,7 @@ import {
   ExceptionUtil,
   UserErrorMessage,
 } from "@dangol/core";
-import { RedisService } from "@dangol/auth";
+import { RedisService } from "@dangol/cache";
 
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { CertificationDto, CreateUserDto } from "./dtos/create-user.dto";

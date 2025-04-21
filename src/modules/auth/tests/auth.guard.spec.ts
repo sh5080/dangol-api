@@ -1,5 +1,5 @@
 import { BlackListEnum, TokenEnum } from "@dangol/core";
-import { AuthGuard, AuthService } from "@dangol/auth";
+import { AuthGuard, AuthService } from "@dangol/cache";
 
 import { Test, TestingModule } from "@nestjs/testing";
 import { ExecutionContext } from "@nestjs/common";

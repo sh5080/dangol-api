@@ -1,4 +1,4 @@
-import { RedisService as DangolRedisService } from "@dangol/auth";
+import { RedisService as DangolRedisService } from "@dangol/cache";
 
 import { UserController } from "../user.controller";
 import { mockAuthService, mockAuthGuard } from "@/modules/auth/tests/auth.mock";

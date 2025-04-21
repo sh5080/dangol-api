@@ -6,7 +6,7 @@ import {
   BlackListEnum,
   TokenEnum,
 } from "@dangol/core";
-import { AuthService } from "@dangol/auth";
+import { AuthService } from "@dangol/cache";
 
 import { TestingModule } from "@nestjs/testing";
 import { ForbiddenException, UnauthorizedException } from "@nestjs/common";

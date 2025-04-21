@@ -1,5 +1,5 @@
 import { PrismaService } from "@dangol/core";
-import { RedisService as DangolRedisService, AuthService } from "@dangol/auth";
+import { RedisService as DangolRedisService, AuthService } from "@dangol/cache";
 
 import { AuthController } from "../auth.controller";
 import { Test } from "@nestjs/testing";

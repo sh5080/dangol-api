@@ -2,7 +2,7 @@ import {
   AuthModule as DangolAuthModule,
   AuthService as DangolAuthService,
   RedisService as DangolRedisService,
-} from "@dangol/auth";
+} from "@dangol/cache";
 
 import { Module, Global } from "@nestjs/common";
 import { AuthController } from "./auth.controller";

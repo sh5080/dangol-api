@@ -1,5 +1,5 @@
 import { AuthRequest, Role } from "@dangol/core";
-import { AuthGuard, Roles } from "@dangol/auth";
+import { AuthGuard, Roles } from "@dangol/cache";
 
 import { Controller, Req, UseGuards, Inject } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
