@@ -1,5 +1,5 @@
 {
-  "name": "dangol-api",
+  "name": "dangol-owner-api",
   "version": "1.0.0",
   "scripts": {
     "start": "nest start",
